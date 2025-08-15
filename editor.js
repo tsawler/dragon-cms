@@ -38,7 +38,6 @@
         setupPanelToggle() {
             const handle = document.getElementById('panel-handle');
             const panel = document.getElementById('snippet-panel');
-            const overlay = document.getElementById('snippet-panel-overlay');
             
             const togglePanel = () => {
                 const isOpen = panel.classList.contains('open');
@@ -46,23 +45,14 @@
                 if (isOpen) {
                     // Close panel
                     panel.classList.remove('open');
-                    overlay.classList.remove('visible');
                 } else {
                     // Open panel
                     panel.classList.add('open');
-                    overlay.classList.add('visible');
                 }
             };
 
             // Toggle on handle click
             handle.addEventListener('click', togglePanel);
-            
-            // Close on overlay click
-            overlay.addEventListener('click', () => {
-                if (panel.classList.contains('open')) {
-                    togglePanel();
-                }
-            });
             
             // Close on Escape key
             document.addEventListener('keydown', (e) => {
@@ -209,16 +199,24 @@
 
         toggleMode() {
             const btn = document.getElementById('toggle-mode-btn');
+            const panel = document.getElementById('snippet-panel');
+            const handle = document.getElementById('panel-handle');
+            
             if (this.currentMode === 'edit') {
                 this.currentMode = 'display';
                 this.editableArea.setAttribute('data-mode', 'display');
                 btn.textContent = 'Switch to Edit Mode';
-                document.getElementById('snippet-panel').style.display = 'none';
+                
+                // Hide panel and handle in display mode
+                panel.classList.remove('open');
+                handle.style.display = 'none';
             } else {
                 this.currentMode = 'edit';
                 this.editableArea.setAttribute('data-mode', 'edit');
                 btn.textContent = 'Switch to Display Mode';
-                document.getElementById('snippet-panel').style.display = 'block';
+                
+                // Show handle in edit mode (panel stays closed by default)
+                handle.style.display = 'flex';
             }
         }
 

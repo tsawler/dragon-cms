@@ -173,23 +173,6 @@ body {
     display: none;
 }
 
-.snippet-panel-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.3);
-    z-index: 999;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease-in-out;
-}
-
-.snippet-panel-overlay.visible {
-    opacity: 1;
-    visibility: visible;
-}
 
 .snippet-panel h2 {
     font-size: 1.125rem;
@@ -281,6 +264,10 @@ body {
 .editable-area[data-mode="edit"] .editor-block:hover {
     border-color: #cbd5e1;
     background: #fafafa;
+}
+
+.editable-area[data-mode="display"] .editor-block {
+    border: none;
 }
 
 .editor-block.drag-over {
@@ -398,6 +385,10 @@ body {
 .editable-area[data-mode="edit"] .editor-snippet:hover {
     border-color: #cbd5e1;
     background: #fafafa;
+}
+
+.editable-area[data-mode="display"] .editor-snippet {
+    border: none;
 }
 
 .editor-snippet[contenteditable="true"] {
