@@ -38,6 +38,7 @@
         setupPanelToggle() {
             const handle = document.getElementById('panel-handle');
             const panel = document.getElementById('snippet-panel');
+            const editorMain = document.querySelector('.editor-main');
             
             const togglePanel = () => {
                 const isOpen = panel.classList.contains('open');
@@ -45,9 +46,11 @@
                 if (isOpen) {
                     // Close panel
                     panel.classList.remove('open');
+                    editorMain.classList.remove('panel-open');
                 } else {
                     // Open panel
                     panel.classList.add('open');
+                    editorMain.classList.add('panel-open');
                 }
             };
 
@@ -201,6 +204,7 @@
             const btn = document.getElementById('toggle-mode-btn');
             const panel = document.getElementById('snippet-panel');
             const handle = document.getElementById('panel-handle');
+            const editorMain = document.querySelector('.editor-main');
             
             if (this.currentMode === 'edit') {
                 this.currentMode = 'display';
@@ -209,6 +213,7 @@
                 
                 // Hide panel and handle in display mode
                 panel.classList.remove('open');
+                editorMain.classList.remove('panel-open');
                 handle.style.display = 'none';
             } else {
                 this.currentMode = 'edit';

@@ -75,14 +75,20 @@ body {
 
 .editor-main {
     flex: 1;
+    display: flex;
     position: relative;
     overflow: hidden;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+.editor-main.panel-open {
+    margin-left: 280px;
 }
 
 .snippet-panel {
     position: fixed;
     left: -280px;
-    top: 0;
+    top: 65px;
     bottom: 0;
     width: 280px;
     background: white;
@@ -216,7 +222,7 @@ body {
 }
 
 .editable-area {
-    width: 100%;
+    flex: 1;
     padding: 2rem;
     background: white;
     overflow-y: auto;
@@ -244,6 +250,10 @@ body {
 }
 
 .editable-area .drop-zone-placeholder:not(:only-child) {
+    display: none;
+}
+
+.editable-area[data-mode="display"] .drop-zone-placeholder {
     display: none;
 }
 
