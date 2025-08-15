@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Snippets Library</title>
+</head>
+<body>
+    <!-- Block Templates -->
+    <div class="block-template" data-name="Container Block">
+        <div class="content-container"></div>
+    </div>
+
+    <div class="block-template" data-name="Two Column Block">
+        <div class="two-column-container" style="display: flex; gap: 20px;">
+            <div class="column" style="flex: 1;"></div>
+            <div class="column" style="flex: 1;"></div>
+        </div>
+    </div>
+
+    <div class="block-template" data-name="Three Column Block">
+        <div class="three-column-container" style="display: flex; gap: 20px;">
+            <div class="column" style="flex: 1;"></div>
+            <div class="column" style="flex: 1;"></div>
+            <div class="column" style="flex: 1;"></div>
+        </div>
+    </div>
+
+    <div class="block-template" data-name="Hero Block">
+        <div class="hero-container" style="padding: 60px 20px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <h1 style="color: white; font-size: 3rem; margin-bottom: 1rem;">Hero Title</h1>
+            <p style="color: white; font-size: 1.25rem;">Hero subtitle goes here</p>
+        </div>
+    </div>
+
+    <!-- Snippet Templates -->
+    <div class="snippet-template" data-name="Heading" data-snippet-type="text">
+        <h2>Your Heading Here</h2>
+    </div>
+
+    <div class="snippet-template" data-name="Paragraph" data-snippet-type="text">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    </div>
+
+    <div class="snippet-template" data-name="Button" data-snippet-type="text">
+        <button style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Click Me</button>
+    </div>
+
+    <div class="snippet-template" data-name="List" data-snippet-type="text">
+        <ul>
+            <li>First item</li>
+            <li>Second item</li>
+            <li>Third item</li>
+        </ul>
+    </div>
+
+    <div class="snippet-template" data-name="Quote" data-snippet-type="text">
+        <blockquote style="border-left: 4px solid #3b82f6; padding-left: 1rem; font-style: italic;">
+            "This is a beautiful quote that inspires people."
+            <footer style="margin-top: 0.5rem; font-style: normal; color: #666;">— Author Name</footer>
+        </blockquote>
+    </div>
+
+    <div class="snippet-template" data-name="Card" data-snippet-type="text">
+        <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <h3 style="margin-bottom: 0.5rem;">Card Title</h3>
+            <p style="color: #666;">Card content goes here. This is a simple card component.</p>
+            <a href="#" style="color: #3b82f6; text-decoration: none;">Learn more →</a>
+        </div>
+    </div>
+
+    <div class="snippet-template" data-name="Image" data-snippet-type="image">
+        <div class="image-placeholder"></div>
+    </div>
+
+    <div class="snippet-template" data-name="Video" data-snippet-type="video">
+        <div class="video-placeholder"></div>
+    </div>
+
+    <div class="snippet-template" data-name="Divider" data-snippet-type="text">
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 2rem 0;">
+    </div>
+
+    <div class="snippet-template" data-name="Spacer" data-snippet-type="text">
+        <div style="height: 40px;"></div>
+    </div>
+
+    <div class="snippet-template" data-name="Form" data-snippet-type="text">
+        <form style="display: flex; flex-direction: column; gap: 1rem; max-width: 400px;">
+            <div>
+                <label style="display: block; margin-bottom: 0.25rem; font-weight: 500;">Name</label>
+                <input type="text" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.25rem; font-weight: 500;">Email</label>
+                <input type="email" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.25rem; font-weight: 500;">Message</label>
+                <textarea style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; min-height: 100px;"></textarea>
+            </div>
+            <button type="submit" style="padding: 0.75rem; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Submit</button>
+        </form>
+    </div>
+
+    <div class="snippet-template" data-name="Table" data-snippet-type="text">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa;">
+                    <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #e2e8f0;">Column 1</th>
+                    <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #e2e8f0;">Column 2</th>
+                    <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #e2e8f0;">Column 3</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">Data 1</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">Data 2</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">Data 3</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">Data 4</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">Data 5</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">Data 6</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="snippet-template" data-name="Code Block" data-snippet-type="text">
+        <pre style="background: #f8f9fa; padding: 1rem; border-radius: 4px; overflow-x: auto;"><code>// Example code
+function helloWorld() {
+    console.log("Hello, World!");
+}</code></pre>
+    </div>
+
+    <div class="snippet-template" data-name="Alert Box" data-snippet-type="text">
+        <div style="padding: 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; color: #991b1b;">
+            <strong>Alert!</strong> This is an important message.
+        </div>
+    </div>
+
+    <div class="snippet-template" data-name="Success Box" data-snippet-type="text">
+        <div style="padding: 1rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; color: #14532d;">
+            <strong>Success!</strong> Your action was completed successfully.
+        </div>
+    </div>
+
+    <div class="snippet-template" data-name="Info Box" data-snippet-type="text">
+        <div style="padding: 1rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 4px; color: #1e3a8a;">
+            <strong>Info:</strong> Here's some helpful information.
+        </div>
+    </div>
+</body>
+</html>

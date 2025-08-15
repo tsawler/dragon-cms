@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Snippets</title>
+</head>
+<body>
+    <h1>Testing Snippet Loading</h1>
+    <div id="test-output"></div>
+    
+    <script src="snippets.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const output = document.getElementById('test-output');
+            
+            try {
+                console.log('Testing getBlocks function...');
+                const blocks = getBlocks();
+                console.log('Blocks:', blocks);
+                output.innerHTML += `<p>Blocks loaded: ${blocks ? blocks.length : 'undefined'}</p>`;
+                
+                console.log('Testing getSnippets function...');
+                const snippets = getSnippets();
+                console.log('Snippets:', snippets);
+                output.innerHTML += `<p>Snippets loaded: ${snippets ? snippets.length : 'undefined'}</p>`;
+                
+                if (blocks && blocks.length > 0) {
+                    output.innerHTML += `<p>First block: ${blocks[0].name}</p>`;
+                }
+                
+                if (snippets && snippets.length > 0) {
+                    output.innerHTML += `<p>First snippet: ${snippets[0].name}</p>`;
+                }
+                
+            } catch (error) {
+                output.innerHTML += `<p style="color: red;">Error: ${error.message}</p>`;
+                console.error('Error loading snippets:', error);
+            }
+        });
+    </script>
+</body>
+</html>
