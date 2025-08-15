@@ -75,16 +75,120 @@ body {
 
 .editor-main {
     flex: 1;
-    display: flex;
+    position: relative;
     overflow: hidden;
 }
 
 .snippet-panel {
-    width: 250px;
+    position: fixed;
+    left: -280px;
+    top: 0;
+    bottom: 0;
+    width: 280px;
     background: white;
     border-right: 1px solid #ddd;
-    padding: 1rem;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem 1rem 1rem 1rem;
     overflow-y: auto;
+    z-index: 1000;
+    transition: left 0.3s ease-in-out;
+}
+
+.snippet-panel.open {
+    left: 0;
+}
+
+.panel-handle {
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 80px;
+    background: #e2e8f0;
+    border-radius: 0 6px 6px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1001;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.panel-handle:hover {
+    width: 28px;
+    background: #cbd5e1;
+}
+
+.handle-grip {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.handle-grip::before,
+.handle-grip::after,
+.handle-grip {
+    content: '';
+    width: 4px;
+    height: 4px;
+    background: #64748b;
+    border-radius: 50%;
+}
+
+.handle-grip::before,
+.handle-grip::after {
+    content: '';
+    display: block;
+}
+
+.snippet-panel.open .panel-handle {
+    left: 280px;
+    background: #3b82f6;
+}
+
+.snippet-panel.open .panel-handle:hover {
+    background: #2563eb;
+}
+
+.snippet-panel.open .handle-grip {
+    position: relative;
+    background: transparent;
+}
+
+.snippet-panel.open .handle-grip::before {
+    position: absolute;
+    content: '✕';
+    font-size: 16px;
+    color: white;
+    width: auto;
+    height: auto;
+    background: transparent;
+    top: -8px;
+    left: -6px;
+}
+
+.snippet-panel.open .handle-grip::after {
+    display: none;
+}
+
+.snippet-panel-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease-in-out;
+}
+
+.snippet-panel-overlay.visible {
+    opacity: 1;
+    visibility: visible;
 }
 
 .snippet-panel h2 {
@@ -129,11 +233,11 @@ body {
 }
 
 .editable-area {
-    flex: 1;
+    width: 100%;
     padding: 2rem;
     background: white;
     overflow-y: auto;
-    min-height: 100%;
+    min-height: calc(100vh - 65px);
     position: relative;
 }
 

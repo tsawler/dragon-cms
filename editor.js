@@ -24,6 +24,7 @@
             this.stateHistory = new StateHistory(this);
             this.formattingToolbar = new FormattingToolbar(this);
             this.styleEditorModal = new StyleEditorModal(this);
+            this.setupPanelToggle();
             this.codeEditorModal = new CodeEditorModal(this);
             this.imageUploader = new ImageUploader(this);
             this.videoSettingsModal = new VideoSettingsModal(this);
@@ -32,6 +33,43 @@
             this.attachEventListeners();
             this.setupMutationObserver();
             this.setupResizing();
+        }
+
+        setupPanelToggle() {
+            const handle = document.getElementById('panel-handle');
+            const panel = document.getElementById('snippet-panel');
+            const overlay = document.getElementById('snippet-panel-overlay');
+            
+            const togglePanel = () => {
+                const isOpen = panel.classList.contains('open');
+                
+                if (isOpen) {
+                    // Close panel
+                    panel.classList.remove('open');
+                    overlay.classList.remove('visible');
+                } else {
+                    // Open panel
+                    panel.classList.add('open');
+                    overlay.classList.add('visible');
+                }
+            };
+
+            // Toggle on handle click
+            handle.addEventListener('click', togglePanel);
+            
+            // Close on overlay click
+            overlay.addEventListener('click', () => {
+                if (panel.classList.contains('open')) {
+                    togglePanel();
+                }
+            });
+            
+            // Close on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && panel.classList.contains('open')) {
+                    togglePanel();
+                }
+            });
         }
 
         attachEventListeners() {
