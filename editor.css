@@ -333,6 +333,39 @@ body {
     padding: 0;
 }
 
+/* Button editing in edit mode */
+.editable-area[data-mode="edit"] button:not(.edit-icon):not(.code-icon):not(.delete-icon):not(.settings-icon):not(.btn):not(.modal button) {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.editable-area[data-mode="edit"] button:not(.edit-icon):not(.code-icon):not(.delete-icon):not(.settings-icon):not(.btn):not(.modal button):hover {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.editable-area[data-mode="edit"] button:not(.edit-icon):not(.code-icon):not(.delete-icon):not(.settings-icon):not(.btn):not(.modal button)::after {
+    content: "Click to edit";
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.editable-area[data-mode="edit"] button:not(.edit-icon):not(.code-icon):not(.delete-icon):not(.settings-icon):not(.btn):not(.modal button):hover::after {
+    opacity: 1;
+}
+
 .drop-insertion-line {
     position: absolute;
     left: 0;

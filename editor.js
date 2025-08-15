@@ -30,6 +30,7 @@
             this.videoSettingsModal = new VideoSettingsModal(this);
             this.confirmationModal = new ConfirmationModal(this);
             this.pageSettingsModal = new PageSettingsModal(this);
+            this.buttonSettingsModal = new ButtonSettingsModal(this);
             
             this.attachEventListeners();
             this.setupMutationObserver();
@@ -80,6 +81,31 @@
             document.getElementById('desktop-viewport').addEventListener('click', () => this.setViewportSize('100%'));
 
             this.editableArea.addEventListener('click', (e) => {
+                // Handle button clicks
+                if (e.target.tagName === 'BUTTON' && 
+                    !e.target.classList.contains('edit-icon') && 
+                    !e.target.classList.contains('code-icon') &&
+                    !e.target.classList.contains('delete-icon') &&
+                    !e.target.classList.contains('settings-icon')) {
+                    
+                    if (this.currentMode === 'edit') {
+                        // In edit mode, open the settings modal
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.buttonSettingsModal.open(e.target);
+                        return;
+                    } else if (this.currentMode === 'display') {
+                        // In display mode, navigate if URL exists
+                        const url = e.target.getAttribute('data-url');
+                        const target = e.target.getAttribute('data-target') || '_self';
+                        if (url) {
+                            e.preventDefault();
+                            window.open(url, target);
+                        }
+                        return;
+                    }
+                }
+                
                 // Check if the clicked element or its parent is an icon or drag handle
                 const target = e.target.closest('.edit-icon, .code-icon, .delete-icon, .settings-icon, .drag-handle');
                 
@@ -376,6 +402,17 @@
             clone.querySelectorAll('[draggable]').forEach(el => el.removeAttribute('draggable'));
             clone.querySelectorAll('.editor-block, .editor-snippet').forEach(el => {
                 el.classList.remove('editor-block', 'editor-snippet');
+            });
+            
+            // Convert button data-url to onclick handlers for export
+            clone.querySelectorAll('button[data-url]').forEach(button => {
+                const url = button.getAttribute('data-url');
+                const target = button.getAttribute('data-target') || '_self';
+                if (url) {
+                    button.setAttribute('onclick', `window.open('${url}', '${target}')`);
+                    button.removeAttribute('data-url');
+                    button.removeAttribute('data-target');
+                }
             });
 
             const styles = `
@@ -2168,6 +2205,156 @@
             
             this.onConfirm = null;
             this.onCancel = null;
+        }
+    }
+
+    class ButtonSettingsModal {
+        constructor(editor) {
+            this.editor = editor;
+            this.targetButton = null;
+            this.modal = null;
+            this.createModal();
+        }
+
+        createModal() {
+            this.modal = document.createElement('div');
+            this.modal.className = 'modal';
+            this.modal.innerHTML = `
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h2>Button Settings</h2>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="button-text">Button Text</label>
+                            <input type="text" id="button-text" placeholder="Enter button text">
+                        </div>
+                        <div class="form-group">
+                            <label for="button-url">Button URL</label>
+                            <input type="url" id="button-url" placeholder="https://example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="button-bg-color">Background Color</label>
+                            <input type="color" id="button-bg-color" value="#3b82f6">
+                        </div>
+                        <div class="form-group">
+                            <label for="button-text-color">Text Color</label>
+                            <input type="color" id="button-text-color" value="#ffffff">
+                        </div>
+                        <div class="form-group">
+                            <label for="button-target">Open in</label>
+                            <select id="button-target">
+                                <option value="_self">Same Window</option>
+                                <option value="_blank">New Window</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn modal-cancel">Cancel</button>
+                        <button class="btn btn-success modal-apply">Apply</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(this.modal);
+            this.attachListeners();
+        }
+
+        attachListeners() {
+            const closeBtn = this.modal.querySelector('.modal-close');
+            const cancelBtn = this.modal.querySelector('.modal-cancel');
+            const applyBtn = this.modal.querySelector('.modal-apply');
+            
+            closeBtn.addEventListener('click', () => this.close());
+            cancelBtn.addEventListener('click', () => this.close());
+            applyBtn.addEventListener('click', () => this.applyChanges());
+            
+            // Close on background click
+            this.modal.addEventListener('click', (e) => {
+                if (e.target === this.modal) {
+                    this.close();
+                }
+            });
+            
+            // Close on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && this.modal.classList.contains('active')) {
+                    this.close();
+                }
+            });
+        }
+
+        open(button) {
+            this.targetButton = button;
+            
+            // Load current button settings
+            const text = button.textContent || 'Click Me';
+            const bgColor = this.rgbToHex(button.style.backgroundColor) || '#3b82f6';
+            const textColor = this.rgbToHex(button.style.color) || '#ffffff';
+            const url = button.getAttribute('data-url') || button.onclick?.toString().match(/window\.open\(['"]([^'"]+)['"]/)?.[1] || '';
+            const target = button.getAttribute('data-target') || '_self';
+            
+            // Set form values
+            document.getElementById('button-text').value = text;
+            document.getElementById('button-url').value = url;
+            document.getElementById('button-bg-color').value = bgColor;
+            document.getElementById('button-text-color').value = textColor;
+            document.getElementById('button-target').value = target;
+            
+            this.modal.classList.add('active');
+        }
+
+        close() {
+            this.modal.classList.remove('active');
+            this.targetButton = null;
+        }
+
+        rgbToHex(rgb) {
+            if (!rgb) return null;
+            if (rgb.startsWith('#')) return rgb;
+            
+            const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+            if (!match) return null;
+            
+            const hex = '#' + [1, 2, 3].map(i => {
+                const val = parseInt(match[i]);
+                return ('0' + val.toString(16)).slice(-2);
+            }).join('');
+            
+            return hex;
+        }
+
+        applyChanges() {
+            const text = document.getElementById('button-text').value;
+            const url = document.getElementById('button-url').value;
+            const bgColor = document.getElementById('button-bg-color').value;
+            const textColor = document.getElementById('button-text-color').value;
+            const target = document.getElementById('button-target').value;
+            
+            // Update button
+            this.targetButton.textContent = text;
+            this.targetButton.style.backgroundColor = bgColor;
+            this.targetButton.style.color = textColor;
+            
+            // Store URL and target as data attributes
+            if (url) {
+                this.targetButton.setAttribute('data-url', url);
+                this.targetButton.setAttribute('data-target', target);
+            } else {
+                this.targetButton.removeAttribute('data-url');
+                this.targetButton.removeAttribute('data-target');
+            }
+            
+            // Remove any existing click handlers
+            this.targetButton.onclick = null;
+            // Remove event listeners by cloning and replacing the button
+            const newButton = this.targetButton.cloneNode(true);
+            this.targetButton.parentNode.replaceChild(newButton, this.targetButton);
+            
+            // Save state
+            this.editor.stateHistory.saveState();
+            this.close();
         }
     }
 
