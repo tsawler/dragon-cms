@@ -630,7 +630,7 @@ button.edit-icon, button.settings-icon, button.code-icon, button.delete-icon {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(255,0,0,0.8);
+    background: rgba(0,0,0,0.5);
     z-index: 999999;
     align-items: center;
     justify-content: center;
@@ -941,6 +941,44 @@ button.edit-icon, button.settings-icon, button.code-icon, button.delete-icon {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.modal-tabs {
+    display: flex;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    color: #3b82f6;
+}
+
+.tab-btn.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+}
+
+.tab-content {
+    min-height: 300px;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
 }
 
 @media (max-width: 768px) {

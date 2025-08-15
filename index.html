@@ -17,6 +17,7 @@
                 <button id="save-btn" class="btn btn-success">Save</button>
                 <button id="load-btn" class="btn">Load</button>
                 <button id="export-html-btn" class="btn">Export HTML</button>
+                <button id="page-settings-btn" class="btn" title="Page Settings">⚙️</button>
             </div>
         </div>
         
@@ -172,6 +173,54 @@
     </div>
 
     
+    <!-- Page Settings Modal -->
+    <div id="page-settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Page Settings</h2>
+                <button class="modal-close" onclick="document.getElementById('page-settings-modal').style.display = 'none'">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-tabs">
+                    <button class="tab-btn active" data-tab="general">General</button>
+                    <button class="tab-btn" data-tab="css">CSS</button>
+                    <button class="tab-btn" data-tab="javascript">JavaScript</button>
+                </div>
+                
+                <div class="tab-content">
+                    <div id="general-tab" class="tab-panel active">
+                        <div class="form-group">
+                            <label for="page-name">Page Name</label>
+                            <input type="text" id="page-name" placeholder="Enter page name">
+                        </div>
+                        <div class="form-group">
+                            <label for="page-title">Page Title</label>
+                            <input type="text" id="page-title" placeholder="Enter page title (for &lt;title&gt; tag)">
+                        </div>
+                    </div>
+                    
+                    <div id="css-tab" class="tab-panel">
+                        <div class="form-group">
+                            <label for="page-css">Custom CSS</label>
+                            <textarea id="page-css" class="code-editor-textarea" placeholder="/* Enter custom CSS for this page */"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div id="javascript-tab" class="tab-panel">
+                        <div class="form-group">
+                            <label for="page-javascript">Custom JavaScript</label>
+                            <textarea id="page-javascript" class="code-editor-textarea" placeholder="// Enter custom JavaScript for this page"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="document.getElementById('page-settings-modal').style.display = 'none'">Cancel</button>
+                <button class="btn btn-primary" id="save-page-settings">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
     <script src="snippets.js" onerror="console.error('Failed to load snippets.js')"></script>
     <script>
         window.addEventListener('load', function() {

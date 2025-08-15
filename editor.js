@@ -29,6 +29,7 @@
             this.imageUploader = new ImageUploader(this);
             this.videoSettingsModal = new VideoSettingsModal(this);
             this.confirmationModal = new ConfirmationModal(this);
+            this.pageSettingsModal = new PageSettingsModal(this);
             
             this.attachEventListeners();
             this.setupMutationObserver();
@@ -424,6 +425,7 @@
 
             return {
                 page_title: document.title,
+                page_settings: this.pageSettingsModal ? this.pageSettingsModal.getPageData() : {},
                 layout: {
                     blocks: blocks
                 }
@@ -432,6 +434,16 @@
 
         deserializeJSONToPage(pageData) {
             this.editableArea.innerHTML = '';
+            
+            // Load page settings if they exist
+            if (pageData.page_settings && this.pageSettingsModal) {
+                this.pageSettingsModal.setPageData(pageData.page_settings);
+                
+                // Update document title if page title is set
+                if (pageData.page_settings.pageTitle) {
+                    document.title = pageData.page_settings.pageTitle;
+                }
+            }
             
             pageData.layout.blocks.forEach(blockData => {
                 const block = this.createBlock();
@@ -481,6 +493,20 @@
                     if (templateBlock.style.cssText) {
                         block.style.cssText = templateBlock.style.cssText;
                     }
+                    
+                    // Make text content editable
+                    const textElements = block.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, div:not([class*="handle"]):not([class*="icon"])');
+                    textElements.forEach(el => {
+                        // Don't make elements with control buttons editable
+                        if (!el.querySelector('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon') && 
+                            !el.classList.contains('drag-handle') && 
+                            !el.classList.contains('edit-icon') && 
+                            !el.classList.contains('code-icon') && 
+                            !el.classList.contains('delete-icon') && 
+                            !el.classList.contains('settings-icon')) {
+                            el.contentEditable = true;
+                        }
+                    });
                 }
             } else {
                 block.innerHTML = controls;
@@ -507,9 +533,15 @@
                 // Use the template content if provided
                 snippet.innerHTML = controls + template;
                 // Make text content editable
-                const textElements = snippet.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, div:not(.drag-handle):not(.edit-icon):not(.code-icon):not(.delete-icon)');
+                const textElements = snippet.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, div:not([class*="handle"]):not([class*="icon"])');
                 textElements.forEach(el => {
-                    if (!el.querySelector('.drag-handle, .edit-icon, .code-icon, .delete-icon')) {
+                    // Don't make elements with control buttons editable
+                    if (!el.querySelector('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon') && 
+                        !el.classList.contains('drag-handle') && 
+                        !el.classList.contains('edit-icon') && 
+                        !el.classList.contains('code-icon') && 
+                        !el.classList.contains('delete-icon') && 
+                        !el.classList.contains('settings-icon')) {
                         el.contentEditable = true;
                     }
                 });
@@ -1476,15 +1508,59 @@
             // Setup text color
             const textColor = document.getElementById('text-color');
             textColor.addEventListener('change', (e) => {
-                document.execCommand('foreColor', false, e.target.value);
-                this.editor.stateHistory.saveState();
+                if (this.currentEditableElement) {
+                    // Try execCommand first for compatibility
+                    try {
+                        document.execCommand('foreColor', false, e.target.value);
+                    } catch (err) {
+                        // Fallback to direct styling if execCommand fails
+                        const selection = window.getSelection();
+                        if (selection.rangeCount > 0) {
+                            const range = selection.getRangeAt(0);
+                            const span = document.createElement('span');
+                            span.style.color = e.target.value;
+                            try {
+                                range.surroundContents(span);
+                            } catch (e) {
+                                // If surrounding fails, just style the entire element
+                                this.currentEditableElement.style.color = e.target.value;
+                            }
+                        } else {
+                            // No selection, style the entire element
+                            this.currentEditableElement.style.color = e.target.value;
+                        }
+                    }
+                    this.editor.stateHistory.saveState();
+                }
             });
 
-            // Setup background color
+            // Setup background color  
             const backgroundColor = document.getElementById('background-color');
             backgroundColor.addEventListener('change', (e) => {
-                document.execCommand('hiliteColor', false, e.target.value);
-                this.editor.stateHistory.saveState();
+                if (this.currentEditableElement) {
+                    // Try execCommand first for compatibility
+                    try {
+                        document.execCommand('hiliteColor', false, e.target.value);
+                    } catch (err) {
+                        // Fallback to direct styling if execCommand fails
+                        const selection = window.getSelection();
+                        if (selection.rangeCount > 0) {
+                            const range = selection.getRangeAt(0);
+                            const span = document.createElement('span');
+                            span.style.backgroundColor = e.target.value;
+                            try {
+                                range.surroundContents(span);
+                            } catch (e) {
+                                // If surrounding fails, just style the entire element
+                                this.currentEditableElement.style.backgroundColor = e.target.value;
+                            }
+                        } else {
+                            // No selection, style the entire element
+                            this.currentEditableElement.style.backgroundColor = e.target.value;
+                        }
+                    }
+                    this.editor.stateHistory.saveState();
+                }
             });
         }
 
@@ -2065,6 +2141,130 @@
             
             this.onConfirm = null;
             this.onCancel = null;
+        }
+    }
+
+    class PageSettingsModal {
+        constructor(editor) {
+            this.editor = editor;
+            this.modal = document.getElementById('page-settings-modal');
+            this.pageData = {
+                pageName: '',
+                pageTitle: '',
+                customCSS: '',
+                customJavaScript: ''
+            };
+            this.init();
+        }
+
+        init() {
+            this.attachListeners();
+            this.loadPageData();
+        }
+
+        attachListeners() {
+            // Gear button to open modal
+            const pageSettingsBtn = document.getElementById('page-settings-btn');
+            pageSettingsBtn.addEventListener('click', () => this.show());
+
+            // Tab switching
+            const tabBtns = this.modal.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => this.switchTab(btn.dataset.tab));
+            });
+
+            // Save button
+            const saveBtn = document.getElementById('save-page-settings');
+            saveBtn.addEventListener('click', () => this.saveSettings());
+
+            // Cancel button and close button (already have onclick in HTML)
+            
+            // Close on background click
+            this.modal.addEventListener('click', (e) => {
+                if (e.target === this.modal) {
+                    this.hide();
+                }
+            });
+
+            // Close on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && this.modal.style.display === 'flex') {
+                    this.hide();
+                }
+            });
+        }
+
+        switchTab(tabName) {
+            // Remove active from all tabs and panels
+            this.modal.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            this.modal.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+            // Activate selected tab and panel
+            this.modal.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            this.modal.querySelector(`#${tabName}-tab`).classList.add('active');
+        }
+
+        show() {
+            this.loadPageData();
+            this.modal.style.display = 'flex';
+            
+            // Focus the first input
+            setTimeout(() => {
+                const firstInput = this.modal.querySelector('input[type="text"]');
+                if (firstInput) firstInput.focus();
+            }, 100);
+        }
+
+        hide() {
+            this.modal.style.display = 'none';
+        }
+
+        saveSettings() {
+            // Get values from form
+            this.pageData.pageName = document.getElementById('page-name').value;
+            this.pageData.pageTitle = document.getElementById('page-title').value;
+            this.pageData.customCSS = document.getElementById('page-css').value;
+            this.pageData.customJavaScript = document.getElementById('page-javascript').value;
+
+            // Store in localStorage
+            localStorage.setItem('pageSettings', JSON.stringify(this.pageData));
+
+            // Update document title if page title is set
+            if (this.pageData.pageTitle) {
+                document.title = this.pageData.pageTitle;
+            }
+
+            // Save state to history
+            this.editor.stateHistory.saveState();
+
+            this.hide();
+        }
+
+        loadPageData() {
+            // Load from localStorage
+            const stored = localStorage.getItem('pageSettings');
+            if (stored) {
+                try {
+                    this.pageData = JSON.parse(stored);
+                } catch (e) {
+                    console.warn('Failed to parse stored page settings');
+                }
+            }
+
+            // Populate form fields
+            document.getElementById('page-name').value = this.pageData.pageName || '';
+            document.getElementById('page-title').value = this.pageData.pageTitle || '';
+            document.getElementById('page-css').value = this.pageData.customCSS || '';
+            document.getElementById('page-javascript').value = this.pageData.customJavaScript || '';
+        }
+
+        getPageData() {
+            return { ...this.pageData };
+        }
+
+        setPageData(data) {
+            this.pageData = { ...data };
+            this.loadPageData();
         }
     }
 
