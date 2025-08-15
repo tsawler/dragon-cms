@@ -293,6 +293,15 @@ body {
     animation: pulse-green 1.5s infinite;
 }
 
+.column.valid-drop-target {
+    background: #f0fdf4;
+    border: 2px solid #10b981;
+    border-radius: 4px;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    animation: pulse-green 1.5s infinite;
+    min-height: 40px;
+}
+
 .drop-insertion-line {
     position: absolute;
     left: 0;

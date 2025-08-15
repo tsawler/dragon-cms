@@ -848,7 +848,13 @@
                 // Store the current target block BEFORE clearing indicators
                 let targetBlock = null;
                 if (elementType === 'snippet') {
-                    targetBlock = e.target.closest('.editor-block');
+                    // First check if we're hovering over a specific column
+                    const targetColumn = e.target.closest('.column');
+                    if (targetColumn) {
+                        targetBlock = targetColumn;
+                    } else {
+                        targetBlock = e.target.closest('.editor-block');
+                    }
                 }
                 
                 // Clear previous indicators
@@ -971,10 +977,21 @@
                     
                     this.editor.stateHistory.saveState();
                 } else if (elementType === 'snippet') {
-                    // Use the target block stored during dragover OR try to find it now
-                    let closestBlock = this.currentTargetBlock || e.target.closest('.editor-block');
+                    // First check if we're dropping into a specific column
+                    let targetContainer = e.target.closest('.column');
+                    let closestBlock = null;
                     
-                    console.log('Snippet drop - stored target block:', this.currentTargetBlock, 'found block:', e.target.closest('.editor-block'), 'using:', closestBlock);
+                    if (targetContainer) {
+                        // Dropping into a column
+                        closestBlock = targetContainer;
+                        console.log('Snippet drop into column:', targetContainer);
+                    } else {
+                        // Use the target block stored during dragover OR try to find it now
+                        closestBlock = this.currentTargetBlock || e.target.closest('.editor-block');
+                        console.log('Snippet drop into block:', closestBlock);
+                    }
+                    
+                    console.log('Snippet drop - target container:', targetContainer, 'closest block:', closestBlock);
                     if (closestBlock) {
                         if (snippetType === 'existing') {
                             // Moving an existing snippet
