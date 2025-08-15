@@ -31,6 +31,7 @@
             this.confirmationModal = new ConfirmationModal(this);
             this.pageSettingsModal = new PageSettingsModal(this);
             this.buttonSettingsModal = new ButtonSettingsModal(this);
+            this.columnResizer = new ColumnResizer(this);
             
             this.attachEventListeners();
             this.setupMutationObserver();
@@ -164,10 +165,34 @@
 
         setupMutationObserver() {
             let timeout;
-            const observer = new MutationObserver(() => {
+            const observer = new MutationObserver((mutations) => {
+                // Skip if we're currently setting up column resizers to prevent infinite loops
+                if (this.columnResizer && this.columnResizer.setupInProgress) {
+                    return;
+                }
+                
+                // Check if any mutation was adding/removing column resize dividers
+                const hasResizerMutation = mutations.some(mutation => {
+                    if (mutation.type === 'childList') {
+                        return Array.from(mutation.addedNodes)
+                            .concat(Array.from(mutation.removedNodes))
+                            .some(node => node.classList && node.classList.contains('column-resize-divider'));
+                    }
+                    return false;
+                });
+                
+                // Skip if the mutation was just adding/removing resize dividers
+                if (hasResizerMutation) {
+                    return;
+                }
+                
                 clearTimeout(timeout);
                 timeout = setTimeout(() => {
                     this.stateHistory.saveState();
+                    // Only refresh column resize dividers if not currently resizing
+                    if (this.columnResizer && !this.columnResizer.isResizing) {
+                        this.columnResizer.refresh();
+                    }
                 }, 300);
             });
 
@@ -259,6 +284,12 @@
                 // Show handle in edit mode (panel stays closed by default)
                 handle.style.display = 'flex';
             }
+            
+            // Refresh column resize dividers when mode changes
+            // Temporarily disabled
+            // if (this.columnResizer) {
+            //     this.columnResizer.refresh();
+            // }
         }
 
         setViewportSize(width) {
@@ -2510,6 +2541,210 @@
         }
     }
 
+    class ColumnResizer {
+        constructor(editor) {
+            this.editor = editor;
+            this.isResizing = false;
+            this.currentDivider = null;
+            this.leftColumn = null;
+            this.rightColumn = null;
+            this.startX = 0;
+            this.leftStartWidth = 0;
+            this.rightStartWidth = 0;
+            this.containerWidth = 0;
+            
+            this.init();
+        }
+        
+        init() {
+            // Add or update resize dividers when DOM changes
+            // Initial setup after a delay to ensure DOM is ready
+            setTimeout(() => {
+                this.setupResizeDividers();
+            }, 500);
+            
+            // Listen for mouse events
+            document.addEventListener('mousedown', this.handleMouseDown.bind(this));
+            document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+            document.addEventListener('mouseup', this.handleMouseUp.bind(this));
+            
+            // Add global function for testing
+            window.debugColumnResizer = () => {
+                console.log('Manual column resizer trigger');
+                this.setupResizeDividers();
+            };
+        }
+        
+        setupResizeDividers() {
+            // Prevent recursive calls
+            if (this.setupInProgress) return;
+            this.setupInProgress = true;
+            
+            // Find all elements that contain multiple .column children
+            const allElements = document.querySelectorAll('*');
+            const containers = [];
+            
+            allElements.forEach(element => {
+                const columns = element.querySelectorAll(':scope > .column');
+                if (columns.length > 1) {
+                    containers.push(element);
+                }
+            });
+            
+            console.log('Setting up resize dividers, found containers:', containers.length);
+            
+            containers.forEach(container => {
+                const columns = container.querySelectorAll('.column');
+                console.log('Container has columns:', columns.length);
+                
+                // Remove existing dividers first
+                container.querySelectorAll('.column-resize-divider').forEach(d => d.remove());
+                
+                // Make container relative for absolute positioning
+                container.style.position = 'relative';
+                
+                // Add dividers between columns (in edit mode only)
+                if (this.editor.currentMode === 'edit' && columns.length > 1) {
+                    for (let i = 0; i < columns.length - 1; i++) {
+                        const divider = document.createElement('div');
+                        divider.className = 'column-resize-divider';
+                        divider.dataset.leftIndex = i;
+                        divider.dataset.rightIndex = i + 1;
+                        
+                        // Calculate position based on column positions
+                        const leftColumn = columns[i];
+                        const rightColumn = columns[i + 1];
+                        
+                        // Position divider in the container, not the column
+                        container.appendChild(divider);
+                        
+                        // Position it between the columns
+                        const updateDividerPosition = () => {
+                            const leftRect = leftColumn.getBoundingClientRect();
+                            const containerRect = container.getBoundingClientRect();
+                            const position = leftRect.right - containerRect.left; // Right edge of left column
+                            divider.style.left = position + 'px';
+                        };
+                        
+                        updateDividerPosition();
+                        
+                        // Store update function for later use if needed
+                        divider.updatePosition = updateDividerPosition;
+                    }
+                }
+            });
+            
+            // Reset the flag
+            this.setupInProgress = false;
+        }
+        
+        handleMouseDown(e) {
+            if (!e.target.classList.contains('column-resize-divider')) return;
+            if (this.editor.currentMode !== 'edit') return;
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log('Starting column resize');
+            this.isResizing = true;
+            this.currentDivider = e.target;
+            
+            // Find the container that holds this divider
+            const container = this.currentDivider.parentNode;
+            if (!container) {
+                console.error('No container found for divider');
+                return;
+            }
+            
+            console.log('Container found:', container);
+            const columns = Array.from(container.querySelectorAll(':scope > .column'));
+            console.log('Columns found:', columns.length);
+            
+            const leftIndex = parseInt(this.currentDivider.dataset.leftIndex);
+            const rightIndex = parseInt(this.currentDivider.dataset.rightIndex);
+            
+            this.leftColumn = columns[leftIndex];
+            this.rightColumn = columns[rightIndex];
+            this.startX = e.clientX;
+            this.containerWidth = container.getBoundingClientRect().width;
+            
+            // Get current widths
+            const leftRect = this.leftColumn.getBoundingClientRect();
+            const rightRect = this.rightColumn.getBoundingClientRect();
+            this.leftStartWidth = leftRect.width;
+            this.rightStartWidth = rightRect.width;
+            
+            // Add resizing class for visual feedback
+            document.body.classList.add('column-resizing');
+            this.currentDivider.classList.add('active');
+        }
+        
+        handleMouseMove(e) {
+            if (!this.isResizing) return;
+            
+            e.preventDefault();
+            const deltaX = e.clientX - this.startX;
+            
+            // Calculate new widths
+            const newLeftWidth = this.leftStartWidth + deltaX;
+            const newRightWidth = this.rightStartWidth - deltaX;
+            
+            // Minimum column width (50px)
+            const minWidth = 50;
+            
+            if (newLeftWidth >= minWidth && newRightWidth >= minWidth) {
+                // Calculate percentages
+                const totalWidth = this.leftStartWidth + this.rightStartWidth;
+                const leftPercent = (newLeftWidth / totalWidth) * 100;
+                const rightPercent = (newRightWidth / totalWidth) * 100;
+                
+                // Update flex values to maintain proportions
+                this.leftColumn.style.flex = `0 0 ${leftPercent}%`;
+                this.rightColumn.style.flex = `0 0 ${rightPercent}%`;
+                
+                // Update divider position visually during drag
+                if (this.currentDivider && this.currentDivider.updatePosition) {
+                    // Use requestAnimationFrame for smooth visual updates
+                    requestAnimationFrame(() => {
+                        if (this.currentDivider && this.currentDivider.updatePosition) {
+                            this.currentDivider.updatePosition();
+                        }
+                    });
+                }
+            }
+        }
+        
+        handleMouseUp(e) {
+            if (!this.isResizing) return;
+            
+            this.isResizing = false;
+            document.body.classList.remove('column-resizing');
+            
+            if (this.currentDivider) {
+                this.currentDivider.classList.remove('active');
+            }
+            
+            // Save state
+            if (this.editor.stateHistory) {
+                this.editor.stateHistory.saveState();
+            }
+            
+            // Reset references
+            this.currentDivider = null;
+            this.leftColumn = null;
+            this.rightColumn = null;
+        }
+        
+        refresh() {
+            // Call this when columns are added/removed or mode changes
+            // Use setTimeout to ensure DOM is fully rendered
+            clearTimeout(this.refreshTimeout);
+            this.refreshTimeout = setTimeout(() => {
+                this.setupResizeDividers();
+            }, 100);
+        }
+    }
+
     class ColumnSettingsModal {
         constructor(editor) {
             this.editor = editor;
@@ -2726,6 +2961,13 @@
             
             // Save state
             this.editor.stateHistory.saveState();
+            
+            // Refresh column resize dividers
+            // Temporarily disabled
+            // if (this.editor.columnResizer) {
+            //     this.editor.columnResizer.refresh();
+            // }
+            
             this.close();
         }
     }

@@ -333,6 +333,72 @@ body {
     padding: 0;
 }
 
+/* Column resize dividers */
+.column-resize-divider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    cursor: col-resize;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    transform: translateX(-50%); /* Center the divider on the boundary */
+}
+
+.column-resize-divider::before {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 100%;
+    background: #cbd5e1;
+    transition: background 0.2s;
+}
+
+.column-resize-divider:hover::before,
+.column-resize-divider.active::before {
+    background: #3b82f6;
+}
+
+.column-resize-divider::after {
+    content: '⋮';
+    position: absolute;
+    color: #64748b;
+    font-size: 18px;
+    font-weight: bold;
+    opacity: 0.6;
+    transition: all 0.2s;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 4px 2px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.column-resize-divider:hover::after {
+    opacity: 1;
+    color: #3b82f6;
+}
+
+/* Prevent text selection while resizing */
+body.column-resizing {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    cursor: col-resize !important;
+}
+
+body.column-resizing * {
+    cursor: col-resize !important;
+}
+
+/* Hide dividers in display mode */
+.editable-area[data-mode="display"] .column-resize-divider {
+    display: none;
+}
+
 /* Button editing in edit mode */
 .editable-area[data-mode="edit"] button:not(.edit-icon):not(.code-icon):not(.delete-icon):not(.settings-icon):not(.btn):not(.modal button) {
     position: relative;
