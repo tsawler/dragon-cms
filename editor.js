@@ -108,8 +108,17 @@
                     const element = target.closest('.editor-block, .editor-snippet');
                     this.deleteElement(element);
                 } else if (target.classList.contains('settings-icon')) {
+                    const block = target.closest('.editor-block');
                     const snippet = target.closest('.editor-snippet');
-                    if (snippet && snippet.classList.contains('video-snippet')) {
+                    
+                    if (block && !snippet) {
+                        // Settings for block (column management)
+                        if (!this.columnSettingsModal) {
+                            this.columnSettingsModal = new ColumnSettingsModal(this);
+                        }
+                        this.columnSettingsModal.open(block);
+                    } else if (snippet && snippet.classList.contains('video-snippet')) {
+                        // Settings for video snippet
                         this.videoSettingsModal.open(snippet);
                     }
                 } else if (target.classList.contains('drag-handle')) {
@@ -475,6 +484,7 @@
             const controls = `
                 <span class="drag-handle">⋮⋮</span>
                 <button class="edit-icon" title="Edit Styles">✏️</button>
+                <button class="settings-icon" title="Column Settings">⚙️</button>
                 <button class="code-icon" title="Edit HTML">&lt;/&gt;</button>
                 <button class="delete-icon" title="Delete">🗑️</button>
                 <div class="resizer-handle right"></div>
@@ -2158,6 +2168,226 @@
             
             this.onConfirm = null;
             this.onCancel = null;
+        }
+    }
+
+    class ColumnSettingsModal {
+        constructor(editor) {
+            this.editor = editor;
+            this.targetBlock = null;
+            this.modal = null;
+            this.createModal();
+        }
+
+        createModal() {
+            this.modal = document.createElement('div');
+            this.modal.className = 'modal';
+            this.modal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h2>Column Settings</h2>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="column-preview" style="margin-bottom: 1.5rem;">
+                            <p style="margin-bottom: 0.5rem; color: #6b7280; font-size: 0.875rem;">Current columns: <span id="column-count">1</span></p>
+                            <div id="column-visual" style="display: flex; gap: 5px; height: 40px;"></div>
+                        </div>
+                        <div class="column-controls" style="display: flex; gap: 1rem; justify-content: center;">
+                            <button id="remove-column-btn" class="btn" style="display: flex; align-items: center; gap: 0.25rem;">
+                                <span style="font-size: 1.25rem;">−</span> Remove Column
+                            </button>
+                            <button id="add-column-btn" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.25rem;">
+                                <span style="font-size: 1.25rem;">+</span> Add Column
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn modal-cancel">Cancel</button>
+                        <button class="btn btn-success modal-apply">Apply</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(this.modal);
+            this.attachListeners();
+        }
+
+        attachListeners() {
+            const closeBtn = this.modal.querySelector('.modal-close');
+            const cancelBtn = this.modal.querySelector('.modal-cancel');
+            const applyBtn = this.modal.querySelector('.modal-apply');
+            const addBtn = this.modal.querySelector('#add-column-btn');
+            const removeBtn = this.modal.querySelector('#remove-column-btn');
+            
+            closeBtn.addEventListener('click', () => this.close());
+            cancelBtn.addEventListener('click', () => this.close());
+            applyBtn.addEventListener('click', () => this.applyChanges());
+            addBtn.addEventListener('click', () => this.addColumn());
+            removeBtn.addEventListener('click', () => this.removeColumn());
+            
+            // Close on background click
+            this.modal.addEventListener('click', (e) => {
+                if (e.target === this.modal) {
+                    this.close();
+                }
+            });
+            
+            // Close on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && this.modal.classList.contains('active')) {
+                    this.close();
+                }
+            });
+        }
+
+        open(block) {
+            this.targetBlock = block;
+            this.tempColumns = this.getCurrentColumns();
+            this.updatePreview();
+            this.modal.classList.add('active');
+        }
+
+        close() {
+            this.modal.classList.remove('active');
+            this.targetBlock = null;
+            this.tempColumns = [];
+        }
+
+        getCurrentColumns() {
+            // Check for column-container first
+            const columnContainer = this.targetBlock.querySelector('.column-container');
+            if (columnContainer) {
+                const columns = columnContainer.querySelectorAll('.column');
+                if (columns.length > 0) {
+                    return Array.from(columns).map(col => ({
+                        content: col.innerHTML,
+                        style: col.style.cssText || 'flex: 1;'
+                    }));
+                }
+            }
+            
+            // Check for two-column or three-column containers
+            const twoCol = this.targetBlock.querySelector('.two-column-container');
+            const threeCol = this.targetBlock.querySelector('.three-column-container');
+            
+            if (twoCol) {
+                return Array.from(twoCol.querySelectorAll('.column')).map(col => ({
+                    content: col.innerHTML,
+                    style: col.style.cssText || 'flex: 1;'
+                }));
+            } else if (threeCol) {
+                return Array.from(threeCol.querySelectorAll('.column')).map(col => ({
+                    content: col.innerHTML,
+                    style: col.style.cssText || 'flex: 1;'
+                }));
+            }
+            
+            // Single column (no column structure)
+            const blockContent = this.targetBlock.innerHTML;
+            // Remove control elements
+            const cleanContent = blockContent.replace(/<(span|button|div)\s+class="(drag-handle|edit-icon|settings-icon|code-icon|delete-icon|resizer-handle)[^"]*"[^>]*>[\s\S]*?<\/(span|button|div)>/gi, '');
+            
+            return [{
+                content: cleanContent.trim(),
+                style: ''
+            }];
+        }
+
+        updatePreview() {
+            const countSpan = this.modal.querySelector('#column-count');
+            const visualDiv = this.modal.querySelector('#column-visual');
+            const removeBtn = this.modal.querySelector('#remove-column-btn');
+            
+            countSpan.textContent = this.tempColumns.length;
+            
+            // Update visual preview
+            visualDiv.innerHTML = '';
+            for (let i = 0; i < this.tempColumns.length; i++) {
+                const colDiv = document.createElement('div');
+                colDiv.style.cssText = 'flex: 1; background: #e2e8f0; border-radius: 4px;';
+                visualDiv.appendChild(colDiv);
+            }
+            
+            // Disable remove button if only 1 column
+            removeBtn.disabled = this.tempColumns.length <= 1;
+            if (removeBtn.disabled) {
+                removeBtn.style.opacity = '0.5';
+                removeBtn.style.cursor = 'not-allowed';
+            } else {
+                removeBtn.style.opacity = '1';
+                removeBtn.style.cursor = 'pointer';
+            }
+        }
+
+        addColumn() {
+            this.tempColumns.push({
+                content: '',
+                style: 'flex: 1;'
+            });
+            this.updatePreview();
+        }
+
+        removeColumn() {
+            if (this.tempColumns.length > 1) {
+                // Remove the last column and merge its content with the previous one
+                const lastColumn = this.tempColumns.pop();
+                if (lastColumn.content && this.tempColumns.length > 0) {
+                    this.tempColumns[this.tempColumns.length - 1].content += lastColumn.content;
+                }
+                this.updatePreview();
+            }
+        }
+
+        applyChanges() {
+            console.log('Applying column changes:', {
+                columnCount: this.tempColumns.length,
+                columns: this.tempColumns
+            });
+            
+            // Save current block controls as HTML strings
+            const controlsHTML = [];
+            this.targetBlock.querySelectorAll('.drag-handle, .edit-icon, .settings-icon, .code-icon, .delete-icon, .resizer-handle').forEach(el => {
+                controlsHTML.push(el.outerHTML);
+            });
+            
+            // Clear block content
+            this.targetBlock.innerHTML = '';
+            
+            // Re-add controls using innerHTML to preserve event handlers
+            const controlsContainer = document.createElement('div');
+            controlsContainer.innerHTML = controlsHTML.join('');
+            while (controlsContainer.firstChild) {
+                this.targetBlock.appendChild(controlsContainer.firstChild);
+            }
+            
+            if (this.tempColumns.length === 1) {
+                // Single column - just add content directly
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = this.tempColumns[0].content;
+                while (tempDiv.firstChild) {
+                    this.targetBlock.appendChild(tempDiv.firstChild);
+                }
+            } else {
+                // Multiple columns - create column container
+                const container = document.createElement('div');
+                container.className = 'column-container';
+                container.style.cssText = 'display: flex; gap: 20px;';
+                
+                this.tempColumns.forEach((colData, index) => {
+                    const column = document.createElement('div');
+                    column.className = 'column';
+                    column.style.cssText = 'flex: 1;';
+                    column.innerHTML = colData.content || '';
+                    container.appendChild(column);
+                });
+                
+                this.targetBlock.appendChild(container);
+            }
+            
+            // Save state
+            this.editor.stateHistory.saveState();
+            this.close();
         }
     }
 
