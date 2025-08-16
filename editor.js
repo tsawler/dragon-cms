@@ -2810,7 +2810,7 @@
             e.preventDefault();
             const deltaX = e.clientX - this.startX;
             
-            // Calculate new widths
+            // Calculate new widths in pixels
             const newLeftWidth = this.leftStartWidth + deltaX;
             const newRightWidth = this.rightStartWidth - deltaX;
             
@@ -2818,14 +2818,60 @@
             const minWidth = 50;
             
             if (newLeftWidth >= minWidth && newRightWidth >= minWidth) {
-                // Calculate percentages
-                const totalWidth = this.leftStartWidth + this.rightStartWidth;
-                const leftPercent = (newLeftWidth / totalWidth) * 100;
-                const rightPercent = (newRightWidth / totalWidth) * 100;
+                // Get the container and all columns
+                const container = this.leftColumn.parentNode;
+                const allColumns = Array.from(container.querySelectorAll('.column'));
                 
-                // Update flex values to maintain proportions
-                this.leftColumn.style.flex = `0 0 ${leftPercent}%`;
-                this.rightColumn.style.flex = `0 0 ${rightPercent}%`;
+                // For multi-column layouts, we need to ensure all columns fit
+                if (allColumns.length === 2) {
+                    // For two columns, they should total 100%
+                    const totalWidth = newLeftWidth + newRightWidth;
+                    const leftPercent = (newLeftWidth / totalWidth) * 100;
+                    const rightPercent = (newRightWidth / totalWidth) * 100;
+                    
+                    this.leftColumn.style.flex = `0 0 ${leftPercent}%`;
+                    this.rightColumn.style.flex = `0 0 ${rightPercent}%`;
+                } else {
+                    // For 3+ columns, we need to calculate all column percentages
+                    const containerRect = container.getBoundingClientRect();
+                    const containerWidth = containerRect.width;
+                    const gap = 20; // Gap between columns in pixels
+                    const totalGaps = gap * (allColumns.length - 1);
+                    const availableWidth = containerWidth - totalGaps;
+                    
+                    // Calculate total width of all columns with the resize
+                    let totalColumnsWidth = 0;
+                    const leftIndex = parseInt(this.currentDivider.dataset.leftIndex);
+                    const rightIndex = parseInt(this.currentDivider.dataset.rightIndex);
+                    
+                    allColumns.forEach((col, index) => {
+                        if (index === leftIndex) {
+                            totalColumnsWidth += newLeftWidth;
+                        } else if (index === rightIndex) {
+                            totalColumnsWidth += newRightWidth;
+                        } else {
+                            const rect = col.getBoundingClientRect();
+                            totalColumnsWidth += rect.width;
+                        }
+                    });
+                    
+                    // Calculate percentages for each column
+                    allColumns.forEach((col, index) => {
+                        let width;
+                        if (index === leftIndex) {
+                            width = newLeftWidth;
+                        } else if (index === rightIndex) {
+                            width = newRightWidth;
+                        } else {
+                            const rect = col.getBoundingClientRect();
+                            width = rect.width;
+                        }
+                        
+                        // Calculate percentage based on available width
+                        const percent = (width / totalColumnsWidth) * ((availableWidth / containerWidth) * 100);
+                        col.style.flex = `0 0 ${percent}%`;
+                    });
+                }
                 
                 // Update divider position visually during drag
                 if (this.currentDivider && this.currentDivider.updatePosition) {
