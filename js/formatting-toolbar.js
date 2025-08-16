@@ -3,6 +3,7 @@ export class FormattingToolbar {
         this.editor = editor;
         this.toolbar = document.getElementById('formatting-toolbar');
         this.currentEditableElement = null;
+        this.savedRange = null;
         this.init();
     }
 
@@ -12,6 +13,310 @@ export class FormattingToolbar {
     }
 
     setupClickListener() {
+        // Debug body classes that might be interfering
+        console.log('Body classes:', document.body.className);
+        console.log('Body user-select style:', window.getComputedStyle(document.body).userSelect);
+        
+        // Add debug function
+        window.debugTextSelection = () => {
+            console.log('=== Text Selection Debug ===');
+            console.log('Body classes:', document.body.className);
+            console.log('Body user-select:', window.getComputedStyle(document.body).userSelect);
+            console.log('Body cursor:', window.getComputedStyle(document.body).cursor);
+            
+            // Check editable elements
+            const editableElements = document.querySelectorAll('[contenteditable="true"]');
+            console.log('Found editable elements:', editableElements.length);
+            
+            editableElements.forEach((el, index) => {
+                const styles = window.getComputedStyle(el);
+                console.log(`Editable element ${index}:`, {
+                    element: el,
+                    userSelect: styles.userSelect,
+                    pointerEvents: styles.pointerEvents,
+                    contentEditable: el.contentEditable,
+                    classes: el.className
+                });
+            });
+            
+            // Check if body has any problematic styles
+            if (document.body.classList.contains('column-resizing')) {
+                console.log('❌ Body has column-resizing class - this disables text selection!');
+                document.body.classList.remove('column-resizing');
+                console.log('✅ Removed column-resizing class');
+            }
+        };
+        
+        // Add function to test clicks
+        window.testTextClick = () => {
+            const editableElements = document.querySelectorAll('[contenteditable="true"]');
+            if (editableElements.length > 0) {
+                const firstEl = editableElements[0];
+                console.log('Focusing first editable element:', firstEl);
+                firstEl.focus();
+                
+                // Try to place cursor at the end
+                const range = document.createRange();
+                const selection = window.getSelection();
+                range.selectNodeContents(firstEl);
+                range.collapse(false);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                console.log('Cursor placed at end of first editable element');
+            }
+        };
+        
+        // Add click debugging
+        window.debugClicks = () => {
+            console.log('Adding click debug handler...');
+            
+            // Debug focus events
+            document.addEventListener('focus', (e) => {
+                if (e.target && e.target.closest && e.target.closest('[contenteditable="true"]')) {
+                    console.log('🎯 FOCUS event on editable:', e.target);
+                    console.trace('Focus event stack:');
+                }
+            }, true);
+            
+            // Debug blur events  
+            document.addEventListener('blur', (e) => {
+                if (e.target && e.target.closest && e.target.closest('[contenteditable="true"]')) {
+                    console.log('👋 BLUR event on editable:', e.target);
+                }
+            }, true);
+            
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('[contenteditable="true"]')) {
+                    console.log('=== CLICK DEBUG ===');
+                    console.log('Clicked element:', e.target);
+                    console.log('Event target tagName:', e.target.tagName);
+                    console.log('Event target classes:', e.target.className);
+                    console.log('Is contenteditable?:', e.target.contentEditable);
+                    console.log('Closest editable:', e.target.closest('[contenteditable="true"]'));
+                    console.log('Event default prevented?:', e.defaultPrevented);
+                    
+                    // Check selection immediately and after delay
+                    const immediateSelection = window.getSelection();
+                    console.log('Immediate selection range count:', immediateSelection.rangeCount);
+                    if (immediateSelection.rangeCount > 0) {
+                        const immediateRange = immediateSelection.getRangeAt(0);
+                        console.log('Immediate range start:', immediateRange.startOffset);
+                    }
+                    
+                    // Check multiple times to see when the cursor gets reset
+                    setTimeout(() => {
+                        const selection1 = window.getSelection();
+                        if (selection1.rangeCount > 0) {
+                            console.log('Selection at 1ms:', selection1.getRangeAt(0).startOffset);
+                        }
+                    }, 1);
+                    
+                    setTimeout(() => {
+                        const selection5 = window.getSelection();
+                        if (selection5.rangeCount > 0) {
+                            console.log('Selection at 5ms:', selection5.getRangeAt(0).startOffset);
+                        }
+                    }, 5);
+                    
+                    setTimeout(() => {
+                        const selection = window.getSelection();
+                        console.log('Selection after click (10ms):');
+                        console.log('  Range count:', selection.rangeCount);
+                        if (selection.rangeCount > 0) {
+                            const range = selection.getRangeAt(0);
+                            console.log('  Range container:', range.commonAncestorContainer);
+                            console.log('  Range start:', range.startOffset);
+                            console.log('  Range end:', range.endOffset);
+                            console.log('  Range collapsed:', range.collapsed);
+                        }
+                        console.log('  Active element:', document.activeElement);
+                    }, 10);
+                    
+                    console.log('===================');
+                }
+            }, true); // Use capture phase to see events before they're potentially blocked
+        };
+        
+        // Add function to manually test cursor positioning
+        window.testManualCursor = (position = 10) => {
+            console.log(`Manually setting cursor to position ${position}...`);
+            
+            const editableElement = document.querySelector('[contenteditable="true"]');
+            if (!editableElement) {
+                console.log('No editable element found');
+                return;
+            }
+            
+            console.log('Editable element:', editableElement);
+            console.log('Text content:', editableElement.textContent);
+            console.log('Inner HTML:', editableElement.innerHTML);
+            
+            const textNode = editableElement.firstChild;
+            console.log('First child (text node):', textNode);
+            console.log('Text node data:', textNode?.data);
+            
+            if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+                const range = document.createRange();
+                const selection = window.getSelection();
+                
+                try {
+                    range.setStart(textNode, Math.min(position, textNode.length));
+                    range.setEnd(textNode, Math.min(position, textNode.length));
+                    
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                    
+                    console.log('✅ Manual cursor set successfully');
+                    
+                    // Check if it worked
+                    setTimeout(() => {
+                        const newSelection = window.getSelection();
+                        if (newSelection.rangeCount > 0) {
+                            const newRange = newSelection.getRangeAt(0);
+                            console.log('Cursor position after manual set:', newRange.startOffset);
+                        }
+                    }, 10);
+                } catch (error) {
+                    console.log('❌ Error setting cursor:', error);
+                }
+            }
+        };
+        
+        // Test if the editable element is actually working
+        window.testEditableElement = () => {
+            const editableElement = document.querySelector('[contenteditable="true"]');
+            console.log('=== EDITABLE ELEMENT TEST ===');
+            console.log('Element:', editableElement);
+            console.log('contentEditable:', editableElement?.contentEditable);
+            console.log('isContentEditable:', editableElement?.isContentEditable);
+            console.log('spellcheck:', editableElement?.spellcheck);
+            
+            // Check parent elements for draggable
+            let parent = editableElement?.parentElement;
+            while (parent) {
+                if (parent.draggable) {
+                    console.log('Found draggable parent:', parent, 'draggable:', parent.draggable);
+                }
+                parent = parent.parentElement;
+            }
+            
+            console.log('Computed styles:');
+            if (editableElement) {
+                const styles = window.getComputedStyle(editableElement);
+                console.log('  user-select:', styles.userSelect);
+                console.log('  pointer-events:', styles.pointerEvents);
+                console.log('  white-space:', styles.whiteSpace);
+                console.log('  word-break:', styles.wordBreak);
+            }
+        };
+        
+        // Test Firefox cursor and structure
+        window.testFirefoxStructure = () => {
+            console.log('=== FIREFOX STRUCTURE TEST ===');
+            
+            const editableElement = document.querySelector('[contenteditable="true"]');
+            if (!editableElement) return;
+            
+            console.log('Editable element HTML:', editableElement.outerHTML);
+            console.log('Parent structure:');
+            
+            let current = editableElement;
+            let level = 0;
+            while (current && level < 5) {
+                console.log(`  Level ${level}:`, {
+                    tagName: current.tagName,
+                    className: current.className,
+                    draggable: current.draggable,
+                    style: current.style.cssText,
+                    computedCursor: window.getComputedStyle(current).cursor,
+                    computedPointerEvents: window.getComputedStyle(current).pointerEvents
+                });
+                current = current.parentElement;
+                level++;
+            }
+        };
+        
+        // Test creating a simple contenteditable element
+        window.testSimpleEditable = () => {
+            console.log('Creating simple contenteditable test...');
+            
+            // Create a simple test element
+            const testDiv = document.createElement('div');
+            testDiv.contentEditable = true;
+            testDiv.style.cssText = 'border: 2px solid red; padding: 10px; margin: 10px; background: yellow;';
+            testDiv.textContent = 'Test editable text - click to position cursor';
+            
+            // Add it to the page
+            document.body.appendChild(testDiv);
+            
+            console.log('✅ Simple test element added (yellow with red border)');
+            console.log('Test clicking in it to see if cursor positioning works');
+            
+            window.removeTestElement = () => {
+                testDiv.remove();
+                console.log('Test element removed');
+            };
+        };
+        
+        // Complete Firefox fix for nested draggable elements
+        window.fixFirefoxDraggable = () => {
+            console.log('Applying complete Firefox draggable fix...');
+            
+            const editableElement = document.querySelector('[contenteditable="true"]');
+            if (!editableElement) return;
+            
+            // Find ALL draggable ancestors
+            const draggableAncestors = [];
+            let current = editableElement.parentElement;
+            while (current) {
+                if (current.draggable) {
+                    draggableAncestors.push({
+                        element: current,
+                        originalDraggable: current.draggable,
+                        originalCursor: current.style.cursor
+                    });
+                }
+                current = current.parentElement;
+            }
+            
+            console.log(`Found ${draggableAncestors.length} draggable ancestors:`, draggableAncestors.map(a => a.element.className));
+            
+            // Disable all draggable ancestors
+            draggableAncestors.forEach((ancestor, index) => {
+                console.log(`  Disabling draggable on: ${ancestor.element.className}`);
+                ancestor.element.draggable = false;
+                ancestor.element.style.cursor = 'default';
+            });
+            
+            // Apply Firefox-specific CSS
+            editableElement.style.cursor = 'text';
+            editableElement.style.userSelect = 'text';
+            editableElement.style.mozUserSelect = 'text';
+            
+            // Reset contenteditable to refresh Firefox's handling
+            editableElement.contentEditable = false;
+            setTimeout(() => {
+                editableElement.contentEditable = true;
+                console.log('✅ Complete Firefox fix applied. Test clicking now!');
+            }, 50);
+            
+            // Store restore function
+            window.restoreAllDraggable = () => {
+                console.log('Restoring all draggable elements...');
+                draggableAncestors.forEach(ancestor => {
+                    ancestor.element.draggable = ancestor.originalDraggable;
+                    ancestor.element.style.cursor = ancestor.originalCursor;
+                });
+                editableElement.style.cursor = '';
+                editableElement.style.userSelect = '';
+                editableElement.style.mozUserSelect = '';
+                console.log('✅ All draggable elements restored');
+            };
+        };
+        
+        // Auto-apply Firefox fix if needed
+        this.applyFirefoxFix();
+        
         // Show toolbar when clicking in editable content
         this.editor.editableArea.addEventListener('click', (e) => {
             const editableElement = e.target.closest('[contenteditable="true"]');
@@ -28,13 +333,43 @@ export class FormattingToolbar {
                 this.hideToolbar();
             }
         });
+        
+        // Update saved range when selection changes in editable content
+        document.addEventListener('selectionchange', () => {
+            if (this.currentEditableElement && this.toolbar.style.display === 'flex') {
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    // Only update if the selection is within our current editable element
+                    const container = range.commonAncestorContainer;
+                    const editableParent = container.nodeType === Node.TEXT_NODE 
+                        ? container.parentElement 
+                        : container;
+                    
+                    if (editableParent && 
+                        (editableParent === this.currentEditableElement || 
+                         editableParent.closest('[contenteditable="true"]') === this.currentEditableElement)) {
+                        this.savedRange = range.cloneRange();
+                    }
+                }
+            }
+        });
     }
 
     setupToolbarControls() {
         // Setup buttons
         this.toolbar.querySelectorAll('button[data-command]').forEach(button => {
+            button.addEventListener('mousedown', (e) => {
+                // Only prevent default on the button itself, not child elements
+                if (e.target === button || button.contains(e.target)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+            
             button.addEventListener('click', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 const command = button.dataset.command;
                 this.executeCommand(command);
             });
@@ -42,21 +377,33 @@ export class FormattingToolbar {
 
         // Setup format selector (H1, H2, etc.)
         const formatSelect = document.getElementById('format-select');
+        formatSelect.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+        });
         formatSelect.addEventListener('change', (e) => {
+            e.stopPropagation();
             this.formatBlock(e.target.value);
             this.updateToolbarState();
         });
 
         // Setup font family
         const fontFamily = document.getElementById('font-family');
+        fontFamily.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+        });
         fontFamily.addEventListener('change', (e) => {
+            e.stopPropagation();
             document.execCommand('fontName', false, e.target.value);
             this.editor.stateHistory.saveState();
         });
 
         // Setup font size
         const fontSize = document.getElementById('font-size');
+        fontSize.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+        });
         fontSize.addEventListener('change', (e) => {
+            e.stopPropagation();
             document.execCommand('fontSize', false, '7'); // Use size 7 then override with CSS
             const selection = window.getSelection();
             if (selection.rangeCount > 0) {
@@ -71,7 +418,11 @@ export class FormattingToolbar {
 
         // Setup text color
         const textColor = document.getElementById('text-color');
+        textColor.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+        });
         textColor.addEventListener('change', (e) => {
+            e.stopPropagation();
             if (this.currentEditableElement) {
                 // Try execCommand first for compatibility
                 try {
@@ -100,7 +451,11 @@ export class FormattingToolbar {
 
         // Setup background color  
         const backgroundColor = document.getElementById('background-color');
+        backgroundColor.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+        });
         backgroundColor.addEventListener('change', (e) => {
+            e.stopPropagation();
             if (this.currentEditableElement) {
                 // Try execCommand first for compatibility
                 try {
@@ -134,12 +489,99 @@ export class FormattingToolbar {
             if (url) {
                 document.execCommand(command, false, url);
             }
+        } else if (command === 'insertImage') {
+            this.insertImage();
         } else {
             document.execCommand(command, false, null);
         }
         
         this.updateToolbarState();
         this.editor.stateHistory.saveState();
+    }
+    
+    insertImage() {
+        console.log('Insert image called, currentEditableElement:', this.currentEditableElement);
+        console.log('Saved range:', this.savedRange);
+        
+        // Capture context to avoid losing 'this' in callbacks
+        const savedRange = this.savedRange;
+        const currentEditableElement = this.currentEditableElement;
+        const editor = this.editor;
+        
+        // Create a hidden file input
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.style.display = 'none';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    console.log('File loaded, inserting image...');
+                    console.log('Captured currentEditableElement:', currentEditableElement);
+                    console.log('Captured savedRange:', savedRange);
+                    
+                    // Create image element
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    img.style.maxWidth = '100%';
+                    img.style.height = 'auto';
+                    img.style.display = 'block';
+                    img.style.margin = '10px 0';
+                    
+                    if (savedRange && currentEditableElement) {
+                        try {
+                            // Focus the editable element first
+                            currentEditableElement.focus();
+                            
+                            // Restore the saved selection
+                            const selection = window.getSelection();
+                            selection.removeAllRanges();
+                            selection.addRange(savedRange);
+                            
+                            // Insert image at the cursor position
+                            savedRange.deleteContents();
+                            savedRange.insertNode(img);
+                            
+                            // Move cursor after the image
+                            savedRange.setStartAfter(img);
+                            savedRange.setEndAfter(img);
+                            selection.removeAllRanges();
+                            selection.addRange(savedRange);
+                            
+                            console.log('✅ Image inserted at saved cursor position');
+                        } catch (error) {
+                            console.log('Error inserting at cursor, appending instead:', error);
+                            currentEditableElement.appendChild(img);
+                            console.log('✅ Image appended due to error');
+                        }
+                    } else if (currentEditableElement) {
+                        // No saved range, append to the current editable element
+                        currentEditableElement.appendChild(img);
+                        console.log('✅ Image appended to editable element');
+                    } else {
+                        console.log('❌ No editable element found, cannot insert image');
+                        console.log('currentEditableElement:', currentEditableElement);
+                        console.log('savedRange:', savedRange);
+                        return;
+                    }
+                    
+                    // Save state
+                    if (editor && editor.stateHistory) {
+                        editor.stateHistory.saveState();
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+            // Clean up
+            input.remove();
+        };
+        
+        // Trigger file selection dialog
+        document.body.appendChild(input);
+        input.click();
     }
 
     formatBlock(tag) {
@@ -157,6 +599,10 @@ export class FormattingToolbar {
         // Update button states based on current selection
         this.toolbar.querySelectorAll('button[data-command]').forEach(button => {
             const command = button.dataset.command;
+            // Skip custom commands that don't have queryCommandState
+            if (command === 'insertImage') {
+                return;
+            }
             const isActive = document.queryCommandState(command);
             button.classList.toggle('active', isActive);
         });
@@ -176,6 +622,13 @@ export class FormattingToolbar {
     }
 
     showToolbar(element) {
+        // Save current selection when showing toolbar
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            this.savedRange = selection.getRangeAt(0).cloneRange();
+            console.log('Saved range for toolbar:', this.savedRange);
+        }
+        
         const rect = element.getBoundingClientRect();
         this.toolbar.style.display = 'flex';
         
@@ -198,5 +651,112 @@ export class FormattingToolbar {
     hideToolbar() {
         this.toolbar.style.display = 'none';
         this.currentEditableElement = null;
+        this.savedRange = null;
+    }
+    
+    applyFirefoxFix() {
+        // Detect Firefox
+        const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        
+        if (!isFirefox) {
+            console.log('Not Firefox - no contenteditable fix needed');
+            return;
+        }
+        
+        console.log('Firefox detected - applying contenteditable fix');
+        
+        // Apply fix to existing editable elements
+        this.fixFirefoxEditableElements();
+        
+        // Watch for new editable elements added dynamically
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach(mutation => {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        // Check if the added node or its descendants have contenteditable
+                        const editableElements = node.querySelectorAll ? 
+                            node.querySelectorAll('[contenteditable="true"]') : [];
+                        
+                        if (node.contentEditable === 'true') {
+                            this.fixSingleFirefoxElement(node);
+                        }
+                        
+                        editableElements.forEach(el => this.fixSingleFirefoxElement(el));
+                    }
+                });
+            });
+        });
+        
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+    
+    fixFirefoxEditableElements() {
+        const editableElements = document.querySelectorAll('[contenteditable="true"]');
+        editableElements.forEach(el => this.fixSingleFirefoxElement(el));
+    }
+    
+    fixSingleFirefoxElement(editableElement) {
+        if (!editableElement || editableElement.dataset.firefoxFixed) return;
+        
+        // Mark as fixed to avoid duplicate processing
+        editableElement.dataset.firefoxFixed = 'true';
+        
+        // Apply CSS fixes
+        editableElement.style.cursor = 'text';
+        editableElement.style.userSelect = 'text';
+        editableElement.style.mozUserSelect = 'text';
+        
+        // Handle draggable ancestors with mouse events
+        this.addFirefoxDragHandling(editableElement);
+    }
+    
+    addFirefoxDragHandling(editableElement) {
+        // Find draggable ancestors
+        const draggableAncestors = [];
+        let current = editableElement.parentElement;
+        while (current) {
+            if (current.draggable) {
+                draggableAncestors.push(current);
+            }
+            current = current.parentElement;
+        }
+        
+        if (draggableAncestors.length === 0) return;
+        
+        // Add mouse event handlers to temporarily disable dragging during text editing
+        editableElement.addEventListener('mouseenter', () => {
+            draggableAncestors.forEach(ancestor => {
+                ancestor.draggable = false;
+            });
+        });
+        
+        editableElement.addEventListener('mouseleave', () => {
+            draggableAncestors.forEach(ancestor => {
+                ancestor.draggable = true;
+            });
+        });
+        
+        // Also disable during focus
+        editableElement.addEventListener('focus', () => {
+            draggableAncestors.forEach(ancestor => {
+                ancestor.draggable = false;
+            });
+        });
+        
+        editableElement.addEventListener('blur', () => {
+            // Small delay to allow for potential re-focus
+            setTimeout(() => {
+                if (document.activeElement !== editableElement) {
+                    draggableAncestors.forEach(ancestor => {
+                        ancestor.draggable = true;
+                    });
+                }
+            }, 100);
+        });
+        
+        console.log(`Firefox fix applied to editable element with ${draggableAncestors.length} draggable ancestors`);
     }
 }
