@@ -491,19 +491,19 @@ export class ConfirmationModal {
 
     attachListeners() {
         this.modal.querySelector('.confirm-modal-cancel').addEventListener('click', () => {
-            this.close();
             if (this.onCancel) this.onCancel();
+            this.close();
         });
         
         this.modal.querySelector('.confirm-modal-confirm').addEventListener('click', () => {
-            this.close();
             if (this.onConfirm) this.onConfirm();
+            this.close();
         });
         
         this.modal.addEventListener('click', (e) => {
             if (e.target === this.modal) {
-                this.close();
                 if (this.onCancel) this.onCancel();
+                this.close();
             }
         });
     }
