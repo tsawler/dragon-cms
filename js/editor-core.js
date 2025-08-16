@@ -42,6 +42,7 @@ export class Editor {
         this.attachEventListeners();
         this.setupMutationObserver();
         this.setupResizing();
+        this.setupViewportControls();
     }
 
     setupPanelToggle() {
@@ -1025,5 +1026,31 @@ export class Editor {
         }
         
         return block;
+    }
+    
+    setupViewportControls() {
+        // Setup viewport control buttons
+        document.getElementById('mobile-viewport').addEventListener('click', () => this.setViewportSize('375px'));
+        document.getElementById('tablet-viewport').addEventListener('click', () => this.setViewportSize('768px'));
+        document.getElementById('desktop-viewport').addEventListener('click', () => this.setViewportSize('100%'));
+        
+        console.log('Viewport controls setup completed');
+    }
+    
+    setViewportSize(width) {
+        this.editableArea.style.maxWidth = width;
+        this.editableArea.style.margin = width === '100%' ? '0' : '0 auto';
+        
+        // Update active button
+        document.querySelectorAll('.viewport-btn').forEach(btn => btn.classList.remove('active'));
+        if (width === '375px') {
+            document.getElementById('mobile-viewport').classList.add('active');
+        } else if (width === '768px') {
+            document.getElementById('tablet-viewport').classList.add('active');
+        } else {
+            document.getElementById('desktop-viewport').classList.add('active');
+        }
+        
+        console.log(`Viewport size set to: ${width}`);
     }
 }
