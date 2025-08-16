@@ -671,6 +671,185 @@ button.edit-icon, button.settings-icon, button.code-icon, button.delete-icon {
     border-radius: 2px;
 }
 
+/* Image resize functionality */
+.image-resize-container {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* Override base display for aligned images */
+.image-resize-container.align-left,
+.image-resize-container.align-right,
+.image-resize-container.align-center {
+    display: block;
+}
+
+.image-resize-container.selected {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.image-resize-handle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: #3b82f6;
+    border: 1px solid white;
+    border-radius: 50%;
+    z-index: 20;
+    cursor: pointer;
+}
+
+.image-resize-handle.nw {
+    top: -4px;
+    left: -4px;
+    cursor: nw-resize;
+}
+
+.image-resize-handle.ne {
+    top: -4px;
+    right: -4px;
+    cursor: ne-resize;
+}
+
+.image-resize-handle.sw {
+    bottom: -4px;
+    left: -4px;
+    cursor: sw-resize;
+}
+
+.image-resize-handle.se {
+    bottom: -4px;
+    right: -4px;
+    cursor: se-resize;
+}
+
+.image-resize-handle.n {
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: n-resize;
+}
+
+.image-resize-handle.s {
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: s-resize;
+}
+
+.image-resize-handle.w {
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: w-resize;
+}
+
+.image-resize-handle.e {
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: e-resize;
+}
+
+/* Hide resize handles when not selected */
+.image-resize-container:not(.selected) .image-resize-handle {
+    display: none;
+}
+
+/* Prevent dragging of images while resizing */
+.image-resize-container img {
+    max-width: 100%;
+    height: auto;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* Prevent text selection while resizing images */
+body.image-resizing {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+body.image-resizing * {
+    cursor: inherit !important;
+}
+
+/* Image alignment styles */
+.image-resize-container.align-left {
+    display: block !important;
+    margin: 10px auto 10px 0 !important;
+    float: left !important;
+    clear: left !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+}
+
+.image-resize-container.align-right {
+    display: block !important;
+    margin: 10px 0 10px auto !important;
+    float: right !important;
+    clear: right !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+}
+
+.image-resize-container.align-center {
+    display: block !important;
+    margin: 10px auto !important;
+    float: none !important;
+    clear: both !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+    text-align: center !important;
+}
+
+/* Image alignment toolbar */
+.image-alignment-toolbar {
+    position: absolute;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: none;
+    gap: 0.25rem;
+    z-index: 1001;
+    align-items: center;
+}
+
+.image-alignment-toolbar.visible {
+    display: flex;
+}
+
+.image-alignment-toolbar button {
+    width: 28px;
+    height: 28px;
+    border: 1px solid transparent;
+    background: white;
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.image-alignment-toolbar button:hover {
+    background: #f0f0f0;
+    border-color: #ddd;
+}
+
+.image-alignment-toolbar button.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
 .formatting-toolbar {
     position: absolute;
     background: white;

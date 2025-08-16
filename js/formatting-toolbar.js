@@ -2,14 +2,17 @@ export class FormattingToolbar {
     constructor(editor) {
         this.editor = editor;
         this.toolbar = document.getElementById('formatting-toolbar');
+        this.alignmentToolbar = document.getElementById('image-alignment-toolbar');
         this.currentEditableElement = null;
         this.savedRange = null;
+        this.selectedImageContainer = null;
         this.init();
     }
 
     init() {
         this.setupClickListener();
         this.setupToolbarControls();
+        this.setupAlignmentToolbar();
     }
 
     setupClickListener() {
@@ -317,6 +320,9 @@ export class FormattingToolbar {
         // Auto-apply Firefox fix if needed
         this.applyFirefoxFix();
         
+        // Wrap existing images with resize containers
+        this.wrapExistingImages();
+        
         // Show toolbar when clicking in editable content
         this.editor.editableArea.addEventListener('click', (e) => {
             const editableElement = e.target.closest('[contenteditable="true"]');
@@ -331,6 +337,11 @@ export class FormattingToolbar {
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.formatting-toolbar') && !e.target.closest('[contenteditable="true"]')) {
                 this.hideToolbar();
+            }
+            
+            // Deselect images when clicking outside of them
+            if (!e.target.closest('.image-resize-container') && !e.target.closest('.image-alignment-toolbar')) {
+                this.deselectAllImages();
             }
         });
         
@@ -523,13 +534,16 @@ export class FormattingToolbar {
                     console.log('Captured currentEditableElement:', currentEditableElement);
                     console.log('Captured savedRange:', savedRange);
                     
-                    // Create image element
+                    // Create image element wrapped in resize container
                     const img = document.createElement('img');
                     img.src = event.target.result;
                     img.style.maxWidth = '100%';
                     img.style.height = 'auto';
                     img.style.display = 'block';
                     img.style.margin = '10px 0';
+                    
+                    // Wrap image in resize container
+                    const resizeContainer = this.createImageResizeContainer(img);
                     
                     if (savedRange && currentEditableElement) {
                         try {
@@ -541,25 +555,25 @@ export class FormattingToolbar {
                             selection.removeAllRanges();
                             selection.addRange(savedRange);
                             
-                            // Insert image at the cursor position
+                            // Insert image container at the cursor position
                             savedRange.deleteContents();
-                            savedRange.insertNode(img);
+                            savedRange.insertNode(resizeContainer);
                             
-                            // Move cursor after the image
-                            savedRange.setStartAfter(img);
-                            savedRange.setEndAfter(img);
+                            // Move cursor after the image container
+                            savedRange.setStartAfter(resizeContainer);
+                            savedRange.setEndAfter(resizeContainer);
                             selection.removeAllRanges();
                             selection.addRange(savedRange);
                             
                             console.log('✅ Image inserted at saved cursor position');
                         } catch (error) {
                             console.log('Error inserting at cursor, appending instead:', error);
-                            currentEditableElement.appendChild(img);
+                            currentEditableElement.appendChild(resizeContainer);
                             console.log('✅ Image appended due to error');
                         }
                     } else if (currentEditableElement) {
                         // No saved range, append to the current editable element
-                        currentEditableElement.appendChild(img);
+                        currentEditableElement.appendChild(resizeContainer);
                         console.log('✅ Image appended to editable element');
                     } else {
                         console.log('❌ No editable element found, cannot insert image');
@@ -758,5 +772,244 @@ export class FormattingToolbar {
         });
         
         console.log(`Firefox fix applied to editable element with ${draggableAncestors.length} draggable ancestors`);
+    }
+    
+    createImageResizeContainer(img) {
+        // Create container
+        const container = document.createElement('div');
+        container.className = 'image-resize-container align-center'; // Default to center alignment
+        container.appendChild(img);
+        
+        // Create resize handles
+        const handlePositions = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
+        handlePositions.forEach(position => {
+            const handle = document.createElement('div');
+            handle.className = `image-resize-handle ${position}`;
+            handle.dataset.position = position;
+            container.appendChild(handle);
+        });
+        
+        // Add click handler to select/deselect image
+        container.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.selectImage(container);
+        });
+        
+        // Add resize handlers
+        this.addResizeHandlers(container);
+        
+        return container;
+    }
+    
+    selectImage(container) {
+        // Deselect all other images
+        document.querySelectorAll('.image-resize-container.selected').forEach(el => {
+            if (el !== container) {
+                el.classList.remove('selected');
+            }
+        });
+        
+        // Toggle selection of this image
+        const wasSelected = container.classList.contains('selected');
+        container.classList.toggle('selected');
+        
+        if (container.classList.contains('selected')) {
+            this.selectedImageContainer = container;
+            this.showAlignmentToolbar(container);
+        } else {
+            this.selectedImageContainer = null;
+            this.hideAlignmentToolbar();
+        }
+    }
+    
+    addResizeHandlers(container) {
+        const handles = container.querySelectorAll('.image-resize-handle');
+        const img = container.querySelector('img');
+        
+        handles.forEach(handle => {
+            handle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const position = handle.dataset.position;
+                const startX = e.clientX;
+                const startY = e.clientY;
+                const startWidth = img.offsetWidth;
+                const startHeight = img.offsetHeight;
+                const aspectRatio = startWidth / startHeight;
+                
+                // Add resizing class to body to prevent text selection
+                document.body.classList.add('image-resizing');
+                
+                const mouseMoveHandler = (e) => {
+                    const deltaX = e.clientX - startX;
+                    const deltaY = e.clientY - startY;
+                    
+                    let newWidth = startWidth;
+                    let newHeight = startHeight;
+                    
+                    // Calculate new dimensions based on handle position
+                    if (position.includes('e')) {
+                        newWidth = startWidth + deltaX;
+                    } else if (position.includes('w')) {
+                        newWidth = startWidth - deltaX;
+                    }
+                    
+                    if (position.includes('s')) {
+                        newHeight = startHeight + deltaY;
+                    } else if (position.includes('n')) {
+                        newHeight = startHeight - deltaY;
+                    }
+                    
+                    // Maintain aspect ratio for corner handles
+                    if (position.length === 2) { // Corner handles (nw, ne, sw, se)
+                        if (position.includes('e') || position.includes('w')) {
+                            newHeight = newWidth / aspectRatio;
+                        } else {
+                            newWidth = newHeight * aspectRatio;
+                        }
+                    }
+                    
+                    // Set minimum size
+                    const minSize = 50;
+                    newWidth = Math.max(minSize, newWidth);
+                    newHeight = Math.max(minSize, newHeight);
+                    
+                    // Apply new dimensions
+                    img.style.width = newWidth + 'px';
+                    img.style.height = newHeight + 'px';
+                };
+                
+                const mouseUpHandler = () => {
+                    document.body.classList.remove('image-resizing');
+                    document.removeEventListener('mousemove', mouseMoveHandler);
+                    document.removeEventListener('mouseup', mouseUpHandler);
+                    
+                    // Save state after resize
+                    if (this.editor && this.editor.stateHistory) {
+                        this.editor.stateHistory.saveState();
+                    }
+                };
+                
+                document.addEventListener('mousemove', mouseMoveHandler);
+                document.addEventListener('mouseup', mouseUpHandler);
+            });
+        });
+    }
+    
+    wrapExistingImages() {
+        // Find all images that are not already in resize containers
+        const existingImages = this.editor.editableArea.querySelectorAll('img:not(.image-resize-container img)');
+        
+        existingImages.forEach(img => {
+            // Skip if image is already in a resize container
+            if (img.closest('.image-resize-container')) return;
+            
+            // Create resize container
+            const container = this.createImageResizeContainer(img.cloneNode(true));
+            
+            // Ensure existing images get default center alignment if they don't have any
+            if (!container.classList.contains('align-left') && 
+                !container.classList.contains('align-right') && 
+                !container.classList.contains('align-center')) {
+                container.classList.add('align-center');
+            }
+            
+            // Replace the original image with the container
+            img.parentNode.replaceChild(container, img);
+        });
+        
+        if (existingImages.length > 0) {
+            console.log(`Wrapped ${existingImages.length} existing images with resize containers`);
+        }
+    }
+    
+    setupAlignmentToolbar() {
+        // Setup alignment button handlers
+        this.alignmentToolbar.querySelectorAll('button[data-align]').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const alignment = button.dataset.align;
+                this.alignSelectedImage(alignment);
+            });
+        });
+    }
+    
+    showAlignmentToolbar(container) {
+        const rect = container.getBoundingClientRect();
+        this.alignmentToolbar.classList.add('visible');
+        
+        // Position toolbar above the image, but keep it within viewport
+        let top = rect.top - this.alignmentToolbar.offsetHeight - 10;
+        if (top < 10) {
+            top = rect.bottom + 10;
+        }
+        
+        let left = rect.left + (rect.width / 2) - (this.alignmentToolbar.offsetWidth / 2);
+        const toolbarWidth = this.alignmentToolbar.offsetWidth || 100;
+        if (left + toolbarWidth > window.innerWidth - 20) {
+            left = window.innerWidth - toolbarWidth - 20;
+        }
+        if (left < 10) {
+            left = 10;
+        }
+        
+        this.alignmentToolbar.style.left = left + 'px';
+        this.alignmentToolbar.style.top = top + 'px';
+        
+        // Update button states
+        this.updateAlignmentToolbarState(container);
+    }
+    
+    hideAlignmentToolbar() {
+        this.alignmentToolbar.classList.remove('visible');
+    }
+    
+    updateAlignmentToolbarState(container) {
+        // Remove active state from all buttons
+        this.alignmentToolbar.querySelectorAll('button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Determine current alignment
+        let currentAlignment = 'center'; // default
+        if (container.classList.contains('align-left')) {
+            currentAlignment = 'left';
+        } else if (container.classList.contains('align-right')) {
+            currentAlignment = 'right';
+        }
+        
+        // Set active state on current alignment button
+        const activeButton = this.alignmentToolbar.querySelector(`button[data-align="${currentAlignment}"]`);
+        if (activeButton) {
+            activeButton.classList.add('active');
+        }
+    }
+    
+    alignSelectedImage(alignment) {
+        if (!this.selectedImageContainer) return;
+        
+        // Remove all alignment classes
+        this.selectedImageContainer.classList.remove('align-left', 'align-center', 'align-right');
+        
+        // Add new alignment class
+        this.selectedImageContainer.classList.add(`align-${alignment}`);
+        
+        // Update toolbar state
+        this.updateAlignmentToolbarState(this.selectedImageContainer);
+        
+        // Save state
+        if (this.editor && this.editor.stateHistory) {
+            this.editor.stateHistory.saveState();
+        }
+    }
+    
+    deselectAllImages() {
+        document.querySelectorAll('.image-resize-container.selected').forEach(container => {
+            container.classList.remove('selected');
+        });
+        this.selectedImageContainer = null;
+        this.hideAlignmentToolbar();
     }
 }
