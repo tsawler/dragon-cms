@@ -5,6 +5,7 @@ import { VideoSettingsModal } from './video-settings-modal.js';
 import { StyleEditorModal, CodeEditorModal, ColumnSettingsModal, ConfirmationModal } from './modals.js';
 import { SnippetPanel } from './snippet-panel.js';
 import { ColumnResizer } from './column-resizer.js';
+import { PageSettingsModal } from './page-settings-modal.js';
 
 export class Editor {
     constructor() {
@@ -19,6 +20,7 @@ export class Editor {
         this.imageUploader = null;
         this.videoSettingsModal = null;
         this.confirmationModal = null;
+        this.pageSettingsModal = null;
         
         this.init();
     }
@@ -36,13 +38,14 @@ export class Editor {
         this.columnSettingsModal = new ColumnSettingsModal(this);
         this.confirmationModal = new ConfirmationModal(this);
         this.columnResizer = new ColumnResizer(this);
-        // this.pageSettingsModal = new PageSettingsModal(this);
+        this.pageSettingsModal = new PageSettingsModal(this);
         // this.buttonSettingsModal = new ButtonSettingsModal(this);
         
         this.attachEventListeners();
         this.setupMutationObserver();
         this.setupResizing();
         this.setupViewportControls();
+        this.makeExistingBlocksEditable();
     }
 
     setupPanelToggle() {
@@ -777,12 +780,24 @@ export class Editor {
     serializePageToJSON() {
         return {
             content: this.editableArea.innerHTML,
+            page_settings: this.pageSettingsModal ? this.pageSettingsModal.getPageData() : {},
             timestamp: Date.now()
         };
     }
 
     deserializeJSONToPage(pageData) {
         this.editableArea.innerHTML = pageData.content || '';
+        
+        // Load page settings if they exist
+        if (pageData.page_settings && this.pageSettingsModal) {
+            this.pageSettingsModal.setPageData(pageData.page_settings);
+            
+            // Update document title if page title is set
+            if (pageData.page_settings.pageTitle) {
+                document.title = pageData.page_settings.pageTitle;
+            }
+        }
+        
         this.stateHistory.saveState();
     }
 
@@ -790,15 +805,24 @@ export class Editor {
         const clone = this.editableArea.cloneNode(true);
         // Remove all control elements
         clone.querySelectorAll('.edit-icon, .code-icon, .delete-icon, .settings-icon, .drag-handle').forEach(el => el.remove());
+        
+        // Get page settings
+        const pageSettings = this.pageSettingsModal ? this.pageSettingsModal.getPageData() : {};
+        const pageTitle = pageSettings.pageTitle || 'Exported Page';
+        const customCSS = pageSettings.customCSS || '';
+        const customJS = pageSettings.customJavaScript || '';
+        
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exported Page</title>
+    <title>${pageTitle}</title>
+    ${customCSS ? `<style>\n${customCSS}\n</style>` : ''}
 </head>
 <body>
     ${clone.innerHTML}
+    ${customJS ? `<script>\n${customJS}\n</script>` : ''}
 </body>
 </html>`;
     }
@@ -1020,6 +1044,31 @@ export class Editor {
         
         if (template) {
             block.innerHTML = controls + template;
+            
+            // Make text elements inside blocks editable
+            // This includes h1-h6, p, span, and other text elements
+            const editableElements = block.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, li, td, th');
+            editableElements.forEach(el => {
+                // Only make elements editable if they contain text content
+                // and are not control elements
+                if (!el.classList.contains('drag-handle') && 
+                    !el.classList.contains('edit-icon') && 
+                    !el.classList.contains('code-icon') && 
+                    !el.classList.contains('delete-icon') && 
+                    !el.classList.contains('settings-icon') &&
+                    !el.closest('button')) {
+                    el.contentEditable = true;
+                    el.style.outline = 'none'; // Remove outline when editing
+                    
+                    // Add focus/blur handlers to improve editing experience
+                    el.addEventListener('focus', () => {
+                        el.style.opacity = '0.9';
+                    });
+                    el.addEventListener('blur', () => {
+                        el.style.opacity = '';
+                    });
+                }
+            });
         } else {
             // Default single column block
             block.innerHTML = controls + '<div class="column" style="flex: 1;"></div>';
@@ -1033,8 +1082,39 @@ export class Editor {
         document.getElementById('mobile-viewport').addEventListener('click', () => this.setViewportSize('375px'));
         document.getElementById('tablet-viewport').addEventListener('click', () => this.setViewportSize('768px'));
         document.getElementById('desktop-viewport').addEventListener('click', () => this.setViewportSize('100%'));
-        
-        console.log('Viewport controls setup completed');
+    }
+    
+    makeExistingBlocksEditable() {
+        // Make all existing text elements in blocks editable
+        // This handles blocks that were created before the fix
+        const blocks = this.editableArea.querySelectorAll('.editor-block');
+        blocks.forEach(block => {
+            const editableElements = block.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, li, td, th');
+            
+            editableElements.forEach(el => {
+                // Skip if already editable or is a control element
+                if (el.contentEditable === 'true' || 
+                    el.classList.contains('drag-handle') || 
+                    el.classList.contains('edit-icon') || 
+                    el.classList.contains('code-icon') || 
+                    el.classList.contains('delete-icon') || 
+                    el.classList.contains('settings-icon') ||
+                    el.closest('button')) {
+                    return;
+                }
+                
+                el.contentEditable = true;
+                el.style.outline = 'none';
+                
+                // Add focus/blur handlers
+                el.addEventListener('focus', () => {
+                    el.style.opacity = '0.9';
+                });
+                el.addEventListener('blur', () => {
+                    el.style.opacity = '';
+                });
+            });
+        });
     }
     
     setViewportSize(width) {
@@ -1050,7 +1130,5 @@ export class Editor {
         } else {
             document.getElementById('desktop-viewport').classList.add('active');
         }
-        
-        console.log(`Viewport size set to: ${width}`);
     }
 }

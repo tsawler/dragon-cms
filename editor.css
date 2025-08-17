@@ -333,6 +333,19 @@ body {
     padding: 0;
 }
 
+/* Show editable text elements on hover in edit mode */
+.editable-area[data-mode="edit"] [contenteditable="true"]:hover {
+    cursor: text;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    transition: background-color 0.2s;
+}
+
+.editable-area[data-mode="edit"] [contenteditable="true"]:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
 /* Column resize dividers */
 .column-resize-divider {
     position: absolute;
