@@ -6,6 +6,7 @@ import { StyleEditorModal, CodeEditorModal, ColumnSettingsModal, ConfirmationMod
 import { SnippetPanel } from './snippet-panel.js';
 import { ColumnResizer } from './column-resizer.js';
 import { PageSettingsModal } from './page-settings-modal.js';
+import { ModalDragger } from './modal-dragger.js';
 
 export class Editor {
     constructor(options = {}) {
@@ -22,6 +23,7 @@ export class Editor {
         this.videoSettingsModal = null;
         this.confirmationModal = null;
         this.pageSettingsModal = null;
+        this.modalDragger = null;
         
         this.init();
     }
@@ -40,6 +42,7 @@ export class Editor {
         this.confirmationModal = new ConfirmationModal(this);
         this.columnResizer = new ColumnResizer(this);
         this.pageSettingsModal = new PageSettingsModal(this);
+        this.modalDragger = new ModalDragger();
         // this.buttonSettingsModal = new ButtonSettingsModal(this);
         
         this.attachEventListeners();

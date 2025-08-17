@@ -1,4 +1,5 @@
 import { Editor } from './editor-core.js';
+import { ModalDragger } from './modal-dragger.js';
 
 class Dragon {
     constructor() {
@@ -38,6 +39,11 @@ class Dragon {
         
         // Add close button handlers
         this.setupCloseHandlers();
+        
+        // Initialize modal dragging for this instance
+        if (!this.modalDragger) {
+            this.modalDragger = new ModalDragger();
+        }
         
         return editor;
     }

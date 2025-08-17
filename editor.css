@@ -981,18 +981,65 @@ body.image-resizing * {
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    position: relative;
+    margin: auto;
+}
+
+.modal-content.dragging,
+.modal-content.dragged {
+    position: absolute;
+    margin: 0;
+    z-index: 1000000;
+    transition: none;
+}
+
+.modal-content.dragging {
+    cursor: move;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.modal-header:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+.modal-header:hover::before {
+    opacity: 1;
+    color: #3b82f6;
+}
+
+.modal-header:active {
+    cursor: grabbing;
+    background-color: rgba(59, 130, 246, 0.1);
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    cursor: move;
+    user-select: none;
+    padding: 0.75rem 0 0.75rem 0;
+    border-bottom: 1px solid #e2e8f0;
+    margin: -2rem -2rem 1.5rem -2rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
 }
 
 .modal-header h2 {
-    font-size: 1.5rem;
+    font-size: 1.125rem;
     color: #2c3e50;
+    margin: 0;
+    flex: 1;
+    font-weight: 600;
+}
+
+.modal-header::before {
+    content: '⋮⋮';
+    color: #94a3b8;
+    font-size: 14px;
+    margin-right: 0.5rem;
+    line-height: 1;
+    opacity: 0.6;
 }
 
 .modal-close {
