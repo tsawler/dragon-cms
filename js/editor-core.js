@@ -8,7 +8,8 @@ import { ColumnResizer } from './column-resizer.js';
 import { PageSettingsModal } from './page-settings-modal.js';
 
 export class Editor {
-    constructor() {
+    constructor(options = {}) {
+        this.options = options;
         this.editableArea = document.getElementById('editable-area');
         this.currentMode = 'edit';
         this.snippetPanel = null;
