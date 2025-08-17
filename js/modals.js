@@ -93,6 +93,9 @@ export class StyleEditorModal {
 
     open(element) {
         this.targetElement = element;
+        
+        // Clear any inline display style that might be preventing the modal from showing
+        this.modal.style.display = '';
         this.modal.classList.add('active');
         
         const styles = window.getComputedStyle(element);
@@ -110,6 +113,12 @@ export class StyleEditorModal {
     close() {
         this.modal.classList.remove('active');
         this.targetElement = null;
+        
+        // Reset modal position if it was dragged
+        const modalContent = this.modal.querySelector('.modal-content');
+        if (modalContent && window.dragon && window.dragon.modalDragger) {
+            window.dragon.modalDragger.resetModalPosition(modalContent);
+        }
     }
 
     save() {
@@ -189,6 +198,9 @@ export class CodeEditorModal {
 
     open(element) {
         this.targetElement = element;
+        
+        // Clear any inline display style that might be preventing the modal from showing
+        this.modal.style.display = '';
         this.modal.classList.add('active');
         
         // Get the inner HTML without the control buttons
@@ -206,6 +218,12 @@ export class CodeEditorModal {
     close() {
         this.modal.classList.remove('active');
         this.targetElement = null;
+        
+        // Reset modal position if it was dragged
+        const modalContent = this.modal.querySelector('.modal-content');
+        if (modalContent && window.dragon && window.dragon.modalDragger) {
+            window.dragon.modalDragger.resetModalPosition(modalContent);
+        }
     }
 
     save() {
@@ -303,13 +321,25 @@ export class ColumnSettingsModal {
         this.targetBlock = block;
         this.tempColumns = this.getCurrentColumns();
         this.updatePreview();
+        
+        // Clear any inline display style that might be preventing the modal from showing
+        this.modal.style.display = '';
         this.modal.classList.add('active');
     }
 
     close() {
+        console.log('ColumnSettingsModal.close() called');
         this.modal.classList.remove('active');
         this.targetBlock = null;
         this.tempColumns = [];
+        
+        // Reset modal position if it was dragged
+        const modalContent = this.modal.querySelector('.modal-content');
+        if (modalContent && window.dragon && window.dragon.modalDragger) {
+            console.log('Resetting modal position...');
+            window.dragon.modalDragger.resetModalPosition(modalContent);
+        }
+        console.log('Modal closed, classes:', this.modal.className);
     }
 
     getCurrentColumns() {
@@ -514,6 +544,9 @@ export class ConfirmationModal {
         
         this.modal.querySelector('.confirm-modal-title').textContent = title;
         this.modal.querySelector('.confirm-modal-message').textContent = message;
+        
+        // Clear any inline display style that might be preventing the modal from showing
+        this.modal.style.display = '';
         this.modal.classList.add('active');
     }
 
@@ -521,5 +554,11 @@ export class ConfirmationModal {
         this.modal.classList.remove('active');
         this.onConfirm = null;
         this.onCancel = null;
+        
+        // Reset modal position if it was dragged
+        const modalContent = this.modal.querySelector('.modal-content');
+        if (modalContent && window.dragon && window.dragon.modalDragger) {
+            window.dragon.modalDragger.resetModalPosition(modalContent);
+        }
     }
 }

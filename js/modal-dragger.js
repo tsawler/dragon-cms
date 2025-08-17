@@ -93,9 +93,37 @@ export class ModalDragger {
 
     // Method to reset a modal's position to center
     resetModalPosition(modalContent) {
+        console.log('BEFORE reset - modalContent styles:', {
+            position: modalContent.style.position,
+            left: modalContent.style.left,
+            top: modalContent.style.top,
+            margin: modalContent.style.margin,
+            display: modalContent.style.display,
+            classes: modalContent.className
+        });
+        
+        // Clear all positioning styles completely
+        modalContent.style.position = '';
         modalContent.style.left = '';
         modalContent.style.top = '';
+        modalContent.style.margin = '';
+        modalContent.style.zIndex = '';
+        modalContent.style.transform = '';
+        
+        // Remove positioning classes
         modalContent.classList.remove('dragging', 'dragged');
+        
+        // Force reflow to ensure styles are applied
+        modalContent.offsetHeight;
+        
+        console.log('AFTER reset - modalContent styles:', {
+            position: modalContent.style.position,
+            left: modalContent.style.left,
+            top: modalContent.style.top,
+            margin: modalContent.style.margin,
+            display: modalContent.style.display,
+            classes: modalContent.className
+        });
     }
 
     // Method to make all modals draggable (call this after adding new modals)

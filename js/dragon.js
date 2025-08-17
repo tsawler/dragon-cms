@@ -297,7 +297,7 @@ class Dragon {
             btn.addEventListener('click', (e) => {
                 const modal = e.target.closest('.modal');
                 if (modal) {
-                    modal.style.display = 'none';
+                    this.closeModal(modal);
                 }
             });
         });
@@ -307,10 +307,30 @@ class Dragon {
             btn.addEventListener('click', (e) => {
                 const modal = e.target.closest('.modal');
                 if (modal) {
-                    modal.style.display = 'none';
+                    this.closeModal(modal);
                 }
             });
         });
+
+        // Handle background clicks
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    this.closeModal(modal);
+                }
+            });
+        });
+    }
+
+    closeModal(modal) {
+        // Hide the modal
+        modal.style.display = 'none';
+        
+        // Reset the modal content position if it was dragged
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent && this.modalDragger) {
+            this.modalDragger.resetModalPosition(modalContent);
+        }
     }
 
     /**

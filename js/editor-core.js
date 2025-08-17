@@ -245,12 +245,15 @@ export class Editor {
                     this.openCodeEditor(element);
                 }
             } else if (target.classList.contains('settings-icon')) {
+                console.log('Settings icon clicked!');
                 const snippet = target.closest('.editor-snippet');
                 if (snippet && snippet.classList.contains('video-snippet')) {
+                    console.log('Opening video settings modal');
                     this.videoSettingsModal.open(snippet);
                 } else {
                     // Handle other settings (blocks, non-video snippets)
                     const element = target.closest('.editor-block, .editor-snippet');
+                    console.log('Opening element settings for:', element);
                     if (element) {
                         this.openElementSettings(element);
                     }
@@ -766,16 +769,24 @@ export class Editor {
     }
 
     openElementSettings(element) {
+        console.log('openElementSettings called with:', element);
         const block = element.closest('.editor-block');
         const snippet = element.closest('.editor-snippet');
         
+        console.log('Block found:', block);
+        console.log('Snippet found:', snippet);
+        
         if (block && !snippet) {
             // Settings for block (column management)
+            console.log('Opening column settings modal for block');
             if (this.columnSettingsModal) {
                 this.columnSettingsModal.open(block);
+            } else {
+                console.error('columnSettingsModal not available!');
             }
         } else {
             // For other element types, show placeholder
+            console.log('Other element type, showing placeholder');
             alert('Settings not yet implemented for this element type');
         }
     }

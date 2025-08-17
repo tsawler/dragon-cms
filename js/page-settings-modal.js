@@ -13,7 +13,27 @@ export class PageSettingsModal {
 
     init() {
         this.attachListeners();
+        this.cleanupBadData();
         this.loadPageData();
+    }
+
+    cleanupBadData() {
+        // Check for corrupted data and clean it up
+        const stored = localStorage.getItem('pageSettings');
+        if (stored) {
+            try {
+                const data = JSON.parse(stored);
+                // Check if customJavaScript contains HTML (likely corrupted)
+                if (data.customJavaScript && data.customJavaScript.includes('<')) {
+                    console.warn('Detected corrupted JavaScript data, clearing...');
+                    data.customJavaScript = '';
+                    localStorage.setItem('pageSettings', JSON.stringify(data));
+                }
+            } catch (e) {
+                console.warn('Corrupted page settings detected, clearing...');
+                localStorage.removeItem('pageSettings');
+            }
+        }
     }
 
     attachListeners() {
@@ -60,6 +80,9 @@ export class PageSettingsModal {
 
     show() {
         this.loadPageData();
+        
+        // Clear any inline display style that might be preventing the modal from showing
+        this.modal.style.display = '';
         this.modal.style.display = 'flex';
         
         // Focus the first input
@@ -71,6 +94,12 @@ export class PageSettingsModal {
 
     hide() {
         this.modal.style.display = 'none';
+        
+        // Reset modal position if it was dragged
+        const modalContent = this.modal.querySelector('.modal-content');
+        if (modalContent && window.dragon && window.dragon.modalDragger) {
+            window.dragon.modalDragger.resetModalPosition(modalContent);
+        }
     }
 
     saveSettings() {
@@ -108,6 +137,12 @@ export class PageSettingsModal {
                 this.pageData = JSON.parse(stored);
             } catch (e) {
                 console.warn('Failed to parse stored page settings');
+                this.pageData = {
+                    pageName: '',
+                    pageTitle: '',
+                    customCSS: '',
+                    customJavaScript: ''
+                };
             }
         }
 
@@ -146,11 +181,16 @@ export class PageSettingsModal {
         }
 
         // Add new custom script if it exists
-        if (this.pageData.customJavaScript) {
-            const scriptElement = document.createElement('script');
-            scriptElement.id = 'custom-page-script';
-            scriptElement.textContent = this.pageData.customJavaScript;
-            document.head.appendChild(scriptElement);
+        if (this.pageData.customJavaScript && this.pageData.customJavaScript.trim()) {
+            try {
+                const scriptElement = document.createElement('script');
+                scriptElement.id = 'custom-page-script';
+                scriptElement.textContent = this.pageData.customJavaScript;
+                document.head.appendChild(scriptElement);
+            } catch (error) {
+                console.error('Error applying custom JavaScript:', error);
+                console.warn('Custom JavaScript not applied due to syntax error:', this.pageData.customJavaScript);
+            }
         }
     }
 
