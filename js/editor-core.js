@@ -7,6 +7,7 @@ import { SnippetPanel } from './snippet-panel.js';
 import { ColumnResizer } from './column-resizer.js';
 import { PageSettingsModal } from './page-settings-modal.js';
 import { ModalDragger } from './modal-dragger.js';
+import { ButtonSettingsModal } from './button-settings-modal.js';
 
 export class Editor {
     constructor(options = {}) {
@@ -43,7 +44,14 @@ export class Editor {
         this.columnResizer = new ColumnResizer(this);
         this.pageSettingsModal = new PageSettingsModal(this);
         this.modalDragger = new ModalDragger();
-        // this.buttonSettingsModal = new ButtonSettingsModal(this);
+        
+        console.log('About to create ButtonSettingsModal...');
+        try {
+            this.buttonSettingsModal = new ButtonSettingsModal(this);
+            console.log('ButtonSettingsModal created successfully');
+        } catch (error) {
+            console.error('Error creating ButtonSettingsModal:', error);
+        }
         
         this.attachEventListeners();
         this.setupMutationObserver();
@@ -176,8 +184,8 @@ export class Editor {
         // Handle header button clicks
         this.attachHeaderListeners();
         
-        // Handle control icon clicks (edit, delete, settings, etc.)
-        this.attachControlListeners();
+        // Handle all clicks (control icons and content buttons)
+        this.attachClickListeners();
 
         console.log('Event listeners attached');
     }
@@ -218,41 +226,71 @@ export class Editor {
         }
     }
 
-    attachControlListeners() {
-        // Use event delegation for dynamically created elements
+    attachClickListeners() {
+        // Use a single event listener for all clicks
         this.editableArea.addEventListener('click', (e) => {
-            // Check if the clicked element or its parent is a control icon
-            const target = e.target.closest('.edit-icon, .code-icon, .delete-icon, .settings-icon, .drag-handle');
+            console.log('Click detected on:', e.target);
             
-            if (!target) return;
+            // FIRST: Check if this is a content button click (not a control icon)
+            if (e.target.tagName === 'BUTTON' && 
+                !e.target.classList.contains('edit-icon') && 
+                !e.target.classList.contains('code-icon') &&
+                !e.target.classList.contains('delete-icon') &&
+                !e.target.classList.contains('settings-icon')) {
+                
+                console.log('Content button clicked');
+                
+                if (this.currentMode === 'edit') {
+                    // In edit mode, open the button settings modal
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Opening button settings modal');
+                    this.buttonSettingsModal.open(e.target);
+                    return;
+                } else if (this.currentMode === 'display') {
+                    // In display mode, navigate if URL exists
+                    const url = e.target.getAttribute('data-url');
+                    const target = e.target.getAttribute('data-target') || '_self';
+                    if (url) {
+                        e.preventDefault();
+                        window.open(url, target);
+                    }
+                    return;
+                }
+            }
+            
+            // SECOND: Check if the clicked element or its parent is a control icon
+            const controlTarget = e.target.closest('.edit-icon, .code-icon, .delete-icon, .settings-icon, .drag-handle');
+            
+            if (!controlTarget) return;
             
             e.preventDefault();
             e.stopPropagation();
             
-            if (target.classList.contains('edit-icon')) {
-                const element = target.closest('.editor-block, .editor-snippet');
+            if (controlTarget.classList.contains('edit-icon')) {
+                const element = controlTarget.closest('.editor-block, .editor-snippet');
                 if (element && this.styleEditorModal) {
                     this.styleEditorModal.open(element);
                 }
-            } else if (target.classList.contains('delete-icon')) {
-                const element = target.closest('.editor-block, .editor-snippet');
+            } else if (controlTarget.classList.contains('delete-icon')) {
+                const element = controlTarget.closest('.editor-block, .editor-snippet');
                 if (element) {
                     this.deleteElement(element);
                 }
-            } else if (target.classList.contains('code-icon')) {
-                const element = target.closest('.editor-block, .editor-snippet');
+            } else if (controlTarget.classList.contains('code-icon')) {
+                const element = controlTarget.closest('.editor-block, .editor-snippet');
                 if (element) {
                     this.openCodeEditor(element);
                 }
-            } else if (target.classList.contains('settings-icon')) {
+            } else if (controlTarget.classList.contains('settings-icon')) {
                 console.log('Settings icon clicked!');
-                const snippet = target.closest('.editor-snippet');
+                const snippet = controlTarget.closest('.editor-snippet');
                 if (snippet && snippet.classList.contains('video-snippet')) {
                     console.log('Opening video settings modal');
                     this.videoSettingsModal.open(snippet);
                 } else {
                     // Handle other settings (blocks, non-video snippets)
-                    const element = target.closest('.editor-block, .editor-snippet');
+                    const element = controlTarget.closest('.editor-block, .editor-snippet');
                     console.log('Opening element settings for:', element);
                     if (element) {
                         this.openElementSettings(element);
