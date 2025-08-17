@@ -1,6 +1,5 @@
 export class ButtonSettingsModal {
     constructor(editor) {
-        console.log('ButtonSettingsModal constructor called');
         this.editor = editor;
         this.targetButton = null;
         this.modal = null;
@@ -14,7 +13,6 @@ export class ButtonSettingsModal {
     }
 
     createModal() {
-        console.log('ButtonSettingsModal.createModal() called');
         this.modal = document.createElement('div');
         this.modal.className = 'modal';
         this.modal.innerHTML = `
@@ -72,8 +70,6 @@ export class ButtonSettingsModal {
         `;
         
         document.body.appendChild(this.modal);
-        console.log('Modal added to body:', this.modal);
-        console.log('Modal in DOM:', document.body.contains(this.modal));
         this.attachListeners();
     }
 
@@ -163,7 +159,6 @@ export class ButtonSettingsModal {
     }
 
     open(button) {
-        console.log('ButtonSettingsModal.open() called with button:', button);
         this.targetButton = button;
         
         // Store original values for cancel functionality
@@ -221,15 +216,6 @@ export class ButtonSettingsModal {
         this.modal.style.display = '';
         this.modal.style.opacity = '1';  // Force opacity to 1
         this.modal.classList.add('active');
-        
-        console.log('Modal after opening:', {
-            classes: this.modal.className,
-            display: this.modal.style.display,
-            computedDisplay: window.getComputedStyle(this.modal).display,
-            visibility: window.getComputedStyle(this.modal).visibility,
-            opacity: window.getComputedStyle(this.modal).opacity,
-            zIndex: window.getComputedStyle(this.modal).zIndex
-        });
     }
 
     close() {

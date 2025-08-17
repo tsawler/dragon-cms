@@ -116,7 +116,7 @@ const SNIPPET_LIBRARY = {
                     <line x1="25" y1="45" x2="95" y2="45" stroke="#6b7280" stroke-width="2"/>
                 </svg>
             `),
-            html: '<ul><li>First item</li><li>Second item</li><li>Third item</li></ul>'
+            html: '<ul><li contenteditable="true">First item</li><li contenteditable="true">Second item</li><li contenteditable="true">Third item</li></ul>'
         },
         {
             id: 'quote-snippet',

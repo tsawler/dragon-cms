@@ -28,18 +28,15 @@ export class ColumnResizer {
         
         // Add global function for testing
         window.debugColumnResizer = () => {
-            console.log('Manual column resizer trigger');
             this.setupResizeDividers();
         };
         
         // Also add a function to inspect current state
         window.inspectColumns = () => {
             const allElements = this.editor.editableArea.querySelectorAll('*');
-            console.log('Inspecting all elements for columns...');
             allElements.forEach(element => {
                 const columns = element.querySelectorAll(':scope > .column');
                 if (columns.length > 0) {
-                    console.log('Element with', columns.length, 'columns:', element.className, element);
                 }
             });
         };
@@ -86,11 +83,8 @@ export class ColumnResizer {
             }
         });
         
-        console.log('Setting up resize dividers, found containers:', containers.length);
-        
         containers.forEach(container => {
             const columns = container.querySelectorAll('.column');
-            console.log('Container has columns:', columns.length);
             
             // Remove existing dividers first
             const existingDividers = container.querySelectorAll('.column-resize-divider');
@@ -142,7 +136,6 @@ export class ColumnResizer {
         e.preventDefault();
         e.stopPropagation();
         
-        console.log('Starting column resize');
         this.isResizing = true;
         this.currentDivider = e.target;
         
@@ -171,16 +164,6 @@ export class ColumnResizer {
         this.rightStartWidth = this.rightColumn.offsetWidth;
         this.containerWidth = container.offsetWidth;
         
-        console.log('Resize started:', {
-            leftStartWidth: this.leftStartWidth,
-            rightStartWidth: this.rightStartWidth,
-            containerWidth: this.containerWidth,
-            startX: this.startX,
-            leftCurrentFlex: this.leftColumn.style.flex,
-            rightCurrentFlex: this.rightColumn.style.flex,
-            leftComputedFlex: window.getComputedStyle(this.leftColumn).flex,
-            rightComputedFlex: window.getComputedStyle(this.rightColumn).flex
-        });
         
         // Add resizing class for visual feedback
         document.body.classList.add('column-resizing');
@@ -195,7 +178,6 @@ export class ColumnResizer {
         e.preventDefault();
         
         const deltaX = e.clientX - this.startX;
-        console.log('Mouse move delta:', deltaX);
         
         // Calculate new widths in pixels (exact same logic as original)
         const newLeftWidth = this.leftStartWidth + deltaX;
@@ -209,13 +191,6 @@ export class ColumnResizer {
             const container = this.leftColumn.parentNode;
             const allColumns = Array.from(container.querySelectorAll('.column'));
             
-            console.log('Applying resize with valid widths:', {
-                newLeftWidth,
-                newRightWidth,
-                leftStartWidth: this.leftStartWidth,
-                rightStartWidth: this.rightStartWidth,
-                deltaX
-            });
             
             // For multi-column layouts, we need to ensure all columns fit
             if (allColumns.length === 2) {
@@ -227,12 +202,6 @@ export class ColumnResizer {
                 this.leftColumn.style.flex = `0 0 ${leftPercent}%`;
                 this.rightColumn.style.flex = `0 0 ${rightPercent}%`;
                 
-                console.log('Applied 2-column resize:', {
-                    leftPercent: leftPercent.toFixed(1),
-                    rightPercent: rightPercent.toFixed(1),
-                    leftNewFlex: this.leftColumn.style.flex,
-                    rightNewFlex: this.rightColumn.style.flex
-                });
             } else {
                 // For 3+ columns, we need to calculate all column percentages
                 const containerRect = container.getBoundingClientRect();
@@ -274,11 +243,6 @@ export class ColumnResizer {
                     col.style.flex = `0 0 ${percent}%`;
                 });
                 
-                console.log('Applied multi-column resize:', {
-                    totalColumnsWidth,
-                    availableWidth,
-                    containerWidth
-                });
             }
             
             // Update divider position visually during drag
@@ -291,18 +255,12 @@ export class ColumnResizer {
                 });
             }
         } else {
-            console.log('Resize rejected - minimum width violated:', {
-                newLeftWidth,
-                newRightWidth,
-                minWidth
-            });
         }
     }
     
     handleMouseUp(e) {
         if (!this.isResizing) return;
         
-        console.log('Ending column resize');
         this.isResizing = false;
         document.body.classList.remove('column-resizing');
         

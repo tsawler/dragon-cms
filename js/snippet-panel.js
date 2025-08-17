@@ -104,7 +104,6 @@ export class SnippetPanel {
     attachDragListeners() {
         this.snippetList.querySelectorAll('[draggable="true"]').forEach(item => {
             item.addEventListener('dragstart', (e) => {
-                console.log('PANEL dragstart - dragging NEW element from panel:', item.dataset.type);
                 e.dataTransfer.effectAllowed = 'copy';
                 e.dataTransfer.setData('elementType', item.dataset.type);
                 e.dataTransfer.setData('snippetType', item.dataset.snippetType || '');

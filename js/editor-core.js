@@ -45,13 +45,7 @@ export class Editor {
         this.pageSettingsModal = new PageSettingsModal(this);
         this.modalDragger = new ModalDragger();
         
-        console.log('About to create ButtonSettingsModal...');
-        try {
-            this.buttonSettingsModal = new ButtonSettingsModal(this);
-            console.log('ButtonSettingsModal created successfully');
-        } catch (error) {
-            console.error('Error creating ButtonSettingsModal:', error);
-        }
+        this.buttonSettingsModal = new ButtonSettingsModal(this);
         
         this.attachEventListeners();
         this.setupMutationObserver();
@@ -139,7 +133,6 @@ export class Editor {
         }
         document.body.appendChild(newHandle);
         
-        console.log('New handle created and added to body');
         
         // Set up panel
         if (panel) {
@@ -153,7 +146,6 @@ export class Editor {
                 transform: translateX(-100%) !important;
                 transition: transform 0.3s ease !important;
             `;
-            console.log('Panel positioned, should be hidden');
         }
         
         if (editableArea) {
@@ -163,12 +155,7 @@ export class Editor {
         // Check final position
         setTimeout(() => {
             const rect = newHandle.getBoundingClientRect();
-            console.log('New handle final position check:', rect);
-            if (rect.left >= 0 && rect.left <= 50) {
-                console.log('✅ Handle is visible!');
-            } else {
-                console.log('❌ Handle still not visible');
-            }
+            // Handle visibility check
         }, 100);
         
         // Refresh column resize dividers when mode changes
@@ -187,7 +174,6 @@ export class Editor {
         // Handle all clicks (control icons and content buttons)
         this.attachClickListeners();
 
-        console.log('Event listeners attached');
     }
 
     attachHeaderListeners() {
@@ -229,8 +215,6 @@ export class Editor {
     attachClickListeners() {
         // Use a single event listener for all clicks
         this.editableArea.addEventListener('click', (e) => {
-            console.log('Click detected on:', e.target);
-            
             // FIRST: Check if this is a content button click (not a control icon)
             if (e.target.tagName === 'BUTTON' && 
                 !e.target.classList.contains('edit-icon') && 
@@ -238,13 +222,10 @@ export class Editor {
                 !e.target.classList.contains('delete-icon') &&
                 !e.target.classList.contains('settings-icon')) {
                 
-                console.log('Content button clicked');
-                
                 if (this.currentMode === 'edit') {
                     // In edit mode, open the button settings modal
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Opening button settings modal');
                     this.buttonSettingsModal.open(e.target);
                     return;
                 } else if (this.currentMode === 'display') {
@@ -283,15 +264,12 @@ export class Editor {
                     this.openCodeEditor(element);
                 }
             } else if (controlTarget.classList.contains('settings-icon')) {
-                console.log('Settings icon clicked!');
                 const snippet = controlTarget.closest('.editor-snippet');
                 if (snippet && snippet.classList.contains('video-snippet')) {
-                    console.log('Opening video settings modal');
                     this.videoSettingsModal.open(snippet);
                 } else {
                     // Handle other settings (blocks, non-video snippets)
                     const element = controlTarget.closest('.editor-block, .editor-snippet');
-                    console.log('Opening element settings for:', element);
                     if (element) {
                         this.openElementSettings(element);
                     }
@@ -342,7 +320,6 @@ export class Editor {
         //     this.columnResizer.refresh();
         // }
         
-        console.log('Mode switched to:', this.currentMode);
     }
     
     setupDropZone() {
@@ -354,7 +331,6 @@ export class Editor {
         area.addEventListener('dragstart', (e) => {
             // Dragstart for existing elements
             if (e.target.classList.contains('editor-block') || e.target.classList.contains('editor-snippet')) {
-                console.log('Dragstart for existing element:', e.target.className);
                 
                 // Store original position for potential restoration
                 this.originalPosition = {
@@ -369,12 +345,10 @@ export class Editor {
                 if (e.target.classList.contains('editor-block')) {
                     e.dataTransfer.setData('elementType', 'block');
                     this.currentDragOperation = { type: 'block', isExisting: true };
-                    console.log('Set currentDragOperation for existing block:', this.currentDragOperation);
                 } else {
                     e.dataTransfer.setData('elementType', 'snippet');
                     e.dataTransfer.setData('snippetType', 'existing');
                     this.currentDragOperation = { type: 'snippet', isExisting: true };
-                    console.log('Set currentDragOperation for existing snippet:', this.currentDragOperation);
                 }
                 e.dataTransfer.setData('template', e.target.outerHTML);
                 
@@ -385,7 +359,6 @@ export class Editor {
         
         area.addEventListener('dragend', (e) => {
             if (e.target.classList.contains('editor-block') || e.target.classList.contains('editor-snippet')) {
-                console.log('Dragend for existing element:', e.target.className);
                 e.target.classList.remove('dragging-element');
                 this.currentDragOperation = null;
                 this.clearVisualIndicators();
@@ -508,7 +481,6 @@ export class Editor {
             
             // For existing elements, override snippetType to 'existing'
             if (this.currentDragOperation?.isExisting && elementType === 'snippet') {
-                console.log('Overriding snippetType from', snippetType, 'to existing');
                 snippetType = 'existing';
             }
 
@@ -548,35 +520,21 @@ export class Editor {
                     closestBlock = this.currentTargetBlock || e.target.closest('.editor-block');
                 }
                 
-                console.log('Snippet drop - target container:', targetContainer, 'closest block:', closestBlock);
                 if (closestBlock) {
                     if (snippetType === 'existing') {
                         // Moving an existing snippet
                         const dragging = draggingElement;
-                        console.log('Moving existing snippet:', {
-                            dragging,
-                            closestBlock,
-                            draggingParent: dragging?.parentNode,
-                            blockChildren: closestBlock ? [...closestBlock.children].map(c => c.className) : []
-                        });
                         
                         if (dragging && dragging.classList.contains('editor-snippet')) {
                             // Insert existing snippet at the correct position within the block
                             const afterElement = this.getSnippetInsertionPoint(closestBlock, e.clientY);
-                            console.log('Insertion details:', {
-                                afterElement,
-                                insertionMethod: afterElement ? 'insertBefore' : 'appendChild'
-                            });
                             
                             if (afterElement == null) {
-                                console.log('Appending to block');
                                 closestBlock.appendChild(dragging);
                             } else {
-                                console.log('Inserting before:', afterElement);
                                 closestBlock.insertBefore(dragging, afterElement);
                             }
                             
-                            console.log('After insertion - parent:', dragging.parentNode, 'parent class:', dragging.parentNode?.className);
                         }
                     } else {
                         // Creating a new snippet from the panel
@@ -785,10 +743,8 @@ export class Editor {
                 'Delete Element',
                 'Are you sure you want to delete this element?',
                 () => {
-                    console.log('Delete confirmed, removing element:', element);
                     element.remove();
                     this.stateHistory.saveState();
-                    console.log('Element removed and state saved');
                 }
             );
         } else {
@@ -807,24 +763,16 @@ export class Editor {
     }
 
     openElementSettings(element) {
-        console.log('openElementSettings called with:', element);
         const block = element.closest('.editor-block');
         const snippet = element.closest('.editor-snippet');
         
-        console.log('Block found:', block);
-        console.log('Snippet found:', snippet);
-        
         if (block && !snippet) {
             // Settings for block (column management)
-            console.log('Opening column settings modal for block');
             if (this.columnSettingsModal) {
                 this.columnSettingsModal.open(block);
-            } else {
-                console.error('columnSettingsModal not available!');
             }
         } else {
             // For other element types, show placeholder
-            console.log('Other element type, showing placeholder');
             alert('Settings not yet implemented for this element type');
         }
     }
@@ -920,7 +868,6 @@ export class Editor {
             attributeOldValue: true
         });
         
-        console.log('Mutation observer setup completed');
     }
 
     setupResizing() {
@@ -988,7 +935,6 @@ export class Editor {
             }
         });
         
-        console.log('Block resizing setup completed');
     }
 
     // Video snippet setup method

@@ -17,8 +17,6 @@ export class FormattingToolbar {
 
     setupClickListener() {
         // Debug body classes that might be interfering
-        console.log('Body classes:', document.body.className);
-        console.log('Body user-select style:', window.getComputedStyle(document.body).userSelect);
         
         // Add debug function
         window.debugTextSelection = () => {
@@ -511,8 +509,6 @@ export class FormattingToolbar {
     }
     
     insertImage() {
-        console.log('Insert image called, currentEditableElement:', this.currentEditableElement);
-        console.log('Saved range:', this.savedRange);
         
         // Capture context to avoid losing 'this' in callbacks
         const savedRange = this.savedRange;
@@ -530,9 +526,6 @@ export class FormattingToolbar {
             if (file && file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    console.log('File loaded, inserting image...');
-                    console.log('Captured currentEditableElement:', currentEditableElement);
-                    console.log('Captured savedRange:', savedRange);
                     
                     // Create image element wrapped in resize container
                     const img = document.createElement('img');
@@ -565,20 +558,13 @@ export class FormattingToolbar {
                             selection.removeAllRanges();
                             selection.addRange(savedRange);
                             
-                            console.log('✅ Image inserted at saved cursor position');
                         } catch (error) {
-                            console.log('Error inserting at cursor, appending instead:', error);
                             currentEditableElement.appendChild(resizeContainer);
-                            console.log('✅ Image appended due to error');
                         }
                     } else if (currentEditableElement) {
                         // No saved range, append to the current editable element
                         currentEditableElement.appendChild(resizeContainer);
-                        console.log('✅ Image appended to editable element');
                     } else {
-                        console.log('❌ No editable element found, cannot insert image');
-                        console.log('currentEditableElement:', currentEditableElement);
-                        console.log('savedRange:', savedRange);
                         return;
                     }
                     
@@ -640,7 +626,6 @@ export class FormattingToolbar {
         const selection = window.getSelection();
         if (selection.rangeCount > 0) {
             this.savedRange = selection.getRangeAt(0).cloneRange();
-            console.log('Saved range for toolbar:', this.savedRange);
         }
         
         const rect = element.getBoundingClientRect();
@@ -673,11 +658,9 @@ export class FormattingToolbar {
         const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
         
         if (!isFirefox) {
-            console.log('Not Firefox - no contenteditable fix needed');
             return;
         }
         
-        console.log('Firefox detected - applying contenteditable fix');
         
         // Apply fix to existing editable elements
         this.fixFirefoxEditableElements();
@@ -771,7 +754,6 @@ export class FormattingToolbar {
             }, 100);
         });
         
-        console.log(`Firefox fix applied to editable element with ${draggableAncestors.length} draggable ancestors`);
     }
     
     createImageResizeContainer(img) {
@@ -920,7 +902,6 @@ export class FormattingToolbar {
         });
         
         if (existingImages.length > 0) {
-            console.log(`Wrapped ${existingImages.length} existing images with resize containers`);
         }
     }
     
