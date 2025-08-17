@@ -49,7 +49,7 @@ const SNIPPET_LIBRARY = {
                     <text x="100" y="60" text-anchor="middle" fill="white" font-size="12">Hero subtitle goes here</text>
                 </svg>
             `),
-            html: '<div class="hero-container" style="padding: 60px 20px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"><h1 style="color: white; font-size: 3rem; margin-bottom: 1rem;">Hero Title</h1><p style="color: white; font-size: 1.25rem;">Hero subtitle goes here</p></div>'
+            html: '<div class="hero-container" style="padding: 60px 20px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"><h1 style="color: white; font-size: 3rem; margin-bottom: 1rem;" contenteditable="true">Hero Title</h1><p style="color: white; font-size: 1.25rem;" contenteditable="true">Hero subtitle goes here</p></div>'
         }
     ],
     
@@ -66,7 +66,7 @@ const SNIPPET_LIBRARY = {
                     <text x="10" y="25" fill="#1f2937" font-size="18" font-weight="bold">Your Heading</text>
                 </svg>
             `),
-            html: '<h2>Your Heading Here</h2>'
+            html: '<h2 contenteditable="true">Your Heading Here</h2>'
         },
         {
             id: 'paragraph-snippet',
@@ -83,7 +83,7 @@ const SNIPPET_LIBRARY = {
                     <line x1="10" y1="45" x2="90" y2="45" stroke="#6b7280" stroke-width="2"/>
                 </svg>
             `),
-            html: '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>'
+            html: '<p contenteditable="true">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>'
         },
         {
             id: 'button-snippet',
@@ -133,7 +133,7 @@ const SNIPPET_LIBRARY = {
                     <text x="15" y="52" fill="#6b7280" font-size="9">— Author Name</text>
                 </svg>
             `),
-            html: '<blockquote style="border-left: 4px solid #3b82f6; padding-left: 1rem; font-style: italic;">"This is a beautiful quote that inspires people."<footer style="margin-top: 0.5rem; font-style: normal; color: #666;">— Author Name</footer></blockquote>'
+            html: '<blockquote style="border-left: 4px solid #3b82f6; padding-left: 1rem; font-style: italic;" contenteditable="true">"This is a beautiful quote that inspires people."<footer style="margin-top: 0.5rem; font-style: normal; color: #666;">— Author Name</footer></blockquote>'
         },
         {
             id: 'card-snippet',
@@ -151,7 +151,7 @@ const SNIPPET_LIBRARY = {
                     <text x="15" y="65" fill="#3b82f6" font-size="10">Learn more →</text>
                 </svg>
             `),
-            html: '<div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"><h3 style="margin-bottom: 0.5rem;">Card Title</h3><p style="color: #666;">Card content goes here. This is a simple card component.</p><a href="#" style="color: #3b82f6; text-decoration: none;">Learn more →</a></div>'
+            html: '<div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"><h3 style="margin-bottom: 0.5rem;" contenteditable="true">Card Title</h3><p style="color: #666;" contenteditable="true">Card content goes here. This is a simple card component.</p><a href="#" style="color: #3b82f6; text-decoration: none;" contenteditable="true">Learn more →</a></div>'
         },
         {
             id: 'image-snippet',
