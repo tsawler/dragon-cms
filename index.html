@@ -11,14 +11,14 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         
-        #dragon-editor {
+        #my-editor {
             width: 100%;
             height: 100vh;
         }
     </style>
 </head>
 <body>
-    <div id="dragon-editor"></div>
+    <div id="my-editor"></div>
 
     <!-- Load snippets first -->
     <script src="snippets.js"></script>
@@ -29,8 +29,9 @@
     <script>
         // Initialize the Dragon editor when the page loads
         window.addEventListener('load', function() {
-            // Simple initialization
-            const editor = dragon.New('dragon-editor', {
+            // Simple, flexible usage - all options in one object
+            const editor = dragon.New({
+                containerId: 'my-editor',  // Optional, defaults to 'dragon-editor'
                 title: 'My Website Builder',
                 cssPath: 'editor.css',
                 snippetsPath: 'snippets.js'

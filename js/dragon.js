@@ -8,11 +8,13 @@ class Dragon {
 
     /**
      * Create a new Dragon editor instance
-     * @param {string} containerId - The ID of the container element
-     * @param {Object} options - Configuration options
+     * @param {Object} options - Configuration options including containerId
      * @returns {Editor} The editor instance
      */
-    New(containerId, options = {}) {
+    New(options = {}) {
+        const finalOptions = options;
+        const containerId = options.containerId || 'dragon-editor';
+        
         // Get or create container element
         let container = document.getElementById(containerId);
         if (!container) {
@@ -26,13 +28,13 @@ class Dragon {
         container.innerHTML = '';
 
         // Create the editor HTML structure
-        this.createEditorHTML(container, options);
+        this.createEditorHTML(container, finalOptions);
 
         // Mark as dragon-initialized
         container.classList.add('dragon-initialized');
 
         // Initialize the editor
-        const editor = new Editor(options);
+        const editor = new Editor(finalOptions);
         
         // Store the instance
         this.instances.set(containerId, editor);
@@ -60,6 +62,8 @@ class Dragon {
                         <button id="redo-btn" class="btn">Redo</button>
                         <button id="save-btn" class="btn btn-success">Save</button>
                         <button id="load-btn" class="btn">Load</button>
+                        <button id="publish-btn" class="btn btn-warning" title="Publish to URL" style="display: none;">Publish</button>
+                        <button id="load-from-url-btn" class="btn btn-info" title="Load from URL" style="display: none;">Load from URL</button>
                         <button id="export-html-btn" class="btn">Export HTML</button>
                         <button id="page-settings-btn" class="btn" title="Page Settings">⚙️</button>
                     </div>

@@ -12,6 +12,9 @@ import { ButtonSettingsModal } from './button-settings-modal.js';
 export class Editor {
     constructor(options = {}) {
         this.options = options;
+        this.publishUrl = options.publishUrl || null;
+        this.loadUrl = options.loadUrl || null;
+        this.initialContent = options.initialContent || null;
         this.editableArea = document.getElementById('editable-area');
         this.currentMode = 'edit';
         this.snippetPanel = null;
@@ -52,6 +55,9 @@ export class Editor {
         this.setupResizing();
         this.setupViewportControls();
         this.makeExistingBlocksEditable();
+        
+        // Load initial content if provided
+        this.loadInitialContent();
     }
 
     setupPanelToggle() {
@@ -165,6 +171,103 @@ export class Editor {
         // }
     }
 
+    loadInitialContent() {
+        if (!this.initialContent) return;
+        
+        console.log('Loading initial content...');
+        
+        // Set the content
+        this.editableArea.innerHTML = this.initialContent;
+        
+        // Process all blocks to add controls
+        const blocks = this.editableArea.querySelectorAll('.editor-block');
+        blocks.forEach(block => {
+            if (!block.querySelector('.drag-handle')) {
+                this.addBlockControls(block);
+            }
+            block.draggable = true;
+        });
+        
+        // Process all snippets to add controls
+        const snippets = this.editableArea.querySelectorAll('.editor-snippet');
+        snippets.forEach(snippet => {
+            if (!snippet.querySelector('.drag-handle')) {
+                this.addSnippetControls(snippet);
+            }
+            snippet.draggable = true;
+        });
+        
+        // Apply Firefox contenteditable fixes if needed
+        if (this.formattingToolbar) {
+            this.formattingToolbar.fixFirefoxEditableElements();
+        }
+        
+        // Make text elements in blocks editable
+        this.makeExistingBlocksEditable();
+        
+        // Initialize column resizers for any multi-column blocks
+        if (this.columnResizer) {
+            setTimeout(() => {
+                this.columnResizer.setupResizeDividers();
+            }, 100);
+        }
+        
+        // Save initial state to history
+        if (this.stateHistory) {
+            this.stateHistory.saveState();
+        }
+        
+        console.log('Initial content loaded successfully');
+    }
+
+    addBlockControls(block) {
+        // Don't add controls if they already exist
+        if (block.querySelector('.drag-handle')) return;
+        
+        const controls = `
+            <span class="drag-handle">⋮⋮</span>
+            <button class="edit-icon" title="Edit Styles">✏️</button>
+            <button class="settings-icon" title="Column Settings">⚙️</button>
+            <button class="code-icon" title="Edit HTML">&lt;/&gt;</button>
+            <button class="delete-icon" title="Delete">🗑️</button>
+            <div class="resizer-handle right"></div>
+            <div class="resizer-handle bottom"></div>
+            <div class="resizer-handle corner"></div>
+        `;
+        
+        // Insert controls at the beginning of the block
+        const controlsDiv = document.createElement('div');
+        controlsDiv.innerHTML = controls;
+        while (controlsDiv.firstChild) {
+            block.insertBefore(controlsDiv.firstChild, block.firstChild);
+        }
+    }
+
+    addSnippetControls(snippet) {
+        // Don't add controls if they already exist
+        if (snippet.querySelector('.drag-handle')) return;
+        
+        const isVideo = snippet.classList.contains('video-snippet');
+        
+        let controls = `
+            <span class="drag-handle">⋮⋮</span>
+            <button class="edit-icon" title="Edit Styles">✏️</button>
+            <button class="code-icon" title="Edit HTML">&lt;/&gt;</button>
+            <button class="delete-icon" title="Delete">🗑️</button>
+        `;
+        
+        if (isVideo) {
+            controls += '<button class="settings-icon" title="Video Settings">⚙️</button>';
+        }
+        
+        // Insert controls at the beginning of the snippet
+        const controlsDiv = document.createElement('div');
+        controlsDiv.innerHTML = controls;
+        while (controlsDiv.firstChild) {
+            snippet.insertBefore(controlsDiv.firstChild, snippet.firstChild);
+        }
+    }
+
     attachEventListeners() {
         this.setupDropZone();
 
@@ -209,6 +312,20 @@ export class Editor {
         const exportBtn = document.getElementById('export-html-btn');
         if (exportBtn) {
             exportBtn.addEventListener('click', () => this.exportHTML());
+        }
+
+        // Publish button (only show if publishUrl is provided)
+        const publishBtn = document.getElementById('publish-btn');
+        if (publishBtn && this.publishUrl) {
+            publishBtn.style.display = 'inline-block';
+            publishBtn.addEventListener('click', () => this.publishToUrl());
+        }
+
+        // Load from URL button (only show if loadUrl is provided)
+        const loadFromUrlBtn = document.getElementById('load-from-url-btn');
+        if (loadFromUrlBtn && this.loadUrl) {
+            loadFromUrlBtn.style.display = 'inline-block';
+            loadFromUrlBtn.addEventListener('click', () => this.loadFromUrl());
         }
     }
 
@@ -735,6 +852,114 @@ export class Editor {
         a.download = 'page.html';
         a.click();
         URL.revokeObjectURL(url);
+    }
+
+    async publishToUrl() {
+        if (!this.publishUrl) {
+            alert('No publish URL configured');
+            return;
+        }
+
+        try {
+            // Show loading state
+            const publishBtn = document.getElementById('publish-btn');
+            const originalText = publishBtn.textContent;
+            publishBtn.textContent = 'Publishing...';
+            publishBtn.disabled = true;
+
+            // Prepare data to send
+            const pageData = {
+                html: this.getCleanHTML(),
+                content: this.editableArea.innerHTML,
+                pageSettings: this.pageSettingsModal ? this.pageSettingsModal.getPageData() : {},
+                timestamp: Date.now()
+            };
+
+            // Send POST request
+            const response = await fetch(this.publishUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(pageData)
+            });
+
+            if (response.ok) {
+                const result = await response.text();
+                alert('Page published successfully!');
+                console.log('Publish result:', result);
+            } else {
+                const errorText = await response.text();
+                throw new Error(`Server responded with ${response.status}: ${errorText}`);
+            }
+        } catch (error) {
+            console.error('Error publishing page:', error);
+            alert(`Error publishing page: ${error.message}`);
+        } finally {
+            // Restore button state
+            const publishBtn = document.getElementById('publish-btn');
+            publishBtn.textContent = 'Publish';
+            publishBtn.disabled = false;
+        }
+    }
+
+    async loadFromUrl() {
+        if (!this.loadUrl) {
+            alert('No load URL configured');
+            return;
+        }
+
+        try {
+            // Show loading state
+            const loadBtn = document.getElementById('load-from-url-btn');
+            const originalText = loadBtn.textContent;
+            loadBtn.textContent = 'Loading...';
+            loadBtn.disabled = true;
+
+            // Send GET request
+            const response = await fetch(this.loadUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                const pageData = await response.json();
+                
+                // Load the content
+                if (pageData.content) {
+                    this.editableArea.innerHTML = pageData.content;
+                }
+
+                // Load page settings if they exist
+                if (pageData.pageSettings && this.pageSettingsModal) {
+                    this.pageSettingsModal.setPageData(pageData.pageSettings);
+                    
+                    // Update document title if page title is set
+                    if (pageData.pageSettings.pageTitle) {
+                        document.title = pageData.pageSettings.pageTitle;
+                    }
+                }
+
+                // Save current state to history
+                this.stateHistory.saveState();
+                
+                alert('Page loaded successfully from URL!');
+                console.log('Loaded page data:', pageData);
+            } else {
+                const errorText = await response.text();
+                throw new Error(`Server responded with ${response.status}: ${errorText}`);
+            }
+        } catch (error) {
+            console.error('Error loading page from URL:', error);
+            alert(`Error loading page: ${error.message}`);
+        } finally {
+            // Restore button state
+            const loadBtn = document.getElementById('load-from-url-btn');
+            loadBtn.textContent = 'Load from URL';
+            loadBtn.disabled = false;
+        }
     }
 
     deleteElement(element) {
