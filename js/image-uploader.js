@@ -1,3 +1,5 @@
+import { ImageSettingsModal } from './image-settings-modal.js';
+
 export class ImageUploader {
     constructor(editor) {
         this.editor = editor;
@@ -107,6 +109,9 @@ export class ImageUploader {
                 
                 // Replace the image container with the resize container
                 imageContainer.parentNode.replaceChild(resizeContainer, imageContainer);
+                
+                // Add class to remove gray background from snippet
+                snippet.classList.add('has-image-container');
             } else {
                 // Fallback to old behavior for existing images
                 const img = document.createElement('img');
@@ -128,6 +133,9 @@ export class ImageUploader {
                 }
                 
                 snippet.appendChild(resizeContainer);
+                
+                // Add class to remove gray background from snippet
+                snippet.classList.add('has-image-container');
             }
             
             this.editor.stateHistory.saveState();
@@ -136,6 +144,12 @@ export class ImageUploader {
     }
 
     reattachImageHandlers(container) {
+        // Add class to remove gray background from snippet
+        const snippet = container.closest('.image-snippet');
+        if (snippet) {
+            snippet.classList.add('has-image-container');
+        }
+        
         // Ensure the browse icon exists and has proper styling
         let browseIcon = container.querySelector('.image-browse-icon');
         if (!browseIcon) {
@@ -181,6 +195,51 @@ export class ImageUploader {
             this.browseForImage(container);
         });
 
+        // Ensure the settings icon exists and has proper styling
+        let settingsIcon = container.querySelector('.image-settings-icon');
+        if (!settingsIcon) {
+            // Create settings icon if it doesn't exist
+            settingsIcon = document.createElement('div');
+            settingsIcon.className = 'image-settings-icon';
+            settingsIcon.innerHTML = '⚙️';
+            settingsIcon.title = 'Image settings';
+            settingsIcon.style.cssText = `
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                width: 30px;
+                height: 30px;
+                background: rgba(255, 255, 255, 0.9);
+                border: 1px solid #ddd;
+                border-radius: 50%;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                font-size: 16px;
+                z-index: 1000;
+                transition: all 0.2s ease;
+            `;
+            container.appendChild(settingsIcon);
+        }
+
+        // Add hover effects to settings icon
+        settingsIcon.addEventListener('mouseenter', () => {
+            settingsIcon.style.background = 'rgba(255, 255, 255, 1)';
+            settingsIcon.style.transform = 'scale(1.1)';
+        });
+        
+        settingsIcon.addEventListener('mouseleave', () => {
+            settingsIcon.style.background = 'rgba(255, 255, 255, 0.9)';
+            settingsIcon.style.transform = 'scale(1)';
+        });
+
+        // Add click handler for settings
+        settingsIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openImageSettings(container);
+        });
+
         // Add click handler to select/deselect image
         container.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -208,6 +267,9 @@ export class ImageUploader {
             imageContainer.parentNode.replaceChild(resizeContainer, imageContainer);
         }
         
+        // Add class to remove gray background from snippet
+        snippet.classList.add('has-image-container');
+        
         // Save state
         if (this.editor && this.editor.stateHistory) {
             this.editor.stateHistory.saveState();
@@ -219,10 +281,13 @@ export class ImageUploader {
         const container = document.createElement('div');
         container.className = 'image-resize-container align-center'; // Default to center alignment
         
+        // Set container to fit content to prevent gray areas
+        container.style.width = 'fit-content';
+        container.style.height = 'fit-content';
+        
         // Ensure mobile-friendly responsive behavior
         img.style.maxWidth = '100%';
         img.style.height = 'auto';
-        img.style.width = 'auto';
         
         container.appendChild(img);
         
@@ -276,6 +341,48 @@ export class ImageUploader {
         });
 
         container.appendChild(browseIcon);
+
+        // Create settings icon (only visible when selected)
+        const settingsIcon = document.createElement('div');
+        settingsIcon.className = 'image-settings-icon';
+        settingsIcon.innerHTML = '⚙️';
+        settingsIcon.title = 'Image settings';
+        settingsIcon.style.cssText = `
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            z-index: 1000;
+            transition: all 0.2s ease;
+        `;
+        
+        // Add hover effect
+        settingsIcon.addEventListener('mouseenter', () => {
+            settingsIcon.style.background = 'rgba(255, 255, 255, 1)';
+            settingsIcon.style.transform = 'scale(1.1)';
+        });
+        
+        settingsIcon.addEventListener('mouseleave', () => {
+            settingsIcon.style.background = 'rgba(255, 255, 255, 0.9)';
+            settingsIcon.style.transform = 'scale(1)';
+        });
+
+        // Add click handler for settings
+        settingsIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openImageSettings(container);
+        });
+
+        container.appendChild(settingsIcon);
         
         // Add click handler to select/deselect image
         container.addEventListener('click', (e) => {
@@ -294,10 +401,14 @@ export class ImageUploader {
         document.querySelectorAll('.image-resize-container.selected').forEach(el => {
             if (el !== container) {
                 el.classList.remove('selected');
-                // Hide browse icon on deselected images
+                // Hide browse and settings icons on deselected images
                 const browseIcon = el.querySelector('.image-browse-icon');
                 if (browseIcon) {
                     browseIcon.style.display = 'none';
+                }
+                const settingsIcon = el.querySelector('.image-settings-icon');
+                if (settingsIcon) {
+                    settingsIcon.style.display = 'none';
                 }
             }
         });
@@ -306,14 +417,20 @@ export class ImageUploader {
         const wasSelected = container.classList.contains('selected');
         container.classList.toggle('selected');
         
-        // Show/hide browse icon based on selection and edit mode
+        // Show/hide browse and settings icons based on selection and edit mode
         const browseIcon = container.querySelector('.image-browse-icon');
-        if (browseIcon) {
+        const settingsIcon = container.querySelector('.image-settings-icon');
+        
+        if (browseIcon || settingsIcon) {
             const isInEditMode = this.editor.currentMode === 'edit';
-            if (container.classList.contains('selected') && isInEditMode) {
-                browseIcon.style.display = 'flex';
-            } else {
-                browseIcon.style.display = 'none';
+            const isSelected = container.classList.contains('selected');
+            
+            if (browseIcon) {
+                browseIcon.style.display = (isSelected && isInEditMode) ? 'flex' : 'none';
+            }
+            
+            if (settingsIcon) {
+                settingsIcon.style.display = (isSelected && isInEditMode) ? 'flex' : 'none';
             }
         }
         
@@ -370,6 +487,13 @@ export class ImageUploader {
             }
         };
         reader.readAsDataURL(file);
+    }
+
+    openImageSettings(container) {
+        if (!this.imageSettingsModal) {
+            this.imageSettingsModal = new ImageSettingsModal(this.editor);
+        }
+        this.imageSettingsModal.open(container);
     }
     
     addResizeHandlers(container) {

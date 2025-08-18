@@ -1413,6 +1413,12 @@ export class Editor {
                     }
                 }
                 
+                // Ensure container fits content properly to prevent gray areas
+                if (!currentWidth && !imgWidth) {
+                    container.style.width = 'fit-content';
+                    container.style.height = 'fit-content';
+                }
+                
                 // Always ensure responsive constraints
                 img.style.maxWidth = '100%';
                 img.style.height = 'auto';

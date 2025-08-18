@@ -775,7 +775,7 @@ button.edit-icon, button.settings-icon, button.code-icon, button.delete-icon {
 .image-resize-container img {
     max-width: 100%;
     height: auto;
-    width: auto;
+    display: block;
     user-select: none;
     -webkit-user-drag: none;
 }
@@ -784,6 +784,11 @@ button.edit-icon, button.settings-icon, button.code-icon, button.delete-icon {
 .image-resize-container {
     max-width: 100% !important;
     box-sizing: border-box;
+    background-color: transparent;
+    padding: 0px;
+    width: fit-content;
+    height: fit-content;
+    display: inline-block;
 }
 
 /* Mobile-friendly image sizing */
@@ -1133,6 +1138,12 @@ body.image-resizing * {
     background: #f8f9fa;
     border-radius: 4px;
     overflow: hidden;
+}
+
+/* Remove background and min-height when image resize container is present */
+.image-snippet.has-image-container {
+    background: transparent !important;
+    min-height: auto !important;
 }
 
 .image-snippet img {
