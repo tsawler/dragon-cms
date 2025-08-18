@@ -36,6 +36,17 @@
                 cssPath: 'editor.css',
                 snippetsPath: 'snippets.js'
             });
+
+            // Example: Loading existing content into the editor
+            // const editor = dragon.New({
+            //     containerId: 'my-editor',
+            //     title: 'My Website Builder',
+            //     cssPath: 'editor.css',
+            //     snippetsPath: 'snippets.js',
+            //     initialContent: '<div class="editor-block"><h1>Welcome</h1><p>This is existing content</p></div>',
+            //     publishUrl: 'https://api.example.com/save',
+            //     loadUrl: 'https://api.example.com/load'
+            // });
             
             // Make it available globally for debugging
             window.editor = editor;

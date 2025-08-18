@@ -1024,6 +1024,16 @@ export class Editor {
             }
         }
         
+        // Restore functionality to loaded content
+        this.makeExistingBlocksEditable();
+        
+        // Initialize column resizers for any multi-column blocks
+        if (this.columnResizer) {
+            setTimeout(() => {
+                this.columnResizer.setupResizeDividers();
+            }, 100);
+        }
+        
         this.stateHistory.saveState();
     }
 
@@ -1221,8 +1231,9 @@ export class Editor {
             snippet.innerHTML = controls + '<button class="settings-icon" title="Video Settings">⚙️</button>';
             // Add default video (Big Buck Bunny)
             this.setupVideoSnippet(snippet, 'https://www.youtube.com/embed/aqz-KE-bpKQ');
-        } else if (type === 'image') {
-            snippet.innerHTML = controls + '<div class="image-upload-zone">Click or drag image here</div>';
+        } else if (type === 'image' && template) {
+            // Use the template content for images (includes default image)
+            snippet.innerHTML = controls + template;
         } else if (template) {
             // Use the template content if provided
             snippet.innerHTML = controls + template;
@@ -1338,6 +1349,18 @@ export class Editor {
                     el.style.opacity = '';
                 });
             });
+
+            // Handle existing image snippets in blocks
+            const imageSnippets = block.querySelectorAll('.editor-snippet');
+            imageSnippets.forEach(snippet => {
+                if (snippet.classList.contains('image-snippet') || 
+                    snippet.querySelector('.image-resize-container') ||
+                    snippet.querySelector('.image-container')) {
+                    if (this.imageUploader) {
+                        this.imageUploader.setupImageSnippet(snippet);
+                    }
+                }
+            });
         });
     }
     
@@ -1354,5 +1377,46 @@ export class Editor {
         } else {
             document.getElementById('desktop-viewport').classList.add('active');
         }
+        
+        // Refresh all images to prevent distortion at different viewport sizes
+        this.refreshImageDimensions();
+    }
+    
+    refreshImageDimensions() {
+        const imageContainers = this.editableArea.querySelectorAll('.image-resize-container');
+        imageContainers.forEach(container => {
+            const img = container.querySelector('img');
+            if (img) {
+                // Store the current dimensions if they exist (user-defined sizes)
+                const currentWidth = container.style.width;
+                const currentHeight = container.style.height;
+                const imgWidth = img.style.width;
+                const imgHeight = img.style.height;
+                
+                // Only reset if the image appears distorted or has no manual sizing
+                // Check if the image is larger than its container (indicates potential distortion)
+                const containerRect = container.getBoundingClientRect();
+                const imgRect = img.getBoundingClientRect();
+                
+                const isDistorted = imgRect.width > containerRect.width + 5; // 5px tolerance
+                
+                if (isDistorted || (!currentWidth && !imgWidth)) {
+                    // Reset only if distorted or no manual sizing exists
+                    container.style.width = '';
+                    container.style.height = '';
+                    img.style.width = '';
+                    img.style.height = '';
+                } else {
+                    // Preserve user-defined dimensions but ensure they don't exceed container
+                    if (currentWidth && parseInt(currentWidth) > containerRect.width) {
+                        container.style.width = '100%';
+                    }
+                }
+                
+                // Always ensure responsive constraints
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+            }
+        });
     }
 }

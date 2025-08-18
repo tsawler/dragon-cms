@@ -1,5 +1,29 @@
 // Snippet definitions for the drag-and-drop editor
 // Each snippet can have either a text label or an image preview
+//
+// SUPPORTED PREVIEW IMAGE FORMATS:
+// - SVG (inline or data URL)
+// - PNG (file path or data URL) 
+// - JPEG/JPG (file path or data URL)
+// - WebP (file path or data URL)
+// - GIF (file path or data URL)
+// - Any web-compatible image format
+//
+// PREVIEW IMAGE OPTIONS:
+// 1. File path: './images/my-preview.png'
+// 2. Absolute URL: 'https://example.com/preview.jpg'
+// 3. Data URL: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...'
+// 4. SVG data URL: svgToDataUrl('<svg>...</svg>')
+//
+// EXAMPLE USAGE:
+// {
+//     id: 'my-snippet',
+//     name: 'My Custom Snippet',
+//     type: 'snippet',
+//     preview: 'image',
+//     previewImage: './assets/my-preview.png',  // Any image format!
+//     html: '<div>My content</div>'
+// }
 
 // Helper function to safely encode SVG to base64
 function svgToDataUrl(svgString) {
@@ -167,7 +191,7 @@ const SNIPPET_LIBRARY = {
                     <text x="60" y="45" text-anchor="middle" fill="#6b7280" font-size="10">Image</text>
                 </svg>
             `),
-            html: '<div class="image-placeholder"></div>'
+            html: '<div class="image-container" style="position: relative; display: inline-block;"><img src="assets/images/vase.jpg" alt="Default Image" style="max-width: 100%; height: auto; display: block;" class="editable-image"><div class="image-upload-zone" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); color: white; display: none; align-items: center; justify-content: center; cursor: pointer; font-size: 14px;">Click to change image</div></div>'
         },
         {
             id: 'video-snippet',
@@ -205,6 +229,49 @@ const SNIPPET_LIBRARY = {
             preview: 'text',
             html: '<div style="height: 40px;"></div>'
         }
+        
+        // Example snippets showing different image formats:
+        // 
+        // PNG example:
+        // {
+        //     id: 'custom-png-snippet',
+        //     name: 'Custom PNG Block',
+        //     type: 'snippet',
+        //     preview: 'image',
+        //     previewImage: 'https://example.com/preview.png',
+        //     html: '<div>Custom content here</div>'
+        // },
+        //
+        // WebP example:
+        // {
+        //     id: 'custom-webp-snippet', 
+        //     name: 'Custom WebP Block',
+        //     type: 'snippet',
+        //     preview: 'image',
+        //     previewImage: 'data:image/webp;base64,UklGRhYAAABXRUJQVlA4TAkAAAAvAQAAAAD+p5aEAA==',
+        //     html: '<div>Custom content here</div>'
+        // },
+        //
+        // GIF example:
+        // {
+        //     id: 'custom-gif-snippet',
+        //     name: 'Custom GIF Block', 
+        //     type: 'snippet',
+        //     preview: 'image',
+        //     previewImage: './assets/my-preview.gif',
+        //     html: '<div>Custom content here</div>'
+        // },
+        //
+        // JPEG example:
+        // {
+        //     id: 'custom-jpg-snippet',
+        //     name: 'Custom JPEG Block',
+        //     type: 'snippet', 
+        //     preview: 'image',
+        //     previewImage: './images/snippet-preview.jpg',
+        //     html: '<div>Custom content here</div>'
+        // }
+        
     ]
 };
 
