@@ -2,7 +2,9 @@
     'use strict';
 
     class Editor {
-        constructor() {
+        constructor(options = {}) {
+            this.options = options;
+            this.showCodeIcon = options.showCodeIcon !== false; // Default to true
             this.editableArea = document.getElementById('editable-area');
             this.currentMode = 'edit';
             this.snippetPanel = null;
@@ -550,11 +552,13 @@
             block.className = 'editor-block';
             block.draggable = true;  // Make blocks draggable by default
             
+            const codeIconHtml = this.showCodeIcon ? '<button class="code-icon" title="Edit HTML">&lt;/&gt;</button>' : '';
+            
             const controls = `
                 <span class="drag-handle">⋮⋮</span>
                 <button class="edit-icon" title="Edit Styles">✏️</button>
                 <button class="settings-icon" title="Column Settings">⚙️</button>
-                <button class="code-icon" title="Edit HTML">&lt;/&gt;</button>
+                ${codeIconHtml}
                 <button class="delete-icon" title="Delete">🗑️</button>
                 <div class="resizer-handle right"></div>
                 <div class="resizer-handle bottom"></div>
@@ -599,11 +603,13 @@
             snippet.className = `editor-snippet ${type}-snippet`;
             snippet.draggable = true;  // Make snippets draggable by default
             
+            const codeIconHtml = this.showCodeIcon ? '<button class="code-icon" title="Edit HTML">&lt;/&gt;</button>' : '';
+            
             // Add the controls
             const controls = `
                 <span class="drag-handle">⋮⋮</span>
                 <button class="edit-icon" title="Edit Styles">✏️</button>
-                <button class="code-icon" title="Edit HTML">&lt;/&gt;</button>
+                ${codeIconHtml}
                 <button class="delete-icon" title="Delete">🗑️</button>
             `;
             
