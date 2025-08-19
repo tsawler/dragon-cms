@@ -1460,6 +1460,73 @@ body.image-resizing * {
     background: rgba(0,0,0,0.7) !important;
 }
 
+/* Syntax highlighting for code editor */
+.code-editor-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.code-editor-textarea {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: transparent;
+    caret-color: #333;
+    resize: none;
+    outline: none;
+    z-index: 2;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    white-space: pre;
+    overflow: auto;
+}
+
+.code-editor-highlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    margin: 0;
+    border: none;
+    background: #fafafa;
+    color: #333;
+    pointer-events: none;
+    z-index: 1;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    white-space: pre;
+    overflow: auto;
+    word-wrap: break-word;
+}
+
+/* Syntax highlighting colors */
+.syntax-tag { color: #0066cc; }
+.syntax-attribute { color: #cc6600; }
+.syntax-string { color: #009900; }
+.syntax-comment { color: #999999; font-style: italic; }
+.syntax-css-property { color: #cc0066; }
+.syntax-css-value { color: #009900; }
+.syntax-css-selector { color: #0066cc; }
+.syntax-js-keyword { color: #0066cc; font-weight: bold; }
+.syntax-js-string { color: #009900; }
+.syntax-js-comment { color: #999999; font-style: italic; }
+.syntax-js-function { color: #cc6600; }
+
 /* Edge/IE transform compatibility */
 @supports (-ms-ime-align: auto) {
     .modal-content,

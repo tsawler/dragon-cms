@@ -201,28 +201,91 @@ export class ButtonSettingsModal {
             }
         }
         
-        // Set form values
-        document.getElementById('button-text').value = text;
-        document.getElementById('button-url').value = url;
-        document.getElementById('button-bg-color').value = bgColor;
-        document.getElementById('button-text-color').value = textColor;
-        document.getElementById('button-target').value = target;
-        document.getElementById('button-border-radius').value = borderRadius;
-        document.getElementById('button-border-radius-number').value = borderRadius;
-        document.getElementById('border-radius-value').textContent = borderRadius;
-        document.getElementById('button-size').value = detectedSize;
+        // Edge compatibility - create a completely new modal
+        const isEdge = window.navigator.userAgent.indexOf('Edge') > -1 || 
+                      window.navigator.userAgent.indexOf('Edg') > -1 ||
+                      window.navigator.userAgent.indexOf('EdgeHTML') > -1;
         
-        // Force a reflow before adding active class for Edge compatibility
-        this.modal.offsetHeight;
-        this.modal.classList.add('active');
-        
-        // Additional Edge compatibility - force redraw
-        if (window.navigator.userAgent.indexOf('Edge') > -1) {
-            this.modal.style.display = 'block';
+        if (isEdge) {
+            // Hide the original modal
+            this.modal.style.display = 'none';
+            
+            // Create a new, simple modal for Edge
+            this.edgeModal = document.createElement('div');
+            this.edgeModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.5);
+                z-index: 999999;
+                display: block;
+            `;
+            
+            const edgeContent = document.createElement('div');
+            edgeContent.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 500px;
+                max-width: 90%;
+                background: white;
+                border-radius: 8px;
+                padding: 2rem;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                margin-left: -250px;
+                margin-top: -200px;
+                z-index: 1000000;
+                max-height: 80vh;
+                overflow-y: auto;
+            `;
+            
+            // Copy the content from the original modal
+            const originalContent = this.modal.querySelector('.modal-content');
+            if (originalContent) {
+                edgeContent.innerHTML = originalContent.innerHTML;
+            }
+            
+            this.edgeModal.appendChild(edgeContent);
+            document.body.appendChild(this.edgeModal);
+            
+            // Attach event listeners to the new modal
+            this.attachEdgeModalListeners(edgeContent);
+            
+            // Add simple drag functionality for Edge modal
+            this.addEdgeDragFunctionality(edgeContent);
+            
+            // Set form values in Edge modal
+            this.populateEdgeModalForm(text, url, bgColor, textColor, target, borderRadius, detectedSize);
+            
+        } else {
+            // Normal browser behavior
+            
+            // Set form values
+            document.getElementById('button-text').value = text;
+            document.getElementById('button-url').value = url;
+            document.getElementById('button-bg-color').value = bgColor;
+            document.getElementById('button-text-color').value = textColor;
+            document.getElementById('button-target').value = target;
+            document.getElementById('button-border-radius').value = borderRadius;
+            document.getElementById('button-border-radius-number').value = borderRadius;
+            document.getElementById('border-radius-value').textContent = borderRadius;
+            document.getElementById('button-size').value = detectedSize;
+            
+            // Force a reflow before adding active class for Edge compatibility
+            this.modal.offsetHeight;
+            this.modal.classList.add('active');
         }
     }
 
     close() {
+        // Handle Edge modal
+        if (this.edgeModal) {
+            document.body.removeChild(this.edgeModal);
+            this.edgeModal = null;
+        }
+        
         this.modal.classList.remove('active');
         // Clear any inline display style
         this.modal.style.display = '';
@@ -312,5 +375,213 @@ export class ButtonSettingsModal {
         // Save state
         this.editor.stateHistory.saveState();
         this.close();
+    }
+    
+    populateEdgeModalForm(text, url, bgColor, textColor, target, borderRadius, detectedSize) {
+        const edgeContent = this.edgeModal.querySelector('div');
+        
+        // Set form values in Edge modal
+        const textInput = edgeContent.querySelector('#button-text');
+        const urlInput = edgeContent.querySelector('#button-url');
+        const bgColorInput = edgeContent.querySelector('#button-bg-color');
+        const textColorInput = edgeContent.querySelector('#button-text-color');
+        const targetSelect = edgeContent.querySelector('#button-target');
+        const borderRadiusSlider = edgeContent.querySelector('#button-border-radius');
+        const borderRadiusNumber = edgeContent.querySelector('#button-border-radius-number');
+        const borderRadiusValue = edgeContent.querySelector('#border-radius-value');
+        const sizeSelect = edgeContent.querySelector('#button-size');
+        
+        if (textInput) textInput.value = text;
+        if (urlInput) urlInput.value = url;
+        if (bgColorInput) bgColorInput.value = bgColor;
+        if (textColorInput) textColorInput.value = textColor;
+        if (targetSelect) targetSelect.value = target;
+        if (borderRadiusSlider) borderRadiusSlider.value = borderRadius;
+        if (borderRadiusNumber) borderRadiusNumber.value = borderRadius;
+        if (borderRadiusValue) borderRadiusValue.textContent = borderRadius;
+        if (sizeSelect) sizeSelect.value = detectedSize;
+    }
+    
+    attachEdgeModalListeners(edgeContent) {
+        // Close button
+        const closeBtn = edgeContent.querySelector('.modal-close');
+        if (closeBtn) closeBtn.addEventListener('click', () => this.close());
+        
+        // Cancel button
+        const cancelBtn = edgeContent.querySelector('.modal-cancel');
+        if (cancelBtn) cancelBtn.addEventListener('click', () => this.cancel());
+        
+        // Apply button
+        const applyBtn = edgeContent.querySelector('.modal-apply');
+        if (applyBtn) applyBtn.addEventListener('click', () => this.applyEdgeChanges());
+        
+        // Live preview listeners
+        const textInput = edgeContent.querySelector('#button-text');
+        const bgColorInput = edgeContent.querySelector('#button-bg-color');
+        const textColorInput = edgeContent.querySelector('#button-text-color');
+        const borderRadiusSlider = edgeContent.querySelector('#button-border-radius');
+        const borderRadiusNumber = edgeContent.querySelector('#button-border-radius-number');
+        const borderRadiusValue = edgeContent.querySelector('#border-radius-value');
+        const sizeSelect = edgeContent.querySelector('#button-size');
+        
+        // Text live preview
+        if (textInput) {
+            textInput.addEventListener('input', (e) => {
+                if (this.targetButton) {
+                    this.targetButton.textContent = e.target.value || 'Button';
+                }
+            });
+        }
+        
+        // Background color live preview
+        if (bgColorInput) {
+            bgColorInput.addEventListener('input', (e) => {
+                if (this.targetButton) {
+                    this.targetButton.style.backgroundColor = e.target.value;
+                }
+            });
+        }
+        
+        // Text color live preview
+        if (textColorInput) {
+            textColorInput.addEventListener('input', (e) => {
+                if (this.targetButton) {
+                    this.targetButton.style.color = e.target.value;
+                }
+            });
+        }
+        
+        // Border radius live preview with slider
+        if (borderRadiusSlider && borderRadiusValue && borderRadiusNumber) {
+            borderRadiusSlider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                borderRadiusValue.textContent = value;
+                borderRadiusNumber.value = value;
+                if (this.targetButton) {
+                    this.targetButton.style.borderRadius = value + 'px';
+                }
+            });
+        }
+        
+        // Border radius live preview with number input
+        if (borderRadiusNumber && borderRadiusSlider && borderRadiusValue) {
+            borderRadiusNumber.addEventListener('input', (e) => {
+                let value = parseInt(e.target.value) || 0;
+                value = Math.max(0, Math.min(50, value)); // Clamp between 0 and 50
+                borderRadiusSlider.value = value;
+                borderRadiusValue.textContent = value;
+                if (this.targetButton) {
+                    this.targetButton.style.borderRadius = value + 'px';
+                }
+            });
+        }
+        
+        // Size live preview
+        if (sizeSelect) {
+            sizeSelect.addEventListener('change', (e) => {
+                const size = e.target.value;
+                const preset = this.sizePresets[size];
+                if (this.targetButton && preset) {
+                    this.targetButton.style.padding = preset.padding;
+                    this.targetButton.style.fontSize = preset.fontSize;
+                }
+            });
+        }
+        
+        // Close on background click
+        this.edgeModal.addEventListener('click', (e) => {
+            if (e.target === this.edgeModal) {
+                this.cancel();
+            }
+        });
+        
+        // Close on Escape key
+        const escapeHandler = (e) => {
+            if (e.key === 'Escape' && this.edgeModal) {
+                this.cancel();
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+    }
+    
+    applyEdgeChanges() {
+        const edgeContent = this.edgeModal.querySelector('div');
+        
+        const text = edgeContent.querySelector('#button-text').value;
+        const url = edgeContent.querySelector('#button-url').value;
+        const bgColor = edgeContent.querySelector('#button-bg-color').value;
+        const textColor = edgeContent.querySelector('#button-text-color').value;
+        const borderRadius = edgeContent.querySelector('#button-border-radius').value;
+        const size = edgeContent.querySelector('#button-size').value;
+        const target = edgeContent.querySelector('#button-target').value;
+        
+        // Update button
+        this.targetButton.textContent = text;
+        this.targetButton.style.backgroundColor = bgColor;
+        this.targetButton.style.color = textColor;
+        this.targetButton.style.borderRadius = borderRadius + 'px';
+        
+        // Apply size preset
+        const preset = this.sizePresets[size];
+        if (preset) {
+            this.targetButton.style.padding = preset.padding;
+            this.targetButton.style.fontSize = preset.fontSize;
+        }
+        
+        // Store URL and target as data attributes
+        if (url) {
+            this.targetButton.setAttribute('data-url', url);
+            this.targetButton.setAttribute('data-target', target);
+        } else {
+            this.targetButton.removeAttribute('data-url');
+            this.targetButton.removeAttribute('data-target');
+        }
+        
+        // Remove any existing click handlers
+        this.targetButton.onclick = null;
+        // Remove event listeners by cloning and replacing the button
+        const newButton = this.targetButton.cloneNode(true);
+        this.targetButton.parentNode.replaceChild(newButton, this.targetButton);
+        
+        // Save state
+        this.editor.stateHistory.saveState();
+        this.close();
+    }
+    
+    addEdgeDragFunctionality(modalContent) {
+        const modalHeader = modalContent.querySelector('.modal-header');
+        if (!modalHeader) return;
+        
+        let isDragging = false;
+        let startX, startY, startLeft, startTop;
+        
+        modalHeader.style.cursor = 'move';
+        
+        modalHeader.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('modal-close')) return;
+            
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = parseInt(modalContent.style.marginLeft) || -250;
+            startTop = parseInt(modalContent.style.marginTop) || -200;
+            
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            
+            modalContent.style.marginLeft = (startLeft + deltaX) + 'px';
+            modalContent.style.marginTop = (startTop + deltaY) + 'px';
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
     }
 }

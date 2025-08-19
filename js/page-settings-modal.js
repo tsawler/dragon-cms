@@ -68,68 +68,104 @@ export class PageSettingsModal {
         });
     }
 
-    switchTab(tabName) {
+    switchTab(tabName, targetModal = null) {
+        const modal = targetModal || this.modal;
+        
         // Remove active from all tabs and panels
-        this.modal.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        this.modal.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+        modal.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        modal.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
 
         // Activate selected tab and panel
-        this.modal.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-        this.modal.querySelector(`#${tabName}-tab`).classList.add('active');
+        modal.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        modal.querySelector(`#${tabName}-tab`).classList.add('active');
     }
 
     show() {
-        this.loadPageData();
-        
-        // Force a reflow before showing modal for Edge compatibility
-        this.modal.offsetHeight;
-        this.modal.classList.add('active');
-        
-        // Additional Edge compatibility - force redraw
+        // Edge compatibility - create a completely new modal
         const isEdge = window.navigator.userAgent.indexOf('Edge') > -1 || 
                       window.navigator.userAgent.indexOf('Edg') > -1 ||
                       window.navigator.userAgent.indexOf('EdgeHTML') > -1;
         
         if (isEdge) {
-            this.modal.style.display = 'block';
-            this.modal.style.setProperty('display', 'block', 'important');
-            // Force another reflow
+            // Hide the original modal
+            this.modal.style.display = 'none';
+            
+            // Create a new, simple modal for Edge
+            this.edgeModal = document.createElement('div');
+            this.edgeModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.5);
+                z-index: 999999;
+                display: block;
+            `;
+            
+            const edgeContent = document.createElement('div');
+            edgeContent.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 600px;
+                max-width: 90%;
+                background: white;
+                border-radius: 8px;
+                padding: 2rem;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                margin-left: -300px;
+                margin-top: -200px;
+                z-index: 1000000;
+                max-height: 80vh;
+                overflow-y: auto;
+            `;
+            
+            // Copy the content from the original modal
+            const originalContent = this.modal.querySelector('.modal-content');
+            if (originalContent) {
+                edgeContent.innerHTML = originalContent.innerHTML;
+                
+                // Add syntax highlighting containers to textareas
+                this.addSyntaxHighlightingToTextareas(edgeContent);
+            }
+            
+            this.edgeModal.appendChild(edgeContent);
+            document.body.appendChild(this.edgeModal);
+            
+            // Attach event listeners to the new modal
+            this.attachEdgeModalListeners(edgeContent);
+            
+            // Add simple drag functionality for Edge modal
+            this.addEdgeDragFunctionality(edgeContent);
+            
+            // Load page data into Edge modal
+            this.loadPageData();
+            
+        } else {
+            // Normal browser behavior
             this.modal.offsetHeight;
+            this.modal.classList.add('active');
+            
+            // Load page data into regular modal
+            this.loadPageData();
         }
-        
-        // Ultimate fallback - set display to block regardless of browser
-        setTimeout(() => {
-            if (window.getComputedStyle(this.modal).display === 'none') {
-                this.modal.style.setProperty('display', 'block', 'important');
-            }
-            
-            // Force positioning for Edge
-            this.modal.style.setProperty('position', 'fixed', 'important');
-            this.modal.style.setProperty('top', '0', 'important');
-            this.modal.style.setProperty('left', '0', 'important');
-            this.modal.style.setProperty('width', '100%', 'important');
-            this.modal.style.setProperty('height', '100%', 'important');
-            this.modal.style.setProperty('z-index', '999999', 'important');
-            
-            // Force modal content positioning
-            const modalContent = this.modal.querySelector('.modal-content');
-            if (modalContent) {
-                modalContent.style.setProperty('position', 'absolute', 'important');
-                modalContent.style.setProperty('top', '50%', 'important');
-                modalContent.style.setProperty('left', '50%', 'important');
-                modalContent.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-                modalContent.style.setProperty('z-index', '1000000', 'important');
-            }
-        }, 10);
         
         // Focus the first input
         setTimeout(() => {
-            const firstInput = this.modal.querySelector('input[type="text"]');
+            const targetModal = this.edgeModal || this.modal;
+            const firstInput = targetModal.querySelector('input[type="text"]');
             if (firstInput) firstInput.focus();
         }, 100);
     }
 
     hide() {
+        // Handle Edge modal
+        if (this.edgeModal) {
+            document.body.removeChild(this.edgeModal);
+            this.edgeModal = null;
+        }
+        
         this.modal.classList.remove('active');
         // Clear any inline display style
         this.modal.style.display = '';
@@ -185,11 +221,17 @@ export class PageSettingsModal {
             }
         }
 
-        // Populate form fields
-        document.getElementById('page-name').value = this.pageData.pageName || '';
-        document.getElementById('page-title').value = this.pageData.pageTitle || '';
-        document.getElementById('page-css').value = this.pageData.customCSS || '';
-        document.getElementById('page-javascript').value = this.pageData.customJavaScript || '';
+        // Populate form fields in the active modal
+        const targetModal = this.edgeModal || document;
+        const pageName = targetModal.querySelector('#page-name');
+        const pageTitle = targetModal.querySelector('#page-title'); 
+        const pageCSS = targetModal.querySelector('#page-css');
+        const pageJS = targetModal.querySelector('#page-javascript');
+        
+        if (pageName) pageName.value = this.pageData.pageName || '';
+        if (pageTitle) pageTitle.value = this.pageData.pageTitle || '';
+        if (pageCSS) pageCSS.value = this.pageData.customCSS || '';
+        if (pageJS) pageJS.value = this.pageData.customJavaScript || '';
 
         // Apply stored styles and scripts on load
         this.applyCustomStyles();
@@ -240,5 +282,154 @@ export class PageSettingsModal {
     setPageData(data) {
         this.pageData = { ...data };
         this.loadPageData();
+    }
+    
+    attachEdgeModalListeners(edgeContent) {
+        // Close button
+        const closeBtn = edgeContent.querySelector('.modal-close');
+        if (closeBtn) closeBtn.addEventListener('click', () => this.hide());
+        
+        // Tab buttons
+        const tabBtns = edgeContent.querySelectorAll('.tab-btn');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tabName = e.target.dataset.tab;
+                this.switchTab(tabName, this.edgeModal);
+            });
+        });
+        
+        // Save button
+        const saveBtn = edgeContent.querySelector('.btn-primary');
+        if (saveBtn) saveBtn.addEventListener('click', () => this.savePageData(this.edgeModal));
+        
+        // Cancel button  
+        const cancelBtn = edgeContent.querySelector('.btn-cancel');
+        if (cancelBtn) cancelBtn.addEventListener('click', () => this.hide());
+        
+        // Close on background click
+        this.edgeModal.addEventListener('click', (e) => {
+            if (e.target === this.edgeModal) {
+                this.hide();
+            }
+        });
+        
+        // Close on Escape key
+        const escapeHandler = (e) => {
+            if (e.key === 'Escape' && this.edgeModal) {
+                this.hide();
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+    }
+    
+    savePageData(targetModal = null) {
+        const modal = targetModal || this.modal;
+        
+        // Get values from form
+        this.pageData.pageName = modal.querySelector('#page-name').value;
+        this.pageData.pageTitle = modal.querySelector('#page-title').value;
+        this.pageData.customCSS = modal.querySelector('#page-css').value;
+        this.pageData.customJavaScript = modal.querySelector('#page-javascript').value;
+        
+        // Save to localStorage
+        localStorage.setItem('pageSettings', JSON.stringify(this.pageData));
+        
+        // Apply the styles and scripts
+        this.applyCustomStyles();
+        this.applyCustomJavaScript();
+        
+        // Save editor state
+        if (this.editor && this.editor.stateHistory) {
+            this.editor.stateHistory.saveState();
+        }
+        
+        // Close modal
+        this.hide();
+        
+        console.log('Page settings saved:', this.pageData);
+    }
+    
+    addEdgeDragFunctionality(modalContent) {
+        const modalHeader = modalContent.querySelector('.modal-header');
+        if (!modalHeader) return;
+        
+        let isDragging = false;
+        let startX, startY, startLeft, startTop;
+        
+        modalHeader.style.cursor = 'move';
+        
+        modalHeader.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('modal-close')) return;
+            
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = parseInt(modalContent.style.marginLeft) || -300;
+            startTop = parseInt(modalContent.style.marginTop) || -200;
+            
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            
+            modalContent.style.marginLeft = (startLeft + deltaX) + 'px';
+            modalContent.style.marginTop = (startTop + deltaY) + 'px';
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+    }
+    
+    addSyntaxHighlightingToTextareas(edgeContent) {
+        const textareas = edgeContent.querySelectorAll('#page-css, #page-javascript');
+        
+        textareas.forEach(textarea => {
+            // Create the container structure
+            const container = document.createElement('div');
+            container.className = 'code-editor-container';
+            
+            const highlight = document.createElement('div');
+            highlight.className = 'code-editor-highlight';
+            highlight.id = textarea.id + '-highlight';
+            
+            // Insert container before textarea
+            textarea.parentNode.insertBefore(container, textarea);
+            
+            // Move textarea into container and add highlight div
+            container.appendChild(highlight);
+            container.appendChild(textarea);
+            
+            // Set up syntax highlighting
+            const updateHighlighting = () => {
+                const code = textarea.value;
+                const language = textarea.id === 'page-css' ? 'css' : 'javascript';
+                
+                // Import highlighting functions from modals.js
+                if (typeof highlightSyntax === 'function') {
+                    highlight.innerHTML = highlightSyntax(code, language);
+                } else {
+                    highlight.textContent = code;
+                }
+                
+                // Sync scroll positions
+                highlight.scrollTop = textarea.scrollTop;
+                highlight.scrollLeft = textarea.scrollLeft;
+            };
+            
+            textarea.addEventListener('input', updateHighlighting);
+            textarea.addEventListener('scroll', () => {
+                highlight.scrollTop = textarea.scrollTop;
+                highlight.scrollLeft = textarea.scrollLeft;
+            });
+            
+            // Initial highlighting
+            setTimeout(updateHighlighting, 100);
+        });
     }
 }

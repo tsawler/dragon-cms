@@ -1,3 +1,163 @@
+// Syntax highlighting utility functions
+function highlightSyntax(code, language = 'html') {
+    if (language === 'html') {
+        return highlightHTML(code);
+    } else if (language === 'css') {
+        return highlightCSS(code);
+    } else if (language === 'javascript') {
+        return highlightJavaScript(code);
+    }
+    return escapeHTML(code);
+}
+
+function escapeHTML(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function highlightHTML(code) {
+    return code
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        // Comments
+        .replace(/(&lt;!--.*?--&gt;)/g, '<span class="syntax-comment">$1</span>')
+        // Tags
+        .replace(/(&lt;\/?)([\w-]+)([^&]*?)(&gt;)/g, (match, open, tagName, attrs, close) => {
+            const highlightedAttrs = attrs.replace(/([\w-]+)(=)([&"'][^&"']*[&"'])/g, 
+                '<span class="syntax-attribute">$1</span>$2<span class="syntax-string">$3</span>');
+            return `${open}<span class="syntax-tag">${tagName}</span>${highlightedAttrs}${close}`;
+        });
+}
+
+function highlightCSS(code) {
+    return code
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        // Comments
+        .replace(/(\/\*.*?\*\/)/g, '<span class="syntax-comment">$1</span>')
+        // Selectors
+        .replace(/^([^{]+)(\{)/gm, '<span class="syntax-css-selector">$1</span>$2')
+        // Properties and values
+        .replace(/([\w-]+)(\s*:\s*)([^;]+)(;)/g, 
+            '<span class="syntax-css-property">$1</span>$2<span class="syntax-css-value">$3</span>$4');
+}
+
+function highlightJavaScript(code) {
+    const keywords = ['var', 'let', 'const', 'function', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'default', 'break', 'continue', 'return', 'try', 'catch', 'finally', 'throw', 'new', 'this', 'class', 'extends', 'super'];
+    
+    // First escape HTML
+    let result = code
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    
+    // Create a list to store protected ranges (strings and comments)
+    const protectedRanges = [];
+    
+    // Find and protect strings first
+    const stringRegex = /(['"`])((?:\\.|(?!\1)[^\\])*?)\1/g;
+    let match;
+    while ((match = stringRegex.exec(result)) !== null) {
+        const placeholder = `__STRING_${protectedRanges.length}__`;
+        protectedRanges.push(`<span class="syntax-js-string">${match[0]}</span>`);
+        result = result.substring(0, match.index) + placeholder + result.substring(match.index + match[0].length);
+        stringRegex.lastIndex = match.index + placeholder.length;
+    }
+    
+    // Find and protect comments
+    const commentRegex1 = /\/\/.*$/gm;
+    while ((match = commentRegex1.exec(result)) !== null) {
+        const placeholder = `__COMMENT_${protectedRanges.length}__`;
+        protectedRanges.push(`<span class="syntax-js-comment">${match[0]}</span>`);
+        result = result.substring(0, match.index) + placeholder + result.substring(match.index + match[0].length);
+        commentRegex1.lastIndex = match.index + placeholder.length;
+    }
+    
+    const commentRegex2 = /\/\*.*?\*\//g;
+    while ((match = commentRegex2.exec(result)) !== null) {
+        const placeholder = `__COMMENT_${protectedRanges.length}__`;
+        protectedRanges.push(`<span class="syntax-js-comment">${match[0]}</span>`);
+        result = result.substring(0, match.index) + placeholder + result.substring(match.index + match[0].length);
+        commentRegex2.lastIndex = match.index + placeholder.length;
+    }
+    
+    // Apply keywords
+    result = result.replace(new RegExp(`\\b(${keywords.join('|')})\\b`, 'g'), '<span class="syntax-js-keyword">$1</span>');
+    
+    // Apply function names
+    result = result.replace(/\b(\w+)(?=\s*\()/g, '<span class="syntax-js-function">$1</span>');
+    
+    // Restore protected ranges
+    protectedRanges.forEach((replacement, index) => {
+        result = result.replace(`__STRING_${index}__`, replacement);
+        result = result.replace(`__COMMENT_${index}__`, replacement);
+    });
+    
+    return result;
+}
+
+function detectLanguage(code) {
+    if (code.includes('<style') || (code.includes('{') && code.includes(':') && code.includes(';'))) {
+        return 'css';
+    }
+    if (code.includes('function') || code.includes('var ') || code.includes('let ') || code.includes('const ')) {
+        return 'javascript';
+    }
+    return 'html';
+}
+
+// Make syntax highlighting functions globally available
+window.highlightSyntax = highlightSyntax;
+window.detectLanguage = detectLanguage;
+
+function formatHTML(html) {
+    // Simple HTML formatter that adds proper indentation and line breaks
+    let formatted = '';
+    let indent = 0;
+    const indentSize = 2;
+    
+    // Split by tags while preserving them
+    const tokens = html.split(/(<[^>]*>)/);
+    
+    for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i].trim();
+        if (!token) continue;
+        
+        if (token.startsWith('<')) {
+            // It's a tag
+            if (token.startsWith('</')) {
+                // Closing tag - decrease indent before adding
+                indent = Math.max(0, indent - indentSize);
+                formatted += ' '.repeat(indent) + token + '\n';
+            } else if (token.endsWith('/>')) {
+                // Self-closing tag
+                formatted += ' '.repeat(indent) + token + '\n';
+            } else {
+                // Opening tag - add then increase indent
+                formatted += ' '.repeat(indent) + token + '\n';
+                
+                // Don't increase indent for inline tags
+                const tagName = token.match(/<(\w+)/);
+                const inlineTags = ['span', 'a', 'strong', 'em', 'b', 'i', 'code', 'small'];
+                if (tagName && !inlineTags.includes(tagName[1].toLowerCase())) {
+                    indent += indentSize;
+                }
+            }
+        } else {
+            // It's content
+            if (token.length > 0) {
+                formatted += ' '.repeat(indent) + token + '\n';
+            }
+        }
+    }
+    
+    // Clean up extra newlines and return
+    return formatted.replace(/\n\s*\n/g, '\n').trim();
+}
+
 // Common utility function for Edge modal dragging
 function addEdgeDragFunctionality(modalContent) {
     const modalHeader = modalContent.querySelector('.modal-header');
@@ -285,7 +445,10 @@ export class CodeEditorModal {
                 <div class="modal-body">
                     <div class="form-group">
                         <label>HTML Code</label>
-                        <textarea class="code-editor-textarea" id="html-code-editor" placeholder="Enter HTML code here..."></textarea>
+                        <div class="code-editor-container">
+                            <div class="code-editor-highlight" id="html-code-highlight"></div>
+                            <textarea class="code-editor-textarea" id="html-code-editor" placeholder="Enter HTML code here..."></textarea>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -303,6 +466,31 @@ export class CodeEditorModal {
         this.modal.querySelector('.modal-close').addEventListener('click', () => this.close());
         this.modal.querySelector('.modal-cancel').addEventListener('click', () => this.close());
         this.modal.querySelector('.modal-save').addEventListener('click', () => this.save());
+        
+        // Add syntax highlighting listeners
+        const textarea = this.modal.querySelector('#html-code-editor');
+        const highlightDiv = this.modal.querySelector('#html-code-highlight');
+        
+        if (textarea && highlightDiv) {
+            const updateHighlighting = () => {
+                const code = textarea.value;
+                const language = detectLanguage(code);
+                highlightDiv.innerHTML = highlightSyntax(code, language);
+                
+                // Sync scroll positions
+                highlightDiv.scrollTop = textarea.scrollTop;
+                highlightDiv.scrollLeft = textarea.scrollLeft;
+            };
+            
+            textarea.addEventListener('input', updateHighlighting);
+            textarea.addEventListener('scroll', () => {
+                highlightDiv.scrollTop = textarea.scrollTop;
+                highlightDiv.scrollLeft = textarea.scrollLeft;
+            });
+            
+            // Store the update function for use in open method
+            this.updateHighlighting = updateHighlighting;
+        }
     }
 
     open(element) {
@@ -367,6 +555,28 @@ export class CodeEditorModal {
             // Add simple drag functionality for Edge modal
             addEdgeDragFunctionality(edgeContent);
             
+            // Add syntax highlighting to Edge modal  
+            const edgeTextarea = edgeContent.querySelector('#html-code-editor');
+            const edgeHighlightDiv = edgeContent.querySelector('#html-code-highlight');
+            
+            if (edgeTextarea && edgeHighlightDiv) {
+                const updateEdgeHighlighting = () => {
+                    const code = edgeTextarea.value;
+                    const language = detectLanguage(code);
+                    edgeHighlightDiv.innerHTML = highlightSyntax(code, language);
+                    
+                    // Sync scroll positions
+                    edgeHighlightDiv.scrollTop = edgeTextarea.scrollTop;
+                    edgeHighlightDiv.scrollLeft = edgeTextarea.scrollLeft;
+                };
+                
+                edgeTextarea.addEventListener('input', updateEdgeHighlighting);
+                edgeTextarea.addEventListener('scroll', () => {
+                    edgeHighlightDiv.scrollTop = edgeTextarea.scrollTop;
+                    edgeHighlightDiv.scrollLeft = edgeTextarea.scrollLeft;
+                });
+            }
+            
         } else {
             // Normal browser behavior
             this.modal.offsetHeight;
@@ -377,13 +587,35 @@ export class CodeEditorModal {
         const clone = element.cloneNode(true);
         clone.querySelectorAll('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon, .resizer-handle').forEach(el => el.remove());
         
+        // Remove internal editor attributes for cleaner HTML display
+        clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+        clone.querySelectorAll('[draggable]').forEach(el => el.removeAttribute('draggable'));
+        clone.querySelectorAll('[data-block-id]').forEach(el => el.removeAttribute('data-block-id'));
+        clone.querySelectorAll('[data-snippet-id]').forEach(el => el.removeAttribute('data-snippet-id'));
+        clone.querySelectorAll('[data-left-index]').forEach(el => el.removeAttribute('data-left-index'));
+        clone.querySelectorAll('[data-right-index]').forEach(el => el.removeAttribute('data-right-index'));
+        
         // Set the value in the appropriate modal
         const cleanHTML = clone.innerHTML.trim();
+        const formattedHTML = formatHTML(cleanHTML);
+        
         if (this.edgeModal) {
             const textArea = this.edgeModal.querySelector('#html-code-editor');
-            if (textArea) textArea.value = cleanHTML;
+            if (textArea) {
+                textArea.value = formattedHTML;
+                // Add syntax highlighting for Edge modal
+                const highlightDiv = this.edgeModal.querySelector('#html-code-highlight');
+                if (highlightDiv) {
+                    const language = detectLanguage(formattedHTML);
+                    highlightDiv.innerHTML = highlightSyntax(formattedHTML, language);
+                }
+            }
         } else {
-            document.getElementById('html-code-editor').value = cleanHTML;
+            document.getElementById('html-code-editor').value = formattedHTML;
+            // Trigger initial syntax highlighting for regular modal
+            if (this.updateHighlighting) {
+                this.updateHighlighting();
+            }
         }
         
         // Focus the textarea
@@ -431,6 +663,18 @@ export class CodeEditorModal {
             
             // Update the element with new HTML but keep controls
             this.targetElement.innerHTML = controls.join('') + newHTML;
+            
+            // Re-enable editor functionality
+            this.editor.enableTextEditing();
+            this.editor.makeDraggable();
+            
+            // Re-apply any data attributes that the editor needs
+            this.targetElement.querySelectorAll('.editor-snippet').forEach(snippet => {
+                snippet.draggable = true;
+            });
+            this.targetElement.querySelectorAll('.block').forEach(block => {
+                block.draggable = true;
+            });
             
             this.editor.stateHistory.saveState();
         }
