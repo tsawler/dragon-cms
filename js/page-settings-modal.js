@@ -62,7 +62,7 @@ export class PageSettingsModal {
 
         // Close on Escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.modal.style.display === 'flex') {
+            if (e.key === 'Escape' && this.modal.classList.contains('active')) {
                 this.hide();
             }
         });
@@ -81,9 +81,46 @@ export class PageSettingsModal {
     show() {
         this.loadPageData();
         
-        // Clear any inline display style that might be preventing the modal from showing
-        this.modal.style.display = '';
-        this.modal.style.display = 'flex';
+        // Force a reflow before showing modal for Edge compatibility
+        this.modal.offsetHeight;
+        this.modal.classList.add('active');
+        
+        // Additional Edge compatibility - force redraw
+        const isEdge = window.navigator.userAgent.indexOf('Edge') > -1 || 
+                      window.navigator.userAgent.indexOf('Edg') > -1 ||
+                      window.navigator.userAgent.indexOf('EdgeHTML') > -1;
+        
+        if (isEdge) {
+            this.modal.style.display = 'block';
+            this.modal.style.setProperty('display', 'block', 'important');
+            // Force another reflow
+            this.modal.offsetHeight;
+        }
+        
+        // Ultimate fallback - set display to block regardless of browser
+        setTimeout(() => {
+            if (window.getComputedStyle(this.modal).display === 'none') {
+                this.modal.style.setProperty('display', 'block', 'important');
+            }
+            
+            // Force positioning for Edge
+            this.modal.style.setProperty('position', 'fixed', 'important');
+            this.modal.style.setProperty('top', '0', 'important');
+            this.modal.style.setProperty('left', '0', 'important');
+            this.modal.style.setProperty('width', '100%', 'important');
+            this.modal.style.setProperty('height', '100%', 'important');
+            this.modal.style.setProperty('z-index', '999999', 'important');
+            
+            // Force modal content positioning
+            const modalContent = this.modal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.style.setProperty('position', 'absolute', 'important');
+                modalContent.style.setProperty('top', '50%', 'important');
+                modalContent.style.setProperty('left', '50%', 'important');
+                modalContent.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+                modalContent.style.setProperty('z-index', '1000000', 'important');
+            }
+        }, 10);
         
         // Focus the first input
         setTimeout(() => {
@@ -93,7 +130,9 @@ export class PageSettingsModal {
     }
 
     hide() {
-        this.modal.style.display = 'none';
+        this.modal.classList.remove('active');
+        // Clear any inline display style
+        this.modal.style.display = '';
         
         // Reset modal position if it was dragged
         const modalContent = this.modal.querySelector('.modal-content');

@@ -327,8 +327,8 @@ class Dragon {
     }
 
     closeModal(modal) {
-        // Hide the modal
-        modal.style.display = 'none';
+        // Hide the modal using class toggle for Edge compatibility
+        modal.classList.remove('active');
         
         // Reset the modal content position if it was dragged
         const modalContent = modal.querySelector('.modal-content');

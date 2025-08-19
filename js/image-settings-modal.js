@@ -176,12 +176,35 @@ export class ImageSettingsModal {
     open(container) {
         this.targetContainer = container;
         this.loadCurrentSettings();
-        this.modal.style.display = 'flex';
+        // Force a reflow before showing modal for Edge compatibility
+        this.modal.offsetHeight;
+        this.modal.classList.add('active');
+        
+        // Additional Edge compatibility - force redraw
+        const isEdge = window.navigator.userAgent.indexOf('Edge') > -1 || 
+                      window.navigator.userAgent.indexOf('Edg') > -1 ||
+                      window.navigator.userAgent.indexOf('EdgeHTML') > -1;
+        
+        if (isEdge) {
+            this.modal.style.display = 'block';
+            this.modal.style.setProperty('display', 'block', 'important');
+            // Force another reflow
+            this.modal.offsetHeight;
+        }
+        
+        // Ultimate fallback - set display to block regardless of browser
+        setTimeout(() => {
+            if (window.getComputedStyle(this.modal).display === 'none') {
+                this.modal.style.setProperty('display', 'block', 'important');
+            }
+        }, 10);
         this.updatePreview();
     }
 
     close() {
-        this.modal.style.display = 'none';
+        this.modal.classList.remove('active');
+        // Clear any inline display style
+        this.modal.style.display = '';
         this.targetContainer = null;
     }
 

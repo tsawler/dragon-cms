@@ -1,3 +1,40 @@
+// Common utility function for Edge modal dragging
+function addEdgeDragFunctionality(modalContent) {
+    const modalHeader = modalContent.querySelector('.modal-header');
+    if (!modalHeader) return;
+    
+    let isDragging = false;
+    let startX, startY, startLeft, startTop;
+    
+    modalHeader.style.cursor = 'move';
+    
+    modalHeader.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('modal-close')) return;
+        
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = parseInt(modalContent.style.marginLeft) || -300;
+        startTop = parseInt(modalContent.style.marginTop) || -200;
+        
+        e.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+        
+        modalContent.style.marginLeft = (startLeft + deltaX) + 'px';
+        modalContent.style.marginTop = (startTop + deltaY) + 'px';
+    });
+    
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+}
+
 export class StyleEditorModal {
     constructor(editor) {
         this.editor = editor;
@@ -94,9 +131,70 @@ export class StyleEditorModal {
     open(element) {
         this.targetElement = element;
         
-        // Clear any inline display style that might be preventing the modal from showing
-        this.modal.style.display = '';
-        this.modal.classList.add('active');
+        // Edge compatibility - create a completely new modal
+        const isEdge = window.navigator.userAgent.indexOf('Edge') > -1 || 
+                      window.navigator.userAgent.indexOf('Edg') > -1 ||
+                      window.navigator.userAgent.indexOf('EdgeHTML') > -1;
+        
+        if (isEdge) {
+            // Hide the original modal
+            this.modal.style.display = 'none';
+            
+            // Create a new, simple modal for Edge
+            this.edgeModal = document.createElement('div');
+            this.edgeModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.5);
+                z-index: 999999;
+                display: block;
+            `;
+            
+            const edgeContent = document.createElement('div');
+            edgeContent.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 600px;
+                max-width: 90%;
+                background: white;
+                border-radius: 8px;
+                padding: 2rem;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                margin-left: -300px;
+                margin-top: -200px;
+                z-index: 1000000;
+            `;
+            
+            // Copy the content from the original modal
+            const originalContent = this.modal.querySelector('.modal-content');
+            if (originalContent) {
+                edgeContent.innerHTML = originalContent.innerHTML;
+            }
+            
+            this.edgeModal.appendChild(edgeContent);
+            document.body.appendChild(this.edgeModal);
+            
+            // Attach event listeners to the new modal
+            const closeBtn = edgeContent.querySelector('.modal-close');
+            const cancelBtn = edgeContent.querySelector('.modal-cancel');
+            const saveBtn = edgeContent.querySelector('.modal-save');
+            
+            if (closeBtn) closeBtn.addEventListener('click', () => this.close());
+            if (cancelBtn) cancelBtn.addEventListener('click', () => this.close());
+            if (saveBtn) saveBtn.addEventListener('click', () => this.save());
+            
+            // Add simple drag functionality for Edge modal
+            addEdgeDragFunctionality(edgeContent);
+            
+        } else {
+            // Normal browser behavior
+            this.modal.offsetHeight;
+            this.modal.classList.add('active');
+        }
         
         const styles = window.getComputedStyle(element);
         this.modal.querySelector('.style-padding').value = parseInt(styles.padding) || '';
@@ -111,7 +209,15 @@ export class StyleEditorModal {
     }
 
     close() {
+        // Handle Edge modal
+        if (this.edgeModal) {
+            document.body.removeChild(this.edgeModal);
+            this.edgeModal = null;
+        }
+        
         this.modal.classList.remove('active');
+        // Clear any inline display style
+        this.modal.style.display = '';
         this.targetElement = null;
         
         // Reset modal position if it was dragged
@@ -123,17 +229,20 @@ export class StyleEditorModal {
 
     save() {
         if (this.targetElement) {
-            const padding = this.modal.querySelector('.style-padding').value;
-            const margin = this.modal.querySelector('.style-margin').value;
-            const borderWidth = this.modal.querySelector('.style-border-width').value;
-            const borderColor = this.modal.querySelector('.style-border-color').value;
-            const borderRadius = this.modal.querySelector('.style-border-radius').value;
-            const background = this.modal.querySelector('.style-background').value;
-            const width = this.modal.querySelector('.style-width').value;
-            const height = this.modal.querySelector('.style-height').value;
-            const transition = this.modal.querySelector('.style-transition').value;
-            const visibility = this.modal.querySelector('.style-visibility').value;
-            const display = this.modal.querySelector('.style-display').value;
+            // Use Edge modal if it exists, otherwise use regular modal
+            const modalToUse = this.edgeModal || this.modal;
+            
+            const padding = modalToUse.querySelector('.style-padding').value;
+            const margin = modalToUse.querySelector('.style-margin').value;
+            const borderWidth = modalToUse.querySelector('.style-border-width').value;
+            const borderColor = modalToUse.querySelector('.style-border-color').value;
+            const borderRadius = modalToUse.querySelector('.style-border-radius').value;
+            const background = modalToUse.querySelector('.style-background').value;
+            const width = modalToUse.querySelector('.style-width').value;
+            const height = modalToUse.querySelector('.style-height').value;
+            const transition = modalToUse.querySelector('.style-transition').value;
+            const visibility = modalToUse.querySelector('.style-visibility').value;
+            const display = modalToUse.querySelector('.style-display').value;
 
             if (padding) this.targetElement.style.padding = padding + 'px';
             if (margin) this.targetElement.style.margin = margin + 'px';
@@ -199,24 +308,104 @@ export class CodeEditorModal {
     open(element) {
         this.targetElement = element;
         
-        // Clear any inline display style that might be preventing the modal from showing
-        this.modal.style.display = '';
-        this.modal.classList.add('active');
+        // Edge compatibility - create a completely new modal
+        const isEdge = window.navigator.userAgent.indexOf('Edge') > -1 || 
+                      window.navigator.userAgent.indexOf('Edg') > -1 ||
+                      window.navigator.userAgent.indexOf('EdgeHTML') > -1;
+        
+        if (isEdge) {
+            // Hide the original modal
+            this.modal.style.display = 'none';
+            
+            // Create a new, simple modal for Edge
+            this.edgeModal = document.createElement('div');
+            this.edgeModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.5);
+                z-index: 999999;
+                display: block;
+            `;
+            
+            const edgeContent = document.createElement('div');
+            edgeContent.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 600px;
+                max-width: 90%;
+                background: white;
+                border-radius: 8px;
+                padding: 2rem;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                margin-left: -300px;
+                margin-top: -200px;
+                z-index: 1000000;
+            `;
+            
+            // Copy the content from the original modal
+            const originalContent = this.modal.querySelector('.modal-content');
+            if (originalContent) {
+                edgeContent.innerHTML = originalContent.innerHTML;
+            }
+            
+            this.edgeModal.appendChild(edgeContent);
+            document.body.appendChild(this.edgeModal);
+            
+            // Attach event listeners to the new modal
+            const closeBtn = edgeContent.querySelector('.modal-close');
+            const cancelBtn = edgeContent.querySelector('.modal-cancel');
+            const saveBtn = edgeContent.querySelector('.modal-save');
+            
+            if (closeBtn) closeBtn.addEventListener('click', () => this.close());
+            if (cancelBtn) cancelBtn.addEventListener('click', () => this.close());
+            if (saveBtn) saveBtn.addEventListener('click', () => this.save());
+            
+            // Add simple drag functionality for Edge modal
+            addEdgeDragFunctionality(edgeContent);
+            
+        } else {
+            // Normal browser behavior
+            this.modal.offsetHeight;
+            this.modal.classList.add('active');
+        }
         
         // Get the inner HTML without the control buttons
         const clone = element.cloneNode(true);
         clone.querySelectorAll('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon').forEach(el => el.remove());
         
-        document.getElementById('html-code-editor').value = clone.innerHTML;
+        // Set the value in the appropriate modal
+        if (this.edgeModal) {
+            const textArea = this.edgeModal.querySelector('#html-code-editor');
+            if (textArea) textArea.value = clone.innerHTML;
+        } else {
+            document.getElementById('html-code-editor').value = clone.innerHTML;
+        }
         
         // Focus the textarea
         setTimeout(() => {
-            document.getElementById('html-code-editor').focus();
+            if (this.edgeModal) {
+                const textArea = this.edgeModal.querySelector('#html-code-editor');
+                if (textArea) textArea.focus();
+            } else {
+                document.getElementById('html-code-editor').focus();
+            }
         }, 100);
     }
 
     close() {
+        // Handle Edge modal
+        if (this.edgeModal) {
+            document.body.removeChild(this.edgeModal);
+            this.edgeModal = null;
+        }
+        
         this.modal.classList.remove('active');
+        // Clear any inline display style
+        this.modal.style.display = '';
         this.targetElement = null;
         
         // Reset modal position if it was dragged
@@ -228,7 +417,10 @@ export class CodeEditorModal {
 
     save() {
         if (this.targetElement) {
-            const newHTML = document.getElementById('html-code-editor').value;
+            // Use Edge modal if it exists, otherwise use regular modal
+            const modalToUse = this.edgeModal || this.modal;
+            const textArea = modalToUse.querySelector('#html-code-editor');
+            const newHTML = textArea ? textArea.value : document.getElementById('html-code-editor').value;
             
             // Preserve the control buttons by collecting them first
             const controls = [];
@@ -259,7 +451,7 @@ export class ColumnSettingsModal {
         this.modal = document.createElement('div');
         this.modal.className = 'modal';
         this.modal.innerHTML = `
-            <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-content" style="width: 400px; max-width: 90%;">
                 <div class="modal-header">
                     <h2>Column Settings</h2>
                     <button class="modal-close">&times;</button>
@@ -322,14 +514,105 @@ export class ColumnSettingsModal {
         this.tempColumns = this.getCurrentColumns();
         this.updatePreview();
         
-        // Clear any inline display style that might be preventing the modal from showing
-        this.modal.style.display = '';
-        this.modal.classList.add('active');
+        // Edge compatibility - create a completely new modal
+        const isEdge = window.navigator.userAgent.indexOf('Edge') > -1 || 
+                      window.navigator.userAgent.indexOf('Edg') > -1 ||
+                      window.navigator.userAgent.indexOf('EdgeHTML') > -1;
+        
+        if (isEdge) {
+            // Hide the original modal
+            this.modal.style.display = 'none';
+            
+            // Create a new, simple modal for Edge
+            this.edgeModal = document.createElement('div');
+            this.edgeModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.5);
+                z-index: 999999;
+                display: block;
+            `;
+            
+            const edgeContent = document.createElement('div');
+            edgeContent.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 400px;
+                max-width: 90%;
+                background: white;
+                border-radius: 8px;
+                padding: 2rem;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                margin-left: -200px;
+                margin-top: -150px;
+                z-index: 1000000;
+                cursor: auto;
+            `;
+            
+            // Copy the content from the original modal
+            const originalContent = this.modal.querySelector('.modal-content');
+            if (originalContent) {
+                edgeContent.innerHTML = originalContent.innerHTML;
+            }
+            
+            this.edgeModal.appendChild(edgeContent);
+            document.body.appendChild(this.edgeModal);
+            
+            // Attach event listeners to the new modal - Column Settings specific
+            const closeBtn = edgeContent.querySelector('.modal-close');
+            const cancelBtn = edgeContent.querySelector('.modal-cancel');
+            const applyBtn = edgeContent.querySelector('.modal-apply');
+            const addBtn = edgeContent.querySelector('#add-column-btn');
+            const removeBtn = edgeContent.querySelector('#remove-column-btn');
+            
+            if (closeBtn) closeBtn.addEventListener('click', () => this.close());
+            if (cancelBtn) cancelBtn.addEventListener('click', () => this.close());
+            if (applyBtn) applyBtn.addEventListener('click', () => this.applyChanges());
+            if (addBtn) addBtn.addEventListener('click', () => this.addColumn());
+            if (removeBtn) removeBtn.addEventListener('click', () => this.removeColumn());
+            
+            // Close on background click
+            this.edgeModal.addEventListener('click', (e) => {
+                if (e.target === this.edgeModal) {
+                    this.close();
+                }
+            });
+            
+            // Close on Escape key
+            const escapeHandler = (e) => {
+                if (e.key === 'Escape' && this.edgeModal) {
+                    this.close();
+                    document.removeEventListener('keydown', escapeHandler);
+                }
+            };
+            document.addEventListener('keydown', escapeHandler);
+            
+            // Add simple drag functionality for Edge modal
+            addEdgeDragFunctionality(edgeContent);
+            
+        } else {
+            // Normal browser behavior
+            this.modal.offsetHeight;
+            this.modal.classList.add('active');
+        }
     }
 
     close() {
         console.log('ColumnSettingsModal.close() called');
+        
+        // Handle Edge modal
+        if (this.edgeModal) {
+            document.body.removeChild(this.edgeModal);
+            this.edgeModal = null;
+        }
+        
         this.modal.classList.remove('active');
+        // Clear any inline display style
+        this.modal.style.display = '';
         this.targetBlock = null;
         this.tempColumns = [];
         
@@ -384,9 +667,12 @@ export class ColumnSettingsModal {
     }
 
     updatePreview() {
-        const countSpan = this.modal.querySelector('#column-count');
-        const visualDiv = this.modal.querySelector('#column-visual');
-        const removeBtn = this.modal.querySelector('#remove-column-btn');
+        // Use Edge modal if it exists, otherwise use regular modal
+        const modalToUse = this.edgeModal || this.modal;
+        
+        const countSpan = modalToUse.querySelector('#column-count');
+        const visualDiv = modalToUse.querySelector('#column-visual');
+        const removeBtn = modalToUse.querySelector('#remove-column-btn');
         
         countSpan.textContent = this.tempColumns.length;
         
@@ -545,13 +831,82 @@ export class ConfirmationModal {
         this.modal.querySelector('.confirm-modal-title').textContent = title;
         this.modal.querySelector('.confirm-modal-message').textContent = message;
         
-        // Clear any inline display style that might be preventing the modal from showing
-        this.modal.style.display = '';
-        this.modal.classList.add('active');
+        // Edge compatibility - create a completely new modal
+        const isEdge = window.navigator.userAgent.indexOf('Edge') > -1 || 
+                      window.navigator.userAgent.indexOf('Edg') > -1 ||
+                      window.navigator.userAgent.indexOf('EdgeHTML') > -1;
+        
+        if (isEdge) {
+            // Hide the original modal
+            this.modal.style.display = 'none';
+            
+            // Create a new, simple modal for Edge
+            this.edgeModal = document.createElement('div');
+            this.edgeModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.5);
+                z-index: 999999;
+                display: block;
+            `;
+            
+            const edgeContent = document.createElement('div');
+            edgeContent.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 600px;
+                max-width: 90%;
+                background: white;
+                border-radius: 8px;
+                padding: 2rem;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                margin-left: -300px;
+                margin-top: -200px;
+                z-index: 1000000;
+            `;
+            
+            // Copy the content from the original modal
+            const originalContent = this.modal.querySelector('.modal-content');
+            if (originalContent) {
+                edgeContent.innerHTML = originalContent.innerHTML;
+            }
+            
+            this.edgeModal.appendChild(edgeContent);
+            document.body.appendChild(this.edgeModal);
+            
+            // Attach event listeners to the new modal
+            const closeBtn = edgeContent.querySelector('.modal-close');
+            const cancelBtn = edgeContent.querySelector('.modal-cancel');
+            const saveBtn = edgeContent.querySelector('.modal-save');
+            
+            if (closeBtn) closeBtn.addEventListener('click', () => this.close());
+            if (cancelBtn) cancelBtn.addEventListener('click', () => this.close());
+            if (saveBtn) saveBtn.addEventListener('click', () => this.save());
+            
+            // Add simple drag functionality for Edge modal
+            addEdgeDragFunctionality(edgeContent);
+            
+        } else {
+            // Normal browser behavior
+            this.modal.offsetHeight;
+            this.modal.classList.add('active');
+        }
     }
 
     close() {
+        // Handle Edge modal
+        if (this.edgeModal) {
+            document.body.removeChild(this.edgeModal);
+            this.edgeModal = null;
+        }
+        
         this.modal.classList.remove('active');
+        // Clear any inline display style
+        this.modal.style.display = '';
         this.onConfirm = null;
         this.onCancel = null;
         

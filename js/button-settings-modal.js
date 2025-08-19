@@ -212,14 +212,20 @@ export class ButtonSettingsModal {
         document.getElementById('border-radius-value').textContent = borderRadius;
         document.getElementById('button-size').value = detectedSize;
         
-        // Clear any inline display style that might be preventing the modal from showing
-        this.modal.style.display = '';
-        this.modal.style.opacity = '1';  // Force opacity to 1
+        // Force a reflow before adding active class for Edge compatibility
+        this.modal.offsetHeight;
         this.modal.classList.add('active');
+        
+        // Additional Edge compatibility - force redraw
+        if (window.navigator.userAgent.indexOf('Edge') > -1) {
+            this.modal.style.display = 'block';
+        }
     }
 
     close() {
         this.modal.classList.remove('active');
+        // Clear any inline display style
+        this.modal.style.display = '';
         this.targetButton = null;
         this.originalValues = null;
         

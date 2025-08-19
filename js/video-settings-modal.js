@@ -44,7 +44,14 @@ export class VideoSettingsModal {
 
     open(snippet) {
         this.targetSnippet = snippet;
+        // Force a reflow before adding active class for Edge compatibility
+        this.modal.offsetHeight;
         this.modal.classList.add('active');
+        
+        // Additional Edge compatibility - force redraw
+        if (window.navigator.userAgent.indexOf('Edge') > -1) {
+            this.modal.style.display = 'block';
+        }
         
         // Look for iframe in video container or directly in snippet
         const iframe = snippet.querySelector('.video-container iframe') || snippet.querySelector('iframe');
@@ -57,6 +64,8 @@ export class VideoSettingsModal {
 
     close() {
         this.modal.classList.remove('active');
+        // Clear any inline display style
+        this.modal.style.display = '';
         this.targetSnippet = null;
     }
 
