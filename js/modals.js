@@ -375,14 +375,15 @@ export class CodeEditorModal {
         
         // Get the inner HTML without the control buttons
         const clone = element.cloneNode(true);
-        clone.querySelectorAll('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon').forEach(el => el.remove());
+        clone.querySelectorAll('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon, .resizer-handle').forEach(el => el.remove());
         
         // Set the value in the appropriate modal
+        const cleanHTML = clone.innerHTML.trim();
         if (this.edgeModal) {
             const textArea = this.edgeModal.querySelector('#html-code-editor');
-            if (textArea) textArea.value = clone.innerHTML;
+            if (textArea) textArea.value = cleanHTML;
         } else {
-            document.getElementById('html-code-editor').value = clone.innerHTML;
+            document.getElementById('html-code-editor').value = cleanHTML;
         }
         
         // Focus the textarea
@@ -424,7 +425,7 @@ export class CodeEditorModal {
             
             // Preserve the control buttons by collecting them first
             const controls = [];
-            this.targetElement.querySelectorAll('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon').forEach(el => {
+            this.targetElement.querySelectorAll('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon, .resizer-handle').forEach(el => {
                 controls.push(el.outerHTML);
             });
             
@@ -658,7 +659,7 @@ export class ColumnSettingsModal {
         
         // Default single column
         const clone = this.targetBlock.cloneNode(true);
-        clone.querySelectorAll('.drag-handle, .edit-icon, .settings-icon, .code-icon, .delete-icon').forEach(el => el.remove());
+        clone.querySelectorAll('.drag-handle, .edit-icon, .settings-icon, .code-icon, .delete-icon, .resizer-handle').forEach(el => el.remove());
         
         return [{
             content: clone.innerHTML,

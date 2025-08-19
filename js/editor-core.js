@@ -1040,7 +1040,7 @@ export class Editor {
     getCleanHTML() {
         const clone = this.editableArea.cloneNode(true);
         // Remove all control elements
-        clone.querySelectorAll('.edit-icon, .code-icon, .delete-icon, .settings-icon, .drag-handle').forEach(el => el.remove());
+        clone.querySelectorAll('.edit-icon, .code-icon, .delete-icon, .settings-icon, .drag-handle, .resizer-handle').forEach(el => el.remove());
         
         // Get page settings
         const pageSettings = this.pageSettingsModal ? this.pageSettingsModal.getPageData() : {};
