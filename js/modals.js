@@ -621,7 +621,25 @@ export class CodeEditorModal {
             
             if (closeBtn) closeBtn.addEventListener('click', () => this.close());
             if (cancelBtn) cancelBtn.addEventListener('click', () => this.close());
-            if (saveBtn) saveBtn.addEventListener('click', () => this.save());
+            if (saveBtn) {
+                saveBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.save();
+                });
+            } else {
+                // Fallback: try to find any button with 'Save' text
+                const allButtons = edgeContent.querySelectorAll('button');
+                allButtons.forEach(btn => {
+                    if (btn.textContent.includes('Save')) {
+                        btn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            this.save();
+                        });
+                    }
+                });
+            }
             
             // Add simple drag functionality for Edge modal
             addEdgeDragFunctionality(edgeContent);
@@ -735,17 +753,30 @@ export class CodeEditorModal {
             // Update the element with new HTML but keep controls
             this.targetElement.innerHTML = controls.join('') + newHTML;
             
-            // Re-enable editor functionality
-            this.editor.enableTextEditing();
-            this.editor.makeDraggable();
+            // Re-enable editor functionality by making elements editable and draggable
+            this.targetElement.querySelectorAll('[contenteditable]').forEach(el => {
+                el.contentEditable = true;
+            });
             
             // Re-apply any data attributes that the editor needs
             this.targetElement.querySelectorAll('.editor-snippet').forEach(snippet => {
                 snippet.draggable = true;
             });
-            this.targetElement.querySelectorAll('.block').forEach(block => {
+            this.targetElement.querySelectorAll('.editor-block').forEach(block => {
                 block.draggable = true;
             });
+            
+            // Ensure the target element itself is draggable if it should be
+            if (this.targetElement.classList.contains('editor-block') || this.targetElement.classList.contains('editor-snippet')) {
+                this.targetElement.draggable = true;
+            }
+            
+            // Re-add block/snippet controls if needed
+            if (this.targetElement.classList.contains('editor-block') && !this.targetElement.querySelector('.drag-handle')) {
+                this.editor.addBlockControls(this.targetElement);
+            } else if (this.targetElement.classList.contains('editor-snippet') && !this.targetElement.querySelector('.drag-handle')) {
+                this.editor.addSnippetControls(this.targetElement);
+            }
             
             this.editor.stateHistory.saveState();
         }
