@@ -770,6 +770,48 @@ export class FormattingToolbar {
             handle.dataset.position = position;
             container.appendChild(handle);
         });
+
+        // Create browse icon (only visible when selected)
+        const browseIcon = document.createElement('div');
+        browseIcon.className = 'image-browse-icon';
+        browseIcon.innerHTML = '📁';
+        browseIcon.title = 'Browse for image';
+        browseIcon.style.cssText = `
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            z-index: 1000;
+            transition: all 0.2s ease;
+        `;
+        
+        // Add hover effect
+        browseIcon.addEventListener('mouseenter', () => {
+            browseIcon.style.background = 'rgba(255, 255, 255, 1)';
+            browseIcon.style.transform = 'scale(1.1)';
+        });
+        
+        browseIcon.addEventListener('mouseleave', () => {
+            browseIcon.style.background = 'rgba(255, 255, 255, 0.9)';
+            browseIcon.style.transform = 'scale(1)';
+        });
+
+        // Add click handler for browsing
+        browseIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.browseForImage(container);
+        });
+        
+        container.appendChild(browseIcon);
         
         // Add click handler to select/deselect image
         container.addEventListener('click', (e) => {
@@ -784,10 +826,14 @@ export class FormattingToolbar {
     }
     
     selectImage(container) {
-        // Deselect all other images
+        // Deselect all other images and hide their browse icons
         document.querySelectorAll('.image-resize-container.selected').forEach(el => {
             if (el !== container) {
                 el.classList.remove('selected');
+                const browseIcon = el.querySelector('.image-browse-icon');
+                if (browseIcon) {
+                    browseIcon.style.display = 'none';
+                }
             }
         });
         
@@ -795,13 +841,55 @@ export class FormattingToolbar {
         const wasSelected = container.classList.contains('selected');
         container.classList.toggle('selected');
         
+        const browseIcon = container.querySelector('.image-browse-icon');
         if (container.classList.contains('selected')) {
             this.selectedImageContainer = container;
             this.showAlignmentToolbar(container);
+            // Show browse icon
+            if (browseIcon) {
+                browseIcon.style.display = 'flex';
+            }
         } else {
             this.selectedImageContainer = null;
             this.hideAlignmentToolbar();
+            // Hide browse icon
+            if (browseIcon) {
+                browseIcon.style.display = 'none';
+            }
         }
+    }
+    
+    browseForImage(container) {
+        // Create a hidden file input
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.style.display = 'none';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = container.querySelector('img');
+                    if (img) {
+                        img.src = event.target.result;
+                        
+                        // Save state after image change
+                        if (this.editor && this.editor.stateHistory) {
+                            this.editor.stateHistory.saveState();
+                        }
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+            // Clean up
+            input.remove();
+        };
+        
+        // Trigger file selection dialog
+        document.body.appendChild(input);
+        input.click();
     }
     
     addResizeHandlers(container) {

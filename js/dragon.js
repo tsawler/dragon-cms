@@ -59,8 +59,8 @@ class Dragon {
                     <h1>${options.title || 'Drag & Drop Editor'}</h1>
                     <div class="editor-controls">
                         <button id="toggle-mode-btn" class="btn btn-primary">Switch to Display Mode</button>
-                        <button id="undo-btn" class="btn">Undo</button>
-                        <button id="redo-btn" class="btn">Redo</button>
+                        <button id="undo-btn" class="btn" title="Undo">↶</button>
+                        <button id="redo-btn" class="btn" title="Redo">↷</button>
                         <button id="save-btn" class="btn btn-success">Save</button>
                         <button id="load-btn" class="btn">Load</button>
                         <button id="publish-btn" class="btn btn-warning" title="Publish to URL" style="display: none;">Publish</button>
