@@ -1,25 +1,22 @@
-/* Dragon Editor CSS - Scoped to .dragon-editor container */
-/* This prevents conflicts with user-defined styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-/* Base container styles */
-.dragon-editor {
+body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: #f5f5f5;
     color: #333;
 }
 
-.dragon-editor * {
-    box-sizing: border-box;
-}
-
-
-
-.dragon-editor .editor-container{
+.editor-container {
     height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-.dragon-editor .editor-header{
+.editor-header {
     background: white;
     border-bottom: 1px solid #ddd;
     padding: 1rem 2rem;
@@ -29,17 +26,17 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.dragon-editor .editor-header h1{
+.editor-header h1 {
     font-size: 1.5rem;
     color: #2c3e50;
 }
 
-.dragon-editor .editor-controls{
+.editor-controls {
     display: flex;
     gap: 0.5rem;
 }
 
-.dragon-editor .btn{
+.btn {
     padding: 0.5rem 1rem;
     border: 1px solid #ddd;
     background: white;
@@ -49,34 +46,34 @@
     transition: all 0.2s;
 }
 
-.dragon-editor .btn:hover{
+.btn:hover {
     background: #f8f8f8;
     border-color: #999;
 }
 
-.dragon-editor .btn-primary{
+.btn-primary {
     background: #3b82f6;
     color: white;
     border-color: #3b82f6;
 }
 
-.dragon-editor .btn-primary:hover{
+.btn-primary:hover {
     background: #2563eb;
     border-color: #2563eb;
 }
 
-.dragon-editor .btn-success{
+.btn-success {
     background: #10b981;
     color: white;
     border-color: #10b981;
 }
 
-.dragon-editor .btn-success:hover{
+.btn-success:hover {
     background: #059669;
     border-color: #059669;
 }
 
-.dragon-editor .editor-main{
+.editor-main {
     flex: 1;
     display: flex;
     position: relative;
@@ -84,11 +81,11 @@
     transition: margin-left 0.3s ease-in-out;
 }
 
-.dragon-editor .editor-main.panel-open{
+.editor-main.panel-open {
     margin-left: 280px;
 }
 
-.dragon-editor .snippet-panel{
+.snippet-panel {
     position: fixed;
     left: -280px;
     top: 65px;
@@ -103,11 +100,11 @@
     transition: left 0.3s ease-in-out;
 }
 
-.dragon-editor .snippet-panel.open{
+.snippet-panel.open {
     left: 0;
 }
 
-.dragon-editor .panel-handle{
+.panel-handle {
     position: fixed;
     left: 0;
     top: 50%;
@@ -125,20 +122,20 @@
     box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
 }
 
-.dragon-editor .panel-handle:hover{
+.panel-handle:hover {
     width: 28px;
     background: #cbd5e1;
 }
 
-.dragon-editor .handle-grip{
+.handle-grip {
     display: flex;
     flex-direction: column;
     gap: 3px;
 }
 
-.dragon-editor .handle-grip::before,
-.dragon-editor .handle-grip::after,
-.dragon-editor .handle-grip{
+.handle-grip::before,
+.handle-grip::after,
+.handle-grip {
     content: '';
     width: 4px;
     height: 4px;
@@ -146,27 +143,27 @@
     border-radius: 50%;
 }
 
-.dragon-editor .handle-grip::before,
-.dragon-editor .handle-grip::after{
+.handle-grip::before,
+.handle-grip::after {
     content: '';
     display: block;
 }
 
-.dragon-editor .snippet-panel.open .panel-handle{
+.snippet-panel.open .panel-handle {
     left: 280px;
     background: #3b82f6;
 }
 
-.dragon-editor .snippet-panel.open .panel-handle:hover{
+.snippet-panel.open .panel-handle:hover {
     background: #2563eb;
 }
 
-.dragon-editor .snippet-panel.open .handle-grip{
+.snippet-panel.open .handle-grip {
     position: relative;
     background: transparent;
 }
 
-.dragon-editor .snippet-panel.open .handle-grip::before{
+.snippet-panel.open .handle-grip::before {
     position: absolute;
     content: '✕';
     font-size: 16px;
@@ -178,24 +175,24 @@
     left: -6px;
 }
 
-.dragon-editor .snippet-panel.open .handle-grip::after{
+.snippet-panel.open .handle-grip::after {
     display: none;
 }
 
 
-.dragon-editor .snippet-panel h2{
+.snippet-panel h2 {
     font-size: 1.125rem;
     margin-bottom: 1rem;
     color: #2c3e50;
 }
 
-.dragon-editor .snippet-list{
+.snippet-list {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
 }
 
-.dragon-editor .snippet-item, .dragon-editor .block-item{
+.snippet-item, .block-item {
     padding: 0.75rem;
     background: #f8f9fa;
     border: 2px dashed #cbd5e1;
@@ -209,22 +206,22 @@
     justify-content: center;
 }
 
-.dragon-editor .snippet-item:hover, .dragon-editor .block-item:hover{
+.snippet-item:hover, .block-item:hover {
     background: #e2e8f0;
     border-color: #94a3b8;
     transform: translateX(2px);
 }
 
-.dragon-editor .snippet-item.dragging, .dragon-editor .block-item.dragging{
+.snippet-item.dragging, .block-item.dragging {
     opacity: 0.5;
 }
 
-.dragon-editor .snippet-item img, .dragon-editor .block-item img{
+.snippet-item img, .block-item img {
     pointer-events: none;
     user-select: none;
 }
 
-.dragon-editor .editable-area{
+.editable-area {
     flex: 1;
     padding: 2rem;
     background: white;
@@ -233,15 +230,15 @@
     position: relative;
 }
 
-.dragon-editor .editable-area[data-mode="display"] .snippet-panel{
+.editable-area[data-mode="display"] .snippet-panel {
     display: none;
 }
 
-.dragon-editor .editable-area[data-mode="display"] .editor-controls{
+.editable-area[data-mode="display"] .editor-controls {
     visibility: hidden;
 }
 
-.dragon-editor .drop-zone-placeholder{
+.drop-zone-placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -252,15 +249,15 @@
     font-size: 1.125rem;
 }
 
-.dragon-editor .editable-area .drop-zone-placeholder:not(:only-child){
+.editable-area .drop-zone-placeholder:not(:only-child) {
     display: none;
 }
 
-.dragon-editor .editable-area[data-mode="display"] .drop-zone-placeholder{
+.editable-area[data-mode="display"] .drop-zone-placeholder {
     display: none;
 }
 
-.dragon-editor .editor-block{
+.editor-block {
     margin: 1rem 0;
     padding: 1rem;
     border: 2px solid transparent;
@@ -270,33 +267,33 @@
     transition: all 0.2s;
 }
 
-.dragon-editor .editable-area[data-mode="edit"] .editor-block{
+.editable-area[data-mode="edit"] .editor-block {
     border-color: #e2e8f0;
 }
 
-.dragon-editor .editable-area[data-mode="edit"] .editor-block:hover{
+.editable-area[data-mode="edit"] .editor-block:hover {
     border-color: #cbd5e1;
     background: #fafafa;
 }
 
-.dragon-editor .editable-area[data-mode="display"] .editor-block{
+.editable-area[data-mode="display"] .editor-block {
     border: none;
 }
 
-.dragon-editor .editor-block.drag-over{
+.editor-block.drag-over {
     background: #eff6ff;
     border-color: #3b82f6;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
-.dragon-editor .editor-block.valid-drop-target{
+.editor-block.valid-drop-target {
     background: #f0fdf4;
     border-color: #10b981;
     box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
     animation: pulse-green 1.5s infinite;
 }
 
-.dragon-editor .column.valid-drop-target{
+.column.valid-drop-target {
     background: #f0fdf4;
     border: 2px solid #10b981;
     border-radius: 4px;
@@ -306,7 +303,7 @@
 }
 
 /* Make columns visible in edit mode */
-.dragon-editor .editable-area[data-mode="edit"] .column{
+.editable-area[data-mode="edit"] .column {
     min-height: 60px;
     position: relative;
     border: 1px dashed #e2e8f0;
@@ -314,12 +311,12 @@
     padding: 10px;
 }
 
-.dragon-editor .editable-area[data-mode="edit"] .column:hover{
+.editable-area[data-mode="edit"] .column:hover {
     border-color: #cbd5e1;
     background: rgba(241, 245, 249, 0.5);
 }
 
-.dragon-editor .editable-area[data-mode="edit"] .column:empty::after{
+.editable-area[data-mode="edit"] .column:empty::after {
     content: "Drop content here";
     position: absolute;
     top: 50%;
@@ -331,26 +328,26 @@
 }
 
 /* Hide column borders in display mode */
-.dragon-editor .editable-area[data-mode="display"] .column{
+.editable-area[data-mode="display"] .column {
     border: none;
     padding: 0;
 }
 
 /* Show editable text elements on hover in edit mode */
-.dragon-editor .editable-area[data-mode="edit"] [contenteditable="true"]:hover{
+.editable-area[data-mode="edit"] [contenteditable="true"]:hover {
     cursor: text;
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 2px;
     transition: background-color 0.2s;
 }
 
-.dragon-editor .editable-area[data-mode="edit"] [contenteditable="true"]:focus{
+.editable-area[data-mode="edit"] [contenteditable="true"]:focus {
     background-color: rgba(255, 255, 255, 0.15);
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
 /* Column resize dividers */
-.dragon-editor .column-resize-divider{
+.column-resize-divider {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -364,7 +361,7 @@
     transform: translateX(-50%); /* Center the divider on the boundary */
 }
 
-.dragon-editor .column-resize-divider::before{
+.column-resize-divider::before {
     content: '';
     position: absolute;
     width: 2px;
@@ -373,12 +370,12 @@
     transition: background 0.2s;
 }
 
-.dragon-editor .column-resize-divider:hover::before,
-.dragon-editor .column-resize-divider.active::before{
+.column-resize-divider:hover::before,
+.column-resize-divider.active::before {
     background: #3b82f6;
 }
 
-.dragon-editor .column-resize-divider::after{
+.column-resize-divider::after {
     content: '⋮';
     position: absolute;
     color: #64748b;
@@ -392,13 +389,13 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.dragon-editor .column-resize-divider:hover::after{
+.column-resize-divider:hover::after {
     opacity: 1;
     color: #3b82f6;
 }
 
 /* Prevent text selection while resizing */
-body.column-resizing{
+body.column-resizing {
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -406,28 +403,28 @@ body.column-resizing{
     cursor: col-resize !important;
 }
 
-body.column-resizing *{
+body.column-resizing * {
     cursor: col-resize !important;
 }
 
 /* Hide dividers in display mode */
-.dragon-editor .editable-area[data-mode="display"] .column-resize-divider{
+.editable-area[data-mode="display"] .column-resize-divider {
     display: none;
 }
 
 /* Button editing in edit mode */
-.dragon-editor .editable-area[data-mode="edit"] button:not(.edit-icon):not(.code-icon):not(.delete-icon):not(.settings-icon):not(.btn):not(.modal button){
+.editable-area[data-mode="edit"] button:not(.edit-icon):not(.code-icon):not(.delete-icon):not(.settings-icon):not(.btn):not(.modal button) {
     position: relative;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.dragon-editor .editable-area[data-mode="edit"] button:not(.edit-icon):not(.code-icon):not(.delete-icon):not(.settings-icon):not(.btn):not(.modal button):hover{
+.editable-area[data-mode="edit"] button:not(.edit-icon):not(.code-icon):not(.delete-icon):not(.settings-icon):not(.btn):not(.modal button):hover {
     outline: 2px solid #3b82f6;
     outline-offset: 2px;
 }
 
-.dragon-editor .editable-area[data-mode="edit"] button:not(.edit-icon):not(.code-icon):not(.delete-icon):not(.settings-icon):not(.btn):not(.modal button)::after{
+.editable-area[data-mode="edit"] button:not(.edit-icon):not(.code-icon):not(.delete-icon):not(.settings-icon):not(.btn):not(.modal button)::after {
     content: "Click to edit";
     position: absolute;
     top: -25px;
@@ -444,11 +441,11 @@ body.column-resizing *{
     transition: opacity 0.2s;
 }
 
-.dragon-editor .editable-area[data-mode="edit"] button:not(.edit-icon):not(.code-icon):not(.delete-icon):not(.settings-icon):not(.btn):not(.modal button):hover::after{
+.editable-area[data-mode="edit"] button:not(.edit-icon):not(.code-icon):not(.delete-icon):not(.settings-icon):not(.btn):not(.modal button):hover::after {
     opacity: 1;
 }
 
-.dragon-editor .drop-insertion-line{
+.drop-insertion-line {
     position: absolute;
     left: 0;
     right: 0;
@@ -460,7 +457,7 @@ body.column-resizing *{
     animation: pulse-blue 1s infinite;
 }
 
-.dragon-editor .drop-insertion-line::before{
+.drop-insertion-line::before {
     content: '';
     position: absolute;
     left: -6px;
@@ -471,7 +468,7 @@ body.column-resizing *{
     border-radius: 50%;
 }
 
-.dragon-editor .drop-insertion-line::after{
+.drop-insertion-line::after {
     content: '';
     position: absolute;
     right: -6px;
@@ -482,7 +479,7 @@ body.column-resizing *{
     border-radius: 50%;
 }
 
-.dragon-editor .drop-zone-overlay{
+.drop-zone-overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -498,7 +495,7 @@ body.column-resizing *{
     pointer-events: none;
 }
 
-.dragon-editor .drop-zone-overlay::before{
+.drop-zone-overlay::before {
     content: '+ Drop here';
     background: #3b82f6;
     color: white;
@@ -509,7 +506,7 @@ body.column-resizing *{
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.dragon-editor .snippet-drop-zone-overlay::before{
+.snippet-drop-zone-overlay::before {
     content: '+ Drop snippet here';
 }
 

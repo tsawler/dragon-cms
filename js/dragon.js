@@ -53,6 +53,7 @@ class Dragon {
     createEditorHTML(container, options = {}) {
         // Create the main editor structure
         container.innerHTML = `
+            <div class="dragon-editor">
             <div class="editor-container">
                 <div class="editor-header">
                     <h1>${options.title || 'Drag & Drop Editor'}</h1>
@@ -267,6 +268,7 @@ class Dragon {
                         <button class="btn btn-primary" id="save-page-settings">Save Settings</button>
                     </div>
                 </div>
+            </div>
             </div>
         `;
 

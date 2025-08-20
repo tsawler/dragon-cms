@@ -126,6 +126,9 @@ export class PageSettingsModal {
             if (originalContent) {
                 edgeContent.innerHTML = originalContent.innerHTML;
                 
+                // Style the modal header with neutral colors
+                this.styleEdgeModalHeader(edgeContent);
+                
                 // Add syntax highlighting containers to textareas
                 this.addSyntaxHighlightingToTextareas(edgeContent);
             }
@@ -348,6 +351,70 @@ export class PageSettingsModal {
         this.hide();
         
         console.log('Page settings saved:', this.pageData);
+    }
+    
+    styleEdgeModalHeader(modalContent) {
+        const modalHeader = modalContent.querySelector('.modal-header');
+        if (!modalHeader) return;
+        
+        // Apply neutral styling to the header
+        modalHeader.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            user-select: none;
+            padding: 0.75rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            margin: -2rem -2rem 1.5rem -2rem;
+            background: transparent;
+            transition: background-color 0.2s;
+        `;
+        
+        // Add hover effect
+        modalHeader.addEventListener('mouseenter', () => {
+            modalHeader.style.backgroundColor = 'rgba(241, 245, 249, 0.5)'; // Very light gray
+        });
+        
+        modalHeader.addEventListener('mouseleave', () => {
+            if (!modalHeader.classList.contains('dragging')) {
+                modalHeader.style.backgroundColor = 'transparent';
+            }
+        });
+        
+        // Style the h2
+        const h2 = modalHeader.querySelector('h2');
+        if (h2) {
+            h2.style.cssText = `
+                font-size: 1.125rem;
+                color: #2c3e50;
+                margin: 0;
+                flex: 1;
+                font-weight: 600;
+            `;
+        }
+        
+        // Style the close button
+        const closeBtn = modalHeader.querySelector('.modal-close');
+        if (closeBtn) {
+            closeBtn.style.cssText = `
+                width: 30px;
+                height: 30px;
+                border: none;
+                background: transparent;
+                cursor: pointer;
+                font-size: 24px;
+                color: #999;
+            `;
+            
+            closeBtn.addEventListener('mouseenter', () => {
+                closeBtn.style.color = '#333';
+            });
+            
+            closeBtn.addEventListener('mouseleave', () => {
+                closeBtn.style.color = '#999';
+            });
+        }
     }
     
     addEdgeDragFunctionality(modalContent) {
