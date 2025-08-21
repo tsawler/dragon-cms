@@ -530,9 +530,10 @@ body.column-resizing *{
 }
 
 .dragging-element {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
+    opacity: 0.8;
+    cursor: move;
+    /* Ensure element stays in normal flow during drag */
+    position: static !important;
 }
 
 .editor-snippet {
