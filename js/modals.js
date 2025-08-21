@@ -1217,28 +1217,27 @@ export class ConfirmationModal {
                 margin-left: -300px;
                 margin-top: -200px;
                 z-index: 1000000;
+                text-align: center;
             `;
             
-            // Copy the content from the original modal
-            const originalContent = this.modal.querySelector('.modal-content');
+            // Copy the content from the original confirmation modal
+            const originalContent = this.modal.querySelector('.confirm-modal-content');
             if (originalContent) {
                 edgeContent.innerHTML = originalContent.innerHTML;
-                
-                // Style the modal header with neutral colors
-                styleEdgeModalHeader(edgeContent);
             }
             
             this.edgeModal.appendChild(edgeContent);
             document.body.appendChild(this.edgeModal);
             
-            // Attach event listeners to the new modal
-            const closeBtn = edgeContent.querySelector('.modal-close');
-            const cancelBtn = edgeContent.querySelector('.modal-cancel');
-            const saveBtn = edgeContent.querySelector('.modal-save');
+            // Attach event listeners to the new modal (confirmation modal specific)
+            const cancelBtn = edgeContent.querySelector('.confirm-modal-cancel');
+            const confirmBtn = edgeContent.querySelector('.confirm-modal-confirm');
             
-            if (closeBtn) closeBtn.addEventListener('click', () => this.close());
             if (cancelBtn) cancelBtn.addEventListener('click', () => this.close());
-            if (saveBtn) saveBtn.addEventListener('click', () => this.save());
+            if (confirmBtn) confirmBtn.addEventListener('click', () => {
+                if (this.onConfirm) this.onConfirm();
+                this.close();
+            });
             
             // Add simple drag functionality for Edge modal
             addEdgeDragFunctionality(edgeContent);
