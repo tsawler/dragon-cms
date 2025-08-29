@@ -336,9 +336,9 @@ export class StyleEditorModal {
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn modal-cancel">Cancel</button>
-                    <button class="btn btn-primary modal-save">Save</button>
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
+                    <button class="btn modal-cancel" style="padding: 0.5rem 1rem; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Cancel</button>
+                    <button class="btn btn-primary modal-save" style="padding: 0.5rem 1rem; border: 1px solid #3b82f6; background: #3b82f6; color: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Save</button>
                 </div>
             </div>
         `;
@@ -519,9 +519,9 @@ export class CodeEditorModal {
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn modal-cancel">Cancel</button>
-                    <button class="btn btn-primary modal-save">Save</button>
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
+                    <button class="btn modal-cancel" style="padding: 0.5rem 1rem; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Cancel</button>
+                    <button class="btn btn-primary modal-save" style="padding: 0.5rem 1rem; border: 1px solid #3b82f6; background: #3b82f6; color: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Save</button>
                 </div>
             </div>
         `;
@@ -564,115 +564,217 @@ export class CodeEditorModal {
     open(element) {
         this.targetElement = element;
         
-        // Edge compatibility - create a completely new modal
-        const isEdge = window.navigator.userAgent.indexOf('Edge') > -1 || 
-                      window.navigator.userAgent.indexOf('Edg') > -1 ||
-                      window.navigator.userAgent.indexOf('EdgeHTML') > -1;
+        // Always use the JavaScript-based modal system for better responsiveness
         
-        if (isEdge) {
-            // Hide the original modal
-            this.modal.style.display = 'none';
-            
-            // Create a new, simple modal for Edge
-            this.edgeModal = document.createElement('div');
-            this.edgeModal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: rgba(0,0,0,0.5);
-                z-index: 999999;
-                display: block;
-            `;
-            
-            const edgeContent = document.createElement('div');
-            edgeContent.style.cssText = `
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                width: 600px;
-                max-width: 90%;
-                background: white;
-                border-radius: 8px;
-                padding: 2rem;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-                margin-left: -300px;
-                margin-top: -200px;
-                z-index: 1000000;
-            `;
-            
-            // Copy the content from the original modal
-            const originalContent = this.modal.querySelector('.modal-content');
-            if (originalContent) {
-                edgeContent.innerHTML = originalContent.innerHTML;
-                
-                // Style the modal header with neutral colors
-                styleEdgeModalHeader(edgeContent);
-            }
-            
-            this.edgeModal.appendChild(edgeContent);
-            document.body.appendChild(this.edgeModal);
-            
-            // Attach event listeners to the new modal
-            const closeBtn = edgeContent.querySelector('.modal-close');
-            const cancelBtn = edgeContent.querySelector('.modal-cancel');
-            const saveBtn = edgeContent.querySelector('.modal-save');
-            
-            if (closeBtn) closeBtn.addEventListener('click', () => this.close());
-            if (cancelBtn) cancelBtn.addEventListener('click', () => this.close());
-            if (saveBtn) {
-                saveBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.save();
-                });
-            } else {
-                // Fallback: try to find any button with 'Save' text
-                const allButtons = edgeContent.querySelectorAll('button');
-                allButtons.forEach(btn => {
-                    if (btn.textContent.includes('Save')) {
-                        btn.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            this.save();
-                        });
-                    }
-                });
-            }
-            
-            // Add simple drag functionality for Edge modal
-            addEdgeDragFunctionality(edgeContent);
-            
-            // Add syntax highlighting to Edge modal  
-            const edgeTextarea = edgeContent.querySelector('#html-code-editor');
-            const edgeHighlightDiv = edgeContent.querySelector('#html-code-highlight');
-            
-            if (edgeTextarea && edgeHighlightDiv) {
-                const updateEdgeHighlighting = () => {
-                    const code = edgeTextarea.value;
-                    const language = detectLanguage(code);
-                    edgeHighlightDiv.innerHTML = highlightSyntax(code, language);
-                    
-                    // Sync scroll positions
-                    edgeHighlightDiv.scrollTop = edgeTextarea.scrollTop;
-                    edgeHighlightDiv.scrollLeft = edgeTextarea.scrollLeft;
-                };
-                
-                edgeTextarea.addEventListener('input', updateEdgeHighlighting);
-                edgeTextarea.addEventListener('scroll', () => {
-                    edgeHighlightDiv.scrollTop = edgeTextarea.scrollTop;
-                    edgeHighlightDiv.scrollLeft = edgeTextarea.scrollLeft;
-                });
-            }
-            
-        } else {
-            // Normal browser behavior
-            this.modal.offsetHeight;
-            this.modal.classList.add('active');
+        // Create a new modal overlay
+        this.jsModal = document.createElement('div');
+        this.jsModal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            z-index: 999999;
+            display: block;
+        `;
+        
+        // Create modal content container with better responsive sizing
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 85%;
+            max-width: 900px;
+            min-width: 700px;
+            max-height: 85vh;
+            background: white;
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            transform: translate(-50%, -50%);
+            z-index: 1000000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        `;
+        
+        // Get current HTML content from the element
+        const currentHTML = element.innerHTML;
+        
+        // Create the modal content with proper responsive design
+        modalContent.innerHTML = `
+            <div style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 2rem 2.5rem 1.5rem 2.5rem;
+                border-bottom: 1px solid #e5e7eb;
+                background: #f8fafc;
+            ">
+                <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600; color: #1f2937;">HTML Editor</h2>
+                <button class="js-modal-close" style="
+                    background: none;
+                    border: none;
+                    font-size: 1.75rem;
+                    cursor: pointer;
+                    color: #6b7280;
+                    padding: 4px;
+                    width: 32px;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 6px;
+                    transition: all 0.2s;
+                ">&times;</button>
+            </div>
+            <div style="
+                padding: 2.5rem;
+                flex: 1;
+                overflow: auto;
+                background: #fafbfc;
+            ">
+                <div style="position: relative; margin-bottom: 1.5rem;">
+                    <label style="
+                        display: block;
+                        margin-bottom: 1rem;
+                        font-weight: 600;
+                        color: #374151;
+                        font-size: 1.1rem;
+                    ">HTML Code</label>
+                    <div style="
+                        position: relative;
+                        background: white;
+                        border-radius: 8px;
+                        border: 2px solid #e5e7eb;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                    ">
+                        <pre class="js-code-highlight" style="
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            bottom: 0;
+                            margin: 0;
+                            padding: 1.5rem;
+                            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
+                            font-size: 14px;
+                            line-height: 1.6;
+                            white-space: pre-wrap;
+                            word-wrap: break-word;
+                            overflow: auto;
+                            pointer-events: none;
+                            color: #1f2937;
+                            background: transparent;
+                        "><code></code></pre>
+                        <textarea class="js-code-editor" style="
+                            position: relative;
+                            width: 100%;
+                            height: 450px;
+                            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
+                            font-size: 14px;
+                            line-height: 1.6;
+                            padding: 1.5rem;
+                            border: none;
+                            resize: vertical;
+                            background: transparent;
+                            color: transparent;
+                            caret-color: #1f2937;
+                            -webkit-text-fill-color: transparent;
+                            outline: none;
+                            min-height: 400px;
+                            box-sizing: border-box;
+                            z-index: 2;
+                        " placeholder="Enter HTML code here..." spellcheck="false"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div style="
+                display: flex;
+                gap: 1.5rem;
+                justify-content: flex-end;
+                padding: 2rem 2.5rem;
+                border-top: 1px solid #e5e7eb;
+                background: #f8fafc;
+            ">
+                <button class="js-modal-cancel" style="
+                    padding: 1rem 2rem;
+                    background: #f3f4f6;
+                    color: #374151;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 1rem;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                ">Cancel</button>
+                <button class="js-modal-save" style="
+                    padding: 1rem 2rem;
+                    background: #3b82f6;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 1rem;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                    box-shadow: 0 2px 6px rgba(59,130,246,0.3);
+                ">Save</button>
+            </div>
+        `;
+        
+        this.jsModal.appendChild(modalContent);
+        document.body.appendChild(this.jsModal);
+        
+        // Attach event listeners
+        const closeBtn = modalContent.querySelector('.js-modal-close');
+        const cancelBtn = modalContent.querySelector('.js-modal-cancel');
+        const saveBtn = modalContent.querySelector('.js-modal-save');
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.close());
+            closeBtn.addEventListener('mouseover', () => {
+                closeBtn.style.backgroundColor = '#e5e7eb';
+                closeBtn.style.color = '#374151';
+            });
+            closeBtn.addEventListener('mouseout', () => {
+                closeBtn.style.backgroundColor = 'transparent';
+                closeBtn.style.color = '#6b7280';
+            });
         }
         
-        // Get the inner HTML without the control buttons
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => this.close());
+            cancelBtn.addEventListener('mouseover', () => {
+                cancelBtn.style.backgroundColor = '#e5e7eb';
+            });
+            cancelBtn.addEventListener('mouseout', () => {
+                cancelBtn.style.backgroundColor = '#f3f4f6';
+            });
+        }
+        
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => this.save());
+            saveBtn.addEventListener('mouseover', () => {
+                saveBtn.style.backgroundColor = '#2563eb';
+            });
+            saveBtn.addEventListener('mouseout', () => {
+                saveBtn.style.backgroundColor = '#3b82f6';
+            });
+        }
+        
+        // Close on background click
+        this.jsModal.addEventListener('click', (e) => {
+            if (e.target === this.jsModal) {
+                this.close();
+            }
+        });
+        
+        // Get the inner HTML without the control buttons first
         const clone = element.cloneNode(true);
         clone.querySelectorAll('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon, .resizer-handle').forEach(el => el.remove());
         
@@ -683,66 +785,116 @@ export class CodeEditorModal {
         clone.querySelectorAll('[data-snippet-id]').forEach(el => el.removeAttribute('data-snippet-id'));
         clone.querySelectorAll('[data-left-index]').forEach(el => el.removeAttribute('data-left-index'));
         clone.querySelectorAll('[data-right-index]').forEach(el => el.removeAttribute('data-right-index'));
+        clone.querySelectorAll('[data-drag-listeners-attached]').forEach(el => el.removeAttribute('data-drag-listeners-attached'));
         
-        // Set the value in the appropriate modal
+        // Get the cleaned and formatted HTML
         const cleanHTML = clone.innerHTML.trim();
         const formattedHTML = formatHTML(cleanHTML);
         
-        if (this.edgeModal) {
-            const textArea = this.edgeModal.querySelector('#html-code-editor');
-            if (textArea) {
-                textArea.value = formattedHTML;
-                // Add syntax highlighting for Edge modal
-                const highlightDiv = this.edgeModal.querySelector('#html-code-highlight');
-                if (highlightDiv) {
-                    const language = detectLanguage(formattedHTML);
-                    highlightDiv.innerHTML = highlightSyntax(formattedHTML, language);
-                }
-            }
-        } else {
-            document.getElementById('html-code-editor').value = formattedHTML;
-            // Trigger initial syntax highlighting for regular modal
-            if (this.updateHighlighting) {
-                this.updateHighlighting();
-            }
+        // Set the formatted HTML in the textarea and add syntax highlighting
+        const codeTextarea = modalContent.querySelector('.js-code-editor');
+        const highlightPre = modalContent.querySelector('.js-code-highlight code');
+        
+        if (codeTextarea && highlightPre) {
+            // Set the formatted HTML in the textarea
+            codeTextarea.value = formattedHTML;
+            
+            // Immediately scroll to top after setting value
+            codeTextarea.scrollTop = 0;
+            codeTextarea.scrollLeft = 0;
+            
+            const updateHighlighting = () => {
+                const code = codeTextarea.value;
+                
+                // HTML syntax highlighting with proper escaping
+                let highlighted = code
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+                
+                // Highlight different parts of HTML
+                highlighted = highlighted
+                    // HTML comments
+                    .replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span style="color: #6b7280; font-style: italic;">$1</span>')
+                    // HTML tags and their content
+                    .replace(/(&lt;)(\/?)(\w+)((?:\s+[\w-]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s&gt;]+))?)*)(\s*\/?)(&gt;)/g, 
+                        (match, lt, slash, tag, attrs, selfClose, gt) => {
+                            // Process attributes
+                            let processedAttrs = attrs.replace(
+                                /([\w-]+)(\s*=\s*)(["'][^"']*["']|[^\s&gt;]+)/g,
+                                '<span style="color: #dc2626;">$1</span><span style="color: #6b7280;">$2</span><span style="color: #059669;">$3</span>'
+                            );
+                            return `<span style="color: #2563eb;">${lt}${slash}${tag}</span>${processedAttrs}<span style="color: #2563eb;">${selfClose}${gt}</span>`;
+                        });
+                
+                highlightPre.innerHTML = highlighted;
+                
+                // Sync scroll positions (but preserve current position)
+                const currentScrollTop = codeTextarea.scrollTop;
+                const currentScrollLeft = codeTextarea.scrollLeft;
+                highlightPre.parentElement.scrollTop = currentScrollTop;
+                highlightPre.parentElement.scrollLeft = currentScrollLeft;
+            };
+            
+            // Add event listeners
+            codeTextarea.addEventListener('input', updateHighlighting);
+            codeTextarea.addEventListener('scroll', () => {
+                highlightPre.parentElement.scrollTop = codeTextarea.scrollTop;
+                highlightPre.parentElement.scrollLeft = codeTextarea.scrollLeft;
+            });
+            
+            // Initial highlighting
+            updateHighlighting();
+            
+            // Multiple attempts to ensure we start at top
+            const scrollToTop = () => {
+                codeTextarea.scrollTop = 0;
+                codeTextarea.scrollLeft = 0;
+                highlightPre.parentElement.scrollTop = 0;
+                highlightPre.parentElement.scrollLeft = 0;
+            };
+            
+            // Immediate scroll to top
+            scrollToTop();
+            
+            // Try again after a short delay
+            setTimeout(scrollToTop, 10);
+            setTimeout(scrollToTop, 50);
         }
         
-        // Focus the textarea
+        // Focus the textarea and ensure it's scrolled to top
         setTimeout(() => {
-            if (this.edgeModal) {
-                const textArea = this.edgeModal.querySelector('#html-code-editor');
-                if (textArea) textArea.focus();
-            } else {
-                document.getElementById('html-code-editor').focus();
+            if (codeTextarea) {
+                // Set cursor to beginning of text
+                codeTextarea.setSelectionRange(0, 0);
+                codeTextarea.focus();
+                
+                // Final scroll to top after everything
+                codeTextarea.scrollTop = 0;
+                codeTextarea.scrollLeft = 0;
+                if (highlightPre) {
+                    highlightPre.parentElement.scrollTop = 0;
+                    highlightPre.parentElement.scrollLeft = 0;
+                }
             }
         }, 100);
     }
 
     close() {
-        // Handle Edge modal
-        if (this.edgeModal) {
-            document.body.removeChild(this.edgeModal);
-            this.edgeModal = null;
+        // Handle JavaScript-based modal
+        if (this.jsModal) {
+            document.body.removeChild(this.jsModal);
+            this.jsModal = null;
         }
         
-        this.modal.classList.remove('active');
-        // Clear any inline display style
-        this.modal.style.display = '';
         this.targetElement = null;
-        
-        // Reset modal position if it was dragged
-        const modalContent = this.modal.querySelector('.modal-content');
-        if (modalContent && window.dragon && window.dragon.modalDragger) {
-            window.dragon.modalDragger.resetModalPosition(modalContent);
-        }
     }
 
     save() {
         if (this.targetElement) {
-            // Use Edge modal if it exists, otherwise use regular modal
-            const modalToUse = this.edgeModal || this.modal;
-            const textArea = modalToUse.querySelector('#html-code-editor');
-            const newHTML = textArea ? textArea.value : document.getElementById('html-code-editor').value;
+            // Get the value from our unified modal
+            const textArea = this.jsModal ? this.jsModal.querySelector('.js-code-editor') : null;
+            const newHTML = textArea ? textArea.value : '';
             
             // Preserve the control buttons by collecting them first
             const controls = [];
@@ -809,17 +961,17 @@ export class ColumnSettingsModal {
                         <div id="column-visual" style="display: flex; gap: 5px; height: 40px;"></div>
                     </div>
                     <div class="column-controls" style="display: flex; gap: 1rem; justify-content: center;">
-                        <button id="remove-column-btn" class="btn" style="display: flex; align-items: center; gap: 0.25rem;">
+                        <button id="remove-column-btn" class="btn" style="display: flex; align-items: center; gap: 0.25rem; padding: 0.5rem 1rem; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
                             <span style="font-size: 1.25rem;">−</span> Remove Column
                         </button>
-                        <button id="add-column-btn" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.25rem;">
+                        <button id="add-column-btn" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.25rem; padding: 0.5rem 1rem; border: 1px solid #3b82f6; background: #3b82f6; color: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
                             <span style="font-size: 1.25rem;">+</span> Add Column
                         </button>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn modal-cancel">Cancel</button>
-                    <button class="btn btn-success modal-apply">Apply</button>
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
+                    <button class="btn modal-cancel" style="padding: 0.5rem 1rem; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Cancel</button>
+                    <button class="btn btn-success modal-apply" style="padding: 0.5rem 1rem; border: 1px solid #10b981; background: #10b981; color: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Apply</button>
                 </div>
             </div>
         `;
@@ -1178,94 +1330,119 @@ export class ConfirmationModal {
         this.onConfirm = onConfirm;
         this.onCancel = onCancel;
         
-        this.modal.querySelector('.confirm-modal-title').textContent = title;
-        this.modal.querySelector('.confirm-modal-message').textContent = message;
+        // Always use the JavaScript-based modal system (previously "Edge" version)
+        // This is more reliable and works consistently across all browsers
         
-        // Edge compatibility - create a completely new modal
-        const isEdge = window.navigator.userAgent.indexOf('Edge') > -1 || 
-                      window.navigator.userAgent.indexOf('Edg') > -1 ||
-                      window.navigator.userAgent.indexOf('EdgeHTML') > -1;
+        // Create a new modal overlay
+        this.jsModal = document.createElement('div');
+        this.jsModal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            z-index: 999999;
+            display: block;
+        `;
         
-        if (isEdge) {
-            // Hide the original modal
-            this.modal.style.display = 'none';
-            
-            // Create a new, simple modal for Edge
-            this.edgeModal = document.createElement('div');
-            this.edgeModal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: rgba(0,0,0,0.5);
-                z-index: 999999;
-                display: block;
-            `;
-            
-            const edgeContent = document.createElement('div');
-            edgeContent.style.cssText = `
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                width: 600px;
-                max-width: 90%;
-                background: white;
-                border-radius: 8px;
-                padding: 2rem;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-                margin-left: -300px;
-                margin-top: -200px;
-                z-index: 1000000;
-                text-align: center;
-            `;
-            
-            // Copy the content from the original confirmation modal
-            const originalContent = this.modal.querySelector('.confirm-modal-content');
-            if (originalContent) {
-                edgeContent.innerHTML = originalContent.innerHTML;
-            }
-            
-            this.edgeModal.appendChild(edgeContent);
-            document.body.appendChild(this.edgeModal);
-            
-            // Attach event listeners to the new modal (confirmation modal specific)
-            const cancelBtn = edgeContent.querySelector('.confirm-modal-cancel');
-            const confirmBtn = edgeContent.querySelector('.confirm-modal-confirm');
-            
-            if (cancelBtn) cancelBtn.addEventListener('click', () => this.close());
-            if (confirmBtn) confirmBtn.addEventListener('click', () => {
+        // Create modal content container
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 400px;
+            max-width: 90%;
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            margin-left: -200px;
+            margin-top: -150px;
+            z-index: 1000000;
+            text-align: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        `;
+        
+        // Create the modal content
+        modalContent.innerHTML = `
+            <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+            <h3 style="margin: 0 0 1rem 0; font-size: 1.25rem; color: #1f2937;">${title}</h3>
+            <p style="margin: 0 0 2rem 0; color: #6b7280; line-height: 1.5;">${message}</p>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button class="js-modal-cancel" style="
+                    padding: 0.75rem 1.5rem;
+                    background: #f3f4f6;
+                    color: #374151;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    transition: background-color 0.2s;
+                ">Cancel</button>
+                <button class="js-modal-confirm" style="
+                    padding: 0.75rem 1.5rem;
+                    background: #ef4444;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    transition: background-color 0.2s;
+                ">Delete</button>
+            </div>
+        `;
+        
+        this.jsModal.appendChild(modalContent);
+        document.body.appendChild(this.jsModal);
+        
+        // Attach event listeners
+        const cancelBtn = modalContent.querySelector('.js-modal-cancel');
+        const confirmBtn = modalContent.querySelector('.js-modal-confirm');
+        
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => this.close());
+            cancelBtn.addEventListener('mouseover', () => {
+                cancelBtn.style.backgroundColor = '#e5e7eb';
+            });
+            cancelBtn.addEventListener('mouseout', () => {
+                cancelBtn.style.backgroundColor = '#f3f4f6';
+            });
+        }
+        
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', () => {
                 if (this.onConfirm) this.onConfirm();
                 this.close();
             });
-            
-            // Add simple drag functionality for Edge modal
-            addEdgeDragFunctionality(edgeContent);
-            
-        } else {
-            // Normal browser behavior
-            this.modal.offsetHeight;
-            this.modal.classList.add('active');
+            confirmBtn.addEventListener('mouseover', () => {
+                confirmBtn.style.backgroundColor = '#dc2626';
+            });
+            confirmBtn.addEventListener('mouseout', () => {
+                confirmBtn.style.backgroundColor = '#ef4444';
+            });
         }
+        
+        // Close on background click
+        this.jsModal.addEventListener('click', (e) => {
+            if (e.target === this.jsModal) {
+                this.close();
+            }
+        });
     }
 
     close() {
-        // Handle Edge modal
-        if (this.edgeModal) {
-            document.body.removeChild(this.edgeModal);
-            this.edgeModal = null;
+        // Handle JavaScript-based modal
+        if (this.jsModal) {
+            document.body.removeChild(this.jsModal);
+            this.jsModal = null;
         }
         
-        this.modal.classList.remove('active');
-        // Clear any inline display style
-        this.modal.style.display = '';
+        // Clear callbacks
         this.onConfirm = null;
         this.onCancel = null;
-        
-        // Reset modal position if it was dragged
-        const modalContent = this.modal.querySelector('.modal-content');
-        if (modalContent && window.dragon && window.dragon.modalDragger) {
-            window.dragon.modalDragger.resetModalPosition(modalContent);
-        }
     }
 }

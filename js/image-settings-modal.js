@@ -77,10 +77,10 @@ export class ImageSettingsModal {
                         <span id="image-opacity-value">100%</span>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-cancel">Cancel</button>
-                    <button class="btn btn-secondary" id="reset-image-settings">Reset</button>
-                    <button class="btn btn-primary" id="apply-image-settings">Apply</button>
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
+                    <button class="btn" id="cancel-image-settings" style="padding: 0.5rem 1rem; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Cancel</button>
+                    <button class="btn" id="reset-image-settings" style="padding: 0.5rem 1rem; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Reset</button>
+                    <button class="btn btn-primary" id="apply-image-settings" style="padding: 0.5rem 1rem; border: 1px solid #3b82f6; background: #3b82f6; color: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Apply</button>
                 </div>
             </div>
         `;
@@ -159,12 +159,44 @@ export class ImageSettingsModal {
         this.modal.querySelector('#image-shadow').addEventListener('change', () => this.updatePreview());
         
         // Buttons
-        this.modal.querySelector('#apply-image-settings').addEventListener('click', () => this.applySettings());
-        this.modal.querySelector('#reset-image-settings').addEventListener('click', () => this.resetSettings());
+        const applyBtn = this.modal.querySelector('#apply-image-settings');
+        const resetBtn = this.modal.querySelector('#reset-image-settings');
+        const cancelBtn = this.modal.querySelector('#cancel-image-settings');
+        
+        applyBtn.addEventListener('click', () => this.applySettings());
+        resetBtn.addEventListener('click', () => this.resetSettings());
+        cancelBtn.addEventListener('click', () => this.close());
+        
+        // Add hover effects for buttons
+        cancelBtn.addEventListener('mouseenter', () => {
+            cancelBtn.style.background = '#f8f8f8';
+            cancelBtn.style.borderColor = '#999';
+        });
+        cancelBtn.addEventListener('mouseleave', () => {
+            cancelBtn.style.background = 'white';
+            cancelBtn.style.borderColor = '#ddd';
+        });
+        
+        resetBtn.addEventListener('mouseenter', () => {
+            resetBtn.style.background = '#f8f8f8';
+            resetBtn.style.borderColor = '#999';
+        });
+        resetBtn.addEventListener('mouseleave', () => {
+            resetBtn.style.background = 'white';
+            resetBtn.style.borderColor = '#ddd';
+        });
+        
+        applyBtn.addEventListener('mouseenter', () => {
+            applyBtn.style.background = '#2563eb';
+            applyBtn.style.borderColor = '#2563eb';
+        });
+        applyBtn.addEventListener('mouseleave', () => {
+            applyBtn.style.background = '#3b82f6';
+            applyBtn.style.borderColor = '#3b82f6';
+        });
         
         // Close handlers
         this.modal.querySelector('.modal-close').addEventListener('click', () => this.close());
-        this.modal.querySelector('.btn-cancel').addEventListener('click', () => this.close());
         
         this.modal.addEventListener('click', (e) => {
             if (e.target === this.modal) {
@@ -238,9 +270,14 @@ export class ImageSettingsModal {
         // Apply preview styles
         this.targetContainer.style.backgroundColor = settings.backgroundColor;
         this.targetContainer.style.padding = settings.padding + 'px';
-        this.targetContainer.style.borderWidth = settings.borderWidth + 'px';
-        this.targetContainer.style.borderColor = settings.borderColor;
-        this.targetContainer.style.borderStyle = settings.borderStyle;
+        
+        // Apply border using shorthand to ensure all properties are set together
+        if (settings.borderWidth > 0) {
+            this.targetContainer.style.border = `${settings.borderWidth}px ${settings.borderStyle} ${settings.borderColor}`;
+        } else {
+            this.targetContainer.style.border = 'none';
+        }
+        
         this.targetContainer.style.borderRadius = settings.borderRadius + 'px';
         this.targetContainer.style.opacity = settings.opacity / 100;
         

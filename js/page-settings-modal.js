@@ -81,102 +81,563 @@ export class PageSettingsModal {
     }
 
     show() {
-        // Edge compatibility - create a completely new modal
-        const isEdge = window.navigator.userAgent.indexOf('Edge') > -1 || 
-                      window.navigator.userAgent.indexOf('Edg') > -1 ||
-                      window.navigator.userAgent.indexOf('EdgeHTML') > -1;
+        // Always use the JavaScript-based modal system for consistency
         
-        if (isEdge) {
-            // Hide the original modal
-            this.modal.style.display = 'none';
-            
-            // Create a new, simple modal for Edge
-            this.edgeModal = document.createElement('div');
-            this.edgeModal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: rgba(0,0,0,0.5);
-                z-index: 999999;
-                display: block;
-            `;
-            
-            const edgeContent = document.createElement('div');
-            edgeContent.style.cssText = `
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                width: 600px;
-                max-width: 90%;
-                background: white;
-                border-radius: 8px;
-                padding: 2rem;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-                margin-left: -300px;
-                margin-top: -200px;
-                z-index: 1000000;
-                max-height: 80vh;
-                overflow-y: auto;
-            `;
-            
-            // Copy the content from the original modal
-            const originalContent = this.modal.querySelector('.modal-content');
-            if (originalContent) {
-                edgeContent.innerHTML = originalContent.innerHTML;
+        // Create a new modal overlay
+        this.jsModal = document.createElement('div');
+        this.jsModal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            z-index: 999999;
+            display: block;
+        `;
+        
+        // Create modal content container
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 85%;
+            max-width: 900px;
+            min-width: 700px;
+            max-height: 85vh;
+            background: white;
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            transform: translate(-50%, -50%);
+            z-index: 1000000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        `;
+        
+        // Create the modal content
+        modalContent.innerHTML = `
+            <div style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 2rem 2.5rem 1.5rem 2.5rem;
+                border-bottom: 1px solid #e5e7eb;
+                background: #f8fafc;
+            ">
+                <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600; color: #1f2937;">Page Settings</h2>
+                <button class="js-modal-close" style="
+                    background: none;
+                    border: none;
+                    font-size: 1.75rem;
+                    cursor: pointer;
+                    color: #6b7280;
+                    padding: 4px;
+                    width: 32px;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 6px;
+                    transition: all 0.2s;
+                ">&times;</button>
+            </div>
+            <div style="
+                padding: 2.5rem;
+                flex: 1;
+                overflow: auto;
+                background: #fafbfc;
+            ">
+                <div class="js-modal-tabs" style="
+                    display: flex;
+                    gap: 1rem;
+                    margin-bottom: 2rem;
+                    border-bottom: 2px solid #e5e7eb;
+                ">
+                    <button class="js-tab-btn js-tab-active" data-tab="general" style="
+                        padding: 1rem 1.5rem;
+                        background: none;
+                        border: none;
+                        border-bottom: 2px solid #3b82f6;
+                        color: #3b82f6;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    ">General</button>
+                    <button class="js-tab-btn" data-tab="css" style="
+                        padding: 1rem 1.5rem;
+                        background: none;
+                        border: none;
+                        border-bottom: 2px solid transparent;
+                        color: #6b7280;
+                        font-weight: 500;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    ">CSS</button>
+                    <button class="js-tab-btn" data-tab="javascript" style="
+                        padding: 1rem 1.5rem;
+                        background: none;
+                        border: none;
+                        border-bottom: 2px solid transparent;
+                        color: #6b7280;
+                        font-weight: 500;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    ">JavaScript</button>
+                </div>
                 
-                // Style the modal header with neutral colors
-                this.styleEdgeModalHeader(edgeContent);
-                
-                // Add syntax highlighting containers to textareas
-                this.addSyntaxHighlightingToTextareas(edgeContent);
-            }
-            
-            this.edgeModal.appendChild(edgeContent);
-            document.body.appendChild(this.edgeModal);
-            
-            // Attach event listeners to the new modal
-            this.attachEdgeModalListeners(edgeContent);
-            
-            // Add simple drag functionality for Edge modal
-            this.addEdgeDragFunctionality(edgeContent);
-            
-            // Load page data into Edge modal
-            this.loadPageData();
-            
-        } else {
-            // Normal browser behavior
-            this.modal.offsetHeight;
-            this.modal.classList.add('active');
-            
-            // Load page data into regular modal
-            this.loadPageData();
-        }
+                <div class="js-tab-content">
+                    <div id="js-general-tab" class="js-tab-panel" style="display: block;">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="
+                                display: block;
+                                margin-bottom: 0.5rem;
+                                font-weight: 600;
+                                color: #374151;
+                            ">Page Name</label>
+                            <input type="text" id="js-page-name" style="
+                                width: 100%;
+                                padding: 1rem;
+                                border: 2px solid #e5e7eb;
+                                border-radius: 8px;
+                                font-size: 1rem;
+                                box-sizing: border-box;
+                            " placeholder="Enter page name">
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="
+                                display: block;
+                                margin-bottom: 0.5rem;
+                                font-weight: 600;
+                                color: #374151;
+                            ">Page Title</label>
+                            <input type="text" id="js-page-title" style="
+                                width: 100%;
+                                padding: 1rem;
+                                border: 2px solid #e5e7eb;
+                                border-radius: 8px;
+                                font-size: 1rem;
+                                box-sizing: border-box;
+                            " placeholder="Enter page title (for &lt;title&gt; tag)">
+                        </div>
+                    </div>
+                    
+                    <div id="js-css-tab" class="js-tab-panel" style="display: none;">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="
+                                display: block;
+                                margin-bottom: 1rem;
+                                font-weight: 600;
+                                color: #374151;
+                                font-size: 1.1rem;
+                            ">Custom CSS</label>
+                            <div style="
+                                position: relative;
+                                background: white;
+                                border-radius: 8px;
+                                border: 2px solid #e5e7eb;
+                                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                            ">
+                                <pre class="js-css-highlight" style="
+                                    position: absolute;
+                                    top: 0;
+                                    left: 0;
+                                    right: 0;
+                                    bottom: 0;
+                                    margin: 0;
+                                    padding: 1.5rem;
+                                    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
+                                    font-size: 14px;
+                                    line-height: 1.6;
+                                    white-space: pre-wrap;
+                                    word-wrap: break-word;
+                                    overflow: auto;
+                                    pointer-events: none;
+                                    color: #1f2937;
+                                    background: transparent;
+                                "><code></code></pre>
+                                <textarea id="js-page-css" style="
+                                    position: relative;
+                                    width: 100%;
+                                    height: 400px;
+                                    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
+                                    font-size: 14px;
+                                    line-height: 1.6;
+                                    padding: 1.5rem;
+                                    border: none;
+                                    resize: vertical;
+                                    background: transparent;
+                                    color: transparent;
+                                    caret-color: #1f2937;
+                                    -webkit-text-fill-color: transparent;
+                                    outline: none;
+                                    min-height: 400px;
+                                    box-sizing: border-box;
+                                    z-index: 2;
+                                " placeholder="/* Enter custom CSS for this page */" spellcheck="false"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="js-javascript-tab" class="js-tab-panel" style="display: none;">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="
+                                display: block;
+                                margin-bottom: 1rem;
+                                font-weight: 600;
+                                color: #374151;
+                                font-size: 1.1rem;
+                            ">Custom JavaScript</label>
+                            <div style="
+                                position: relative;
+                                background: white;
+                                border-radius: 8px;
+                                border: 2px solid #e5e7eb;
+                                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                            ">
+                                <pre class="js-js-highlight" style="
+                                    position: absolute;
+                                    top: 0;
+                                    left: 0;
+                                    right: 0;
+                                    bottom: 0;
+                                    margin: 0;
+                                    padding: 1.5rem;
+                                    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
+                                    font-size: 14px;
+                                    line-height: 1.6;
+                                    white-space: pre-wrap;
+                                    word-wrap: break-word;
+                                    overflow: auto;
+                                    pointer-events: none;
+                                    color: #1f2937;
+                                    background: transparent;
+                                "><code></code></pre>
+                                <textarea id="js-page-javascript" style="
+                                    position: relative;
+                                    width: 100%;
+                                    height: 400px;
+                                    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
+                                    font-size: 14px;
+                                    line-height: 1.6;
+                                    padding: 1.5rem;
+                                    border: none;
+                                    resize: vertical;
+                                    background: transparent;
+                                    color: transparent;
+                                    caret-color: #1f2937;
+                                    -webkit-text-fill-color: transparent;
+                                    outline: none;
+                                    min-height: 400px;
+                                    box-sizing: border-box;
+                                    z-index: 2;
+                                " placeholder="// Enter custom JavaScript for this page" spellcheck="false"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="
+                display: flex;
+                gap: 1.5rem;
+                justify-content: flex-end;
+                padding: 2rem 2.5rem;
+                border-top: 1px solid #e5e7eb;
+                background: #f8fafc;
+            ">
+                <button class="js-modal-cancel" style="
+                    padding: 1rem 2rem;
+                    background: #f3f4f6;
+                    color: #374151;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 1rem;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                ">Cancel</button>
+                <button class="js-modal-save" style="
+                    padding: 1rem 2rem;
+                    background: #3b82f6;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 1rem;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                    box-shadow: 0 2px 6px rgba(59,130,246,0.3);
+                ">Save Settings</button>
+            </div>
+        `;
+        
+        this.jsModal.appendChild(modalContent);
+        document.body.appendChild(this.jsModal);
+        
+        // Set up event listeners
+        this.setupJSModalListeners(modalContent);
+        
+        // Load page data
+        this.loadPageData();
+        
+        // Setup syntax highlighting after modal is rendered
+        setTimeout(() => {
+            this.setupSyntaxHighlighting(modalContent);
+        }, 50);
         
         // Focus the first input
         setTimeout(() => {
-            const targetModal = this.edgeModal || this.modal;
-            const firstInput = targetModal.querySelector('input[type="text"]');
+            const firstInput = modalContent.querySelector('input[type="text"]');
             if (firstInput) firstInput.focus();
         }, 100);
     }
-
-    hide() {
-        // Handle Edge modal
-        if (this.edgeModal) {
-            document.body.removeChild(this.edgeModal);
-            this.edgeModal = null;
+    
+    setupJSModalListeners(modalContent) {
+        // Close button
+        const closeBtn = modalContent.querySelector('.js-modal-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.hide());
+            closeBtn.addEventListener('mouseover', () => {
+                closeBtn.style.backgroundColor = '#e5e7eb';
+                closeBtn.style.color = '#374151';
+            });
+            closeBtn.addEventListener('mouseout', () => {
+                closeBtn.style.backgroundColor = 'transparent';
+                closeBtn.style.color = '#6b7280';
+            });
         }
         
-        this.modal.classList.remove('active');
-        // Clear any inline display style
-        this.modal.style.display = '';
+        // Tab buttons
+        const tabBtns = modalContent.querySelectorAll('.js-tab-btn');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabName = btn.dataset.tab;
+                this.switchJSTab(tabName, modalContent);
+            });
+            btn.addEventListener('mouseover', () => {
+                if (!btn.classList.contains('js-tab-active')) {
+                    btn.style.color = '#374151';
+                    btn.style.borderBottomColor = '#d1d5db';
+                }
+            });
+            btn.addEventListener('mouseout', () => {
+                if (!btn.classList.contains('js-tab-active')) {
+                    btn.style.color = '#6b7280';
+                    btn.style.borderBottomColor = 'transparent';
+                }
+            });
+        });
         
-        // Reset modal position if it was dragged
-        const modalContent = this.modal.querySelector('.modal-content');
-        if (modalContent && window.dragon && window.dragon.modalDragger) {
-            window.dragon.modalDragger.resetModalPosition(modalContent);
+        // Cancel button
+        const cancelBtn = modalContent.querySelector('.js-modal-cancel');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => this.hide());
+            cancelBtn.addEventListener('mouseover', () => {
+                cancelBtn.style.backgroundColor = '#e5e7eb';
+            });
+            cancelBtn.addEventListener('mouseout', () => {
+                cancelBtn.style.backgroundColor = '#f3f4f6';
+            });
+        }
+        
+        // Save button
+        const saveBtn = modalContent.querySelector('.js-modal-save');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => this.saveJSSettings(modalContent));
+            saveBtn.addEventListener('mouseover', () => {
+                saveBtn.style.backgroundColor = '#2563eb';
+            });
+            saveBtn.addEventListener('mouseout', () => {
+                saveBtn.style.backgroundColor = '#3b82f6';
+            });
+        }
+        
+        // Close on background click
+        this.jsModal.addEventListener('click', (e) => {
+            if (e.target === this.jsModal) {
+                this.hide();
+            }
+        });
+    }
+    
+    switchJSTab(tabName, modalContent) {
+        // Remove active from all tabs and panels
+        const tabBtns = modalContent.querySelectorAll('.js-tab-btn');
+        const tabPanels = modalContent.querySelectorAll('.js-tab-panel');
+        
+        tabBtns.forEach(btn => {
+            btn.classList.remove('js-tab-active');
+            btn.style.color = '#6b7280';
+            btn.style.borderBottomColor = 'transparent';
+            btn.style.fontWeight = '500';
+        });
+        
+        tabPanels.forEach(panel => {
+            panel.style.display = 'none';
+        });
+        
+        // Activate selected tab and panel
+        const activeBtn = modalContent.querySelector(`[data-tab="${tabName}"]`);
+        const activePanel = modalContent.querySelector(`#js-${tabName}-tab`);
+        
+        if (activeBtn) {
+            activeBtn.classList.add('js-tab-active');
+            activeBtn.style.color = '#3b82f6';
+            activeBtn.style.borderBottomColor = '#3b82f6';
+            activeBtn.style.fontWeight = '600';
+        }
+        
+        if (activePanel) {
+            activePanel.style.display = 'block';
+        }
+    }
+    
+    setupSyntaxHighlighting(modalContent) {
+        // CSS editor
+        const cssTextarea = modalContent.querySelector('#js-page-css');
+        const cssHighlight = modalContent.querySelector('.js-css-highlight code');
+        
+        if (cssTextarea && cssHighlight) {
+            const updateCSSHighlighting = () => {
+                const code = cssTextarea.value;
+                
+                // Escape HTML characters
+                let escaped = code
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+                
+                // Simple line-by-line processing to avoid regex conflicts
+                const lines = escaped.split('\n');
+                const highlightedLines = lines.map(line => {
+                    // Skip empty lines
+                    if (!line.trim()) return line;
+                    
+                    // CSS comments
+                    if (line.includes('/*') || line.includes('*/')) {
+                        return line.replace(/(\/\*.*?\*\/)/g, '<span style="color: #6b7280; font-style: italic;">$1</span>');
+                    }
+                    
+                    // CSS selectors (lines ending with {)
+                    if (line.trim().endsWith('{')) {
+                        const parts = line.split('{');
+                        const selector = parts[0].trim();
+                        return line.replace(selector, `<span style="color: #2563eb;">${selector}</span>`);
+                    }
+                    
+                    // CSS properties (lines with : but not ending with {)
+                    if (line.includes(':') && !line.trim().endsWith('{')) {
+                        const colonIndex = line.indexOf(':');
+                        const beforeColon = line.substring(0, colonIndex);
+                        const afterColon = line.substring(colonIndex);
+                        
+                        // Highlight property name
+                        const propertyMatch = beforeColon.match(/(\s*)([\w-]+)(\s*)$/);
+                        if (propertyMatch) {
+                            const highlighted = beforeColon.replace(propertyMatch[2], `<span style="color: #dc2626;">${propertyMatch[2]}</span>`);
+                            
+                            // Highlight the value part
+                            const valueMatch = afterColon.match(/^(\s*:\s*)([^;}]+)(.*)/);
+                            if (valueMatch) {
+                                return highlighted + valueMatch[1] + `<span style="color: #059669;">${valueMatch[2]}</span>` + valueMatch[3];
+                            }
+                        }
+                    }
+                    
+                    return line;
+                });
+                
+                cssHighlight.innerHTML = highlightedLines.join('\n');
+                
+                // Sync scroll
+                cssHighlight.parentElement.scrollTop = cssTextarea.scrollTop;
+                cssHighlight.parentElement.scrollLeft = cssTextarea.scrollLeft;
+            };
+            
+            cssTextarea.addEventListener('input', updateCSSHighlighting);
+            cssTextarea.addEventListener('scroll', () => {
+                cssHighlight.parentElement.scrollTop = cssTextarea.scrollTop;
+                cssHighlight.parentElement.scrollLeft = cssTextarea.scrollLeft;
+            });
+            
+            // Initial highlighting and scroll to top
+            updateCSSHighlighting();
+            setTimeout(() => {
+                cssTextarea.scrollTop = 0;
+                cssHighlight.parentElement.scrollTop = 0;
+                updateCSSHighlighting(); // Update again after scroll
+            }, 100);
+        }
+        
+        // JavaScript editor
+        const jsTextarea = modalContent.querySelector('#js-page-javascript');
+        const jsHighlight = modalContent.querySelector('.js-js-highlight code');
+        
+        if (jsTextarea && jsHighlight) {
+            const updateJSHighlighting = () => {
+                const code = jsTextarea.value;
+                
+                // Escape HTML characters
+                let escaped = code
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+                
+                // Simple approach: process specific patterns carefully
+                let highlighted = escaped;
+                
+                // JavaScript single-line comments
+                highlighted = highlighted.replace(/\/\/(.*)$/gm, '<span style="color: #6b7280; font-style: italic;">//$1</span>');
+                
+                // JavaScript multi-line comments
+                highlighted = highlighted.replace(/\/\*([\s\S]*?)\*\//g, '<span style="color: #6b7280; font-style: italic;">/*$1*/</span>');
+                
+                // JavaScript strings (simple approach)
+                highlighted = highlighted.replace(/"([^"]*)"/g, '<span style="color: #059669;">"$1"</span>');
+                highlighted = highlighted.replace(/'([^']*)'/g, '<span style="color: #059669;">\'$1\'</span>');
+                
+                // JavaScript keywords (simple approach without lookahead)
+                const keywords = ['var', 'let', 'const', 'function', 'if', 'else', 'for', 'while', 'return', 'class', 'import', 'export', 'default', 'new', 'this', 'true', 'false', 'null', 'undefined'];
+                keywords.forEach(keyword => {
+                    const regex = new RegExp(`\\b(${keyword})\\b`, 'g');
+                    highlighted = highlighted.replace(regex, `<span style="color: #7c3aed;">$1</span>`);
+                });
+                
+                // Numbers (simple approach)
+                highlighted = highlighted.replace(/\b(\d+\.?\d*)\b/g, '<span style="color: #dc2626;">$1</span>');
+                
+                jsHighlight.innerHTML = highlighted;
+                
+                // Sync scroll
+                jsHighlight.parentElement.scrollTop = jsTextarea.scrollTop;
+                jsHighlight.parentElement.scrollLeft = jsTextarea.scrollLeft;
+            };
+            
+            jsTextarea.addEventListener('input', updateJSHighlighting);
+            jsTextarea.addEventListener('scroll', () => {
+                jsHighlight.parentElement.scrollTop = jsTextarea.scrollTop;
+                jsHighlight.parentElement.scrollLeft = jsTextarea.scrollLeft;
+            });
+            
+            // Initial highlighting and scroll to top
+            updateJSHighlighting();
+            setTimeout(() => {
+                jsTextarea.scrollTop = 0;
+                jsHighlight.parentElement.scrollTop = 0;
+                updateJSHighlighting(); // Update again after scroll
+            }, 100);
+        }
+    }
+
+    hide() {
+        // Handle JavaScript-based modal
+        if (this.jsModal) {
+            document.body.removeChild(this.jsModal);
+            this.jsModal = null;
         }
     }
 
@@ -206,6 +667,35 @@ export class PageSettingsModal {
 
         this.hide();
     }
+    
+    saveJSSettings(modalContent) {
+        // Get values from our JS modal
+        this.pageData.pageName = modalContent.querySelector('#js-page-name').value;
+        this.pageData.pageTitle = modalContent.querySelector('#js-page-title').value;
+        this.pageData.customCSS = modalContent.querySelector('#js-page-css').value;
+        this.pageData.customJavaScript = modalContent.querySelector('#js-page-javascript').value;
+
+        // Store in localStorage
+        localStorage.setItem('pageSettings', JSON.stringify(this.pageData));
+
+        // Update document title if page title is set
+        if (this.pageData.pageTitle) {
+            document.title = this.pageData.pageTitle;
+        }
+
+        // Apply custom CSS
+        this.applyCustomStyles();
+
+        // Apply custom JavaScript
+        this.applyCustomJavaScript();
+
+        // Save state to history
+        if (this.editor && this.editor.stateHistory) {
+            this.editor.stateHistory.saveState();
+        }
+
+        this.hide();
+    }
 
     loadPageData() {
         // Load from localStorage
@@ -224,17 +714,34 @@ export class PageSettingsModal {
             }
         }
 
-        // Populate form fields in the active modal
-        const targetModal = this.edgeModal || document;
-        const pageName = targetModal.querySelector('#page-name');
-        const pageTitle = targetModal.querySelector('#page-title'); 
-        const pageCSS = targetModal.querySelector('#page-css');
-        const pageJS = targetModal.querySelector('#page-javascript');
+        // Populate form fields in the active modal (prioritize JS modal)
+        const targetModal = this.jsModal || document;
+        
+        // Try JS modal fields first
+        const pageName = targetModal.querySelector('#js-page-name') || targetModal.querySelector('#page-name');
+        const pageTitle = targetModal.querySelector('#js-page-title') || targetModal.querySelector('#page-title'); 
+        const pageCSS = targetModal.querySelector('#js-page-css') || targetModal.querySelector('#page-css');
+        const pageJS = targetModal.querySelector('#js-page-javascript') || targetModal.querySelector('#page-javascript');
         
         if (pageName) pageName.value = this.pageData.pageName || '';
         if (pageTitle) pageTitle.value = this.pageData.pageTitle || '';
         if (pageCSS) pageCSS.value = this.pageData.customCSS || '';
         if (pageJS) pageJS.value = this.pageData.customJavaScript || '';
+        
+        // If using JS modal, trigger syntax highlighting updates
+        if (this.jsModal && pageCSS) {
+            setTimeout(() => {
+                const event = new Event('input');
+                pageCSS.dispatchEvent(event);
+            }, 150);
+        }
+        
+        if (this.jsModal && pageJS) {
+            setTimeout(() => {
+                const event = new Event('input');
+                pageJS.dispatchEvent(event);
+            }, 150);
+        }
 
         // Apply stored styles and scripts on load
         this.applyCustomStyles();
