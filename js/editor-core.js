@@ -468,6 +468,9 @@ export class Editor {
         const panel = document.getElementById('snippet-panel');
         const handle = document.getElementById('new-panel-handle');
         
+        // Hide/show viewport controls based on mode
+        const viewportControls = document.querySelector('.viewport-controls');
+        
         if (this.currentMode === 'display') {
             // Hide panel and handle in display mode
             if (panel) {
@@ -476,6 +479,10 @@ export class Editor {
             }
             if (handle) {
                 handle.style.display = 'none';
+            }
+            // Hide viewport controls in display mode
+            if (viewportControls) {
+                viewportControls.style.display = 'none';
             }
             // Reset margin
             if (this.editableArea) {
@@ -487,6 +494,10 @@ export class Editor {
                 handle.style.display = 'flex';
                 // Reset handle position to left edge since panel should be closed
                 handle.style.left = '0px';
+            }
+            // Show viewport controls in edit mode
+            if (viewportControls) {
+                viewportControls.style.display = 'flex';
             }
         }
         
