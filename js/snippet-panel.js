@@ -104,6 +104,9 @@ export class SnippetPanel {
     attachDragListeners() {
         this.snippetList.querySelectorAll('[draggable="true"]').forEach(item => {
             item.addEventListener('dragstart', (e) => {
+                // Save state before drag operation begins
+                this.editor.stateHistory.saveState();
+                
                 e.dataTransfer.effectAllowed = 'copy';
                 e.dataTransfer.setData('elementType', item.dataset.type);
                 e.dataTransfer.setData('snippetType', item.dataset.snippetType || '');

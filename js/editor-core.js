@@ -528,6 +528,8 @@ export class Editor {
             
             // Dragstart for existing elements
             if (draggedElement) {
+                // Save state before moving existing elements
+                this.stateHistory.saveState();
                 console.log('Processing existing element drag, dragFromHandle:', draggedElement.dataset.dragFromHandle);
                 
                 // Check if drag was initiated from handle
@@ -733,7 +735,6 @@ export class Editor {
                     } else {
                         area.insertBefore(draggingElement, afterElement);
                     }
-                    this.stateHistory.saveState();
                     this.originalPosition = null; // Clear since drop was successful
                 } else {
                     // Create a new block from panel
@@ -744,7 +745,6 @@ export class Editor {
                     } else {
                         area.insertBefore(block, afterElement);
                     }
-                    this.stateHistory.saveState();
                 }
             } else if (elementType === 'snippet') {
                 // Find the closest column first, then block
@@ -778,7 +778,6 @@ export class Editor {
                             console.log('Inserted snippet before element');
                         }
                         
-                        this.stateHistory.saveState();
                         this.originalPosition = null; // Clear since drop was successful
                         console.log('Existing snippet moved successfully');
                     } else {
@@ -797,8 +796,6 @@ export class Editor {
                         if (snippetType === 'image') {
                             this.imageUploader.setupImageSnippet(snippet);
                         }
-                        
-                        this.stateHistory.saveState();
                         console.log('New snippet created successfully');
                     }
                 } else {

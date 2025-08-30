@@ -14,6 +14,12 @@ export class StateHistory {
     saveState() {
         const state = this.editor.editableArea.innerHTML;
         
+        // Don't save if the state is identical to the current state
+        if (this.history.length > 0 && this.history[this.currentIndex] === state) {
+            console.log('StateHistory: Skipping duplicate state save');
+            return;
+        }
+        
         if (this.currentIndex < this.history.length - 1) {
             this.history = this.history.slice(0, this.currentIndex + 1);
         }
@@ -25,12 +31,15 @@ export class StateHistory {
         } else {
             this.currentIndex++;
         }
+        
+        console.log('StateHistory: Saved state, total states:', this.history.length, 'current index:', this.currentIndex);
     }
 
     undo() {
         if (this.currentIndex > 0) {
             this.currentIndex--;
             this.editor.editableArea.innerHTML = this.history[this.currentIndex];
+            this.restoreFunctionality();
         }
     }
 
@@ -38,6 +47,35 @@ export class StateHistory {
         if (this.currentIndex < this.history.length - 1) {
             this.currentIndex++;
             this.editor.editableArea.innerHTML = this.history[this.currentIndex];
+            this.restoreFunctionality();
         }
+    }
+
+    restoreFunctionality() {
+        // Restore contentEditable functionality and drag handles after innerHTML change
+        // Similar to the fix we applied in CodeEditorModal
+        
+        // Re-initialize all blocks and snippets
+        this.editor.makeExistingBlocksEditable();
+        
+        // Restore drag functionality for all elements
+        const allElements = this.editor.editableArea.querySelectorAll('.editor-block, .editor-snippet');
+        allElements.forEach(element => {
+            this.editor.attachDragHandleListeners(element);
+        });
+        
+        // Apply Firefox fixes if needed
+        const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        if (isFirefox && this.editor.formattingToolbar) {
+            this.editor.formattingToolbar.fixFirefoxEditableElements();
+        }
+        
+        // Re-setup image snippets
+        const imageSnippets = this.editor.editableArea.querySelectorAll('.image-snippet');
+        imageSnippets.forEach(snippet => {
+            if (this.editor.imageUploader) {
+                this.editor.imageUploader.setupImageSnippet(snippet);
+            }
+        });
     }
 }
