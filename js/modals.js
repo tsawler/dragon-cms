@@ -905,18 +905,69 @@ export class CodeEditorModal {
             // Update the element with new HTML but keep controls
             this.targetElement.innerHTML = controls.join('') + newHTML;
             
-            // Re-enable editor functionality by making elements editable and draggable
-            this.targetElement.querySelectorAll('[contenteditable]').forEach(el => {
-                el.contentEditable = true;
+            // Make text elements editable and fix Firefox cursor positioning
+            const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+            const textElements = this.targetElement.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, li, td, th, blockquote');
+            textElements.forEach(el => {
+                if (!el.querySelector('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon') && 
+                    !el.classList.contains('drag-handle') && 
+                    !el.classList.contains('edit-icon') && 
+                    !el.classList.contains('code-icon') && 
+                    !el.classList.contains('delete-icon') && 
+                    !el.classList.contains('settings-icon') &&
+                    !el.closest('button')) {
+                    el.contentEditable = true;
+                    el.style.outline = 'none';
+                    
+                    // Firefox-specific cursor positioning fix
+                    if (isFirefox) {
+                        el.addEventListener('mousedown', (e) => {
+                            // Clear any existing selection
+                            const selection = window.getSelection();
+                            selection.removeAllRanges();
+                            
+                            // Use caretPositionFromPoint for Firefox
+                            if (document.caretPositionFromPoint) {
+                                const caretPosition = document.caretPositionFromPoint(e.clientX, e.clientY);
+                                if (caretPosition) {
+                                    const range = document.createRange();
+                                    range.setStart(caretPosition.offsetNode, caretPosition.offset);
+                                    range.collapse(true);
+                                    selection.addRange(range);
+                                }
+                            }
+                        });
+                        
+                        el.addEventListener('click', (e) => {
+                            // Additional click handler to ensure cursor positioning works
+                            setTimeout(() => {
+                                if (document.caretPositionFromPoint) {
+                                    const selection = window.getSelection();
+                                    const caretPosition = document.caretPositionFromPoint(e.clientX, e.clientY);
+                                    if (caretPosition) {
+                                        const range = document.createRange();
+                                        range.setStart(caretPosition.offsetNode, caretPosition.offset);
+                                        range.collapse(true);
+                                        selection.removeAllRanges();
+                                        selection.addRange(range);
+                                    }
+                                }
+                            }, 1);
+                        });
+                    }
+                }
             });
             
-            // Re-apply any data attributes that the editor needs
-            this.targetElement.querySelectorAll('.editor-snippet').forEach(snippet => {
-                snippet.draggable = true;
-            });
-            this.targetElement.querySelectorAll('.editor-block').forEach(block => {
-                block.draggable = true;
-            });
+            // Simply call the same method that makes new snippets work
+            this.editor.attachDragHandleListeners(this.targetElement);
+            
+            // Apply Firefox fixes for contentEditable elements to ensure formatting toolbar works
+            if (this.editor.formattingToolbar && this.editor.formattingToolbar.fixFirefoxEditableElements) {
+                // Small delay to ensure DOM is ready
+                setTimeout(() => {
+                    this.editor.formattingToolbar.fixFirefoxEditableElements();
+                }, 10);
+            }
             
             // Ensure the target element itself is draggable if it should be
             if (this.targetElement.classList.contains('editor-block') || this.targetElement.classList.contains('editor-snippet')) {
@@ -935,6 +986,7 @@ export class CodeEditorModal {
         
         this.close();
     }
+    
 }
 
 export class ColumnSettingsModal {
