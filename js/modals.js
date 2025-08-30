@@ -943,6 +943,14 @@ export class ColumnSettingsModal {
         this.targetBlock = null;
         this.tempColumns = [];
         this.modal = null;
+        this.blockSettings = {
+            width: '',
+            fullWidth: false,
+            height: '',
+            backgroundColor: '',
+            backgroundImage: '',
+            contentWidth: ''
+        };
         this.createModal();
     }
 
@@ -950,28 +958,119 @@ export class ColumnSettingsModal {
         this.modal = document.createElement('div');
         this.modal.className = 'modal';
         this.modal.innerHTML = `
-            <div class="modal-content" style="width: 400px; max-width: 90%;">
+            <div class="modal-content" style="width: 550px; max-width: 90%; max-height: 90vh; overflow-y: auto;">
                 <div class="modal-header">
-                    <h2>Column Settings</h2>
+                    <h2>Block Settings</h2>
                     <button class="modal-close">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <div class="column-preview" style="margin-bottom: 1.5rem;">
-                        <p style="margin-bottom: 0.5rem; color: #6b7280; font-size: 0.875rem;">Current columns: <span id="column-count">1</span></p>
-                        <div id="column-visual" style="display: flex; gap: 5px; height: 40px;"></div>
+                    <!-- Tab Navigation -->
+                    <div class="tabs-nav" style="display: flex; border-bottom: 2px solid #e5e7eb; margin-bottom: 1.5rem;">
+                        <button class="tab-btn active" data-tab="layout" style="padding: 0.75rem 1.5rem; background: none; border: none; border-bottom: 2px solid #3b82f6; color: #3b82f6; font-weight: 500; cursor: pointer; transition: all 0.2s;">Layout</button>
+                        <button class="tab-btn" data-tab="columns" style="padding: 0.75rem 1.5rem; background: none; border: none; border-bottom: 2px solid transparent; color: #6b7280; font-weight: 500; cursor: pointer; transition: all 0.2s;">Columns</button>
+                        <button class="tab-btn" data-tab="background" style="padding: 0.75rem 1.5rem; background: none; border: none; border-bottom: 2px solid transparent; color: #6b7280; font-weight: 500; cursor: pointer; transition: all 0.2s;">Background</button>
                     </div>
-                    <div class="column-controls" style="display: flex; gap: 1rem; justify-content: center;">
-                        <button id="remove-column-btn" class="btn" style="display: flex; align-items: center; gap: 0.25rem; padding: 0.5rem 1rem; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-                            <span style="font-size: 1.25rem;">−</span> Remove Column
-                        </button>
-                        <button id="add-column-btn" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.25rem; padding: 0.5rem 1rem; border: 1px solid #3b82f6; background: #3b82f6; color: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-                            <span style="font-size: 1.25rem;">+</span> Add Column
-                        </button>
+                    
+                    <!-- Tab Content -->
+                    <div class="tabs-content">
+                        <!-- Layout Tab -->
+                        <div class="tab-pane active" data-tab="layout">
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <input type="checkbox" id="full-width-check" style="width: 16px; height: 16px;">
+                                    <span style="font-size: 0.875rem; font-weight: 500;">Full viewport width (edge to edge)</span>
+                                </label>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Block Width</label>
+                                <input type="text" id="block-width" placeholder="e.g., 100%, 1200px, 90vw" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem;">
+                                <small style="color: #6b7280; font-size: 0.75rem;">Use %, px, or vw units</small>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Block Height</label>
+                                <input type="text" id="block-height" placeholder="e.g., 400px, 50vh, auto" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem;">
+                                <small style="color: #6b7280; font-size: 0.75rem;">Use px, vh, or auto</small>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Content Max Width</label>
+                                <input type="text" id="content-width" placeholder="e.g., 1200px, 90%" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem;">
+                                <small style="color: #6b7280; font-size: 0.75rem;">Controls the maximum width of content inside the block</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Columns Tab -->
+                        <div class="tab-pane" data-tab="columns" style="display: none;">
+                            <div class="column-preview" style="margin-bottom: 1.5rem;">
+                                <p style="margin-bottom: 0.75rem; color: #374151; font-size: 0.875rem; font-weight: 500;">Current columns: <span id="column-count" style="font-weight: 600;">1</span></p>
+                                <div id="column-visual" style="display: flex; gap: 8px; height: 60px; padding: 10px; background: #f9fafb; border-radius: 8px;"></div>
+                            </div>
+                            <div class="column-controls" style="display: flex; gap: 1rem; justify-content: center;">
+                                <button id="remove-column-btn" class="btn" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s;">
+                                    <span style="font-size: 1.25rem;">−</span> Remove
+                                </button>
+                                <button id="add-column-btn" class="btn btn-primary" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border: 1px solid #3b82f6; background: #3b82f6; color: white; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s;">
+                                    <span style="font-size: 1.25rem;">+</span> Add Column
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Background Tab -->
+                        <div class="tab-pane" data-tab="background" style="display: none;">
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Background Color</label>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="color" id="bg-color-picker" style="width: 50px; height: 40px; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer;">
+                                    <input type="text" id="bg-color-text" placeholder="#ffffff or transparent" style="flex: 1; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem;">
+                                    <button id="clear-color-btn" style="padding: 0.5rem 1rem; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">Clear</button>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Background Image</label>
+                                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <input type="text" id="bg-image" placeholder="https://example.com/image.jpg or gradient" style="flex: 1; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem;">
+                                    <input type="file" id="bg-image-file" accept="image/*" style="display: none;">
+                                    <button id="browse-image-btn" style="padding: 0.5rem 1rem; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">Browse</button>
+                                </div>
+                                <small style="color: #6b7280; font-size: 0.75rem;">Enter URL, CSS gradient, or browse for local image</small>
+                                <div id="bg-image-preview" style="margin-top: 1rem; display: none;">
+                                    <img src="" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 6px; border: 1px solid #d1d5db;">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Background Size</label>
+                                <select id="bg-size" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem;">
+                                    <option value="cover">Cover (default)</option>
+                                    <option value="contain">Contain</option>
+                                    <option value="auto">Auto</option>
+                                    <option value="100% 100%">Stretch</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Background Position</label>
+                                <select id="bg-position" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem;">
+                                    <option value="center">Center (default)</option>
+                                    <option value="top">Top</option>
+                                    <option value="bottom">Bottom</option>
+                                    <option value="left">Left</option>
+                                    <option value="right">Right</option>
+                                    <option value="top left">Top Left</option>
+                                    <option value="top right">Top Right</option>
+                                    <option value="bottom left">Bottom Left</option>
+                                    <option value="bottom right">Bottom Right</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
-                    <button class="btn modal-cancel" style="padding: 0.5rem 1rem; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Cancel</button>
-                    <button class="btn btn-success modal-apply" style="padding: 0.5rem 1rem; border: 1px solid #10b981; background: #10b981; color: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Apply</button>
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+                    <button class="btn modal-cancel" style="padding: 0.5rem 1.5rem; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s;">Cancel</button>
+                    <button class="btn btn-success modal-apply" style="padding: 0.5rem 1.5rem; border: 1px solid #10b981; background: #10b981; color: white; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s;">Apply Changes</button>
                 </div>
             </div>
         `;
@@ -987,11 +1086,117 @@ export class ColumnSettingsModal {
         const addBtn = this.modal.querySelector('#add-column-btn');
         const removeBtn = this.modal.querySelector('#remove-column-btn');
         
+        // Tab elements
+        const tabBtns = this.modal.querySelectorAll('.tab-btn');
+        const tabPanes = this.modal.querySelectorAll('.tab-pane');
+        
+        // Layout settings
+        const fullWidthCheck = this.modal.querySelector('#full-width-check');
+        const blockWidthInput = this.modal.querySelector('#block-width');
+        
+        // Background settings
+        const bgColorPicker = this.modal.querySelector('#bg-color-picker');
+        const bgColorText = this.modal.querySelector('#bg-color-text');
+        const clearColorBtn = this.modal.querySelector('#clear-color-btn');
+        const browseImageBtn = this.modal.querySelector('#browse-image-btn');
+        const bgImageFile = this.modal.querySelector('#bg-image-file');
+        const bgImageInput = this.modal.querySelector('#bg-image');
+        const bgImagePreview = this.modal.querySelector('#bg-image-preview');
+        
+        // Basic listeners
         closeBtn.addEventListener('click', () => this.close());
         cancelBtn.addEventListener('click', () => this.close());
         applyBtn.addEventListener('click', () => this.applyChanges());
         addBtn.addEventListener('click', () => this.addColumn());
         removeBtn.addEventListener('click', () => this.removeColumn());
+        
+        // Tab switching
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const targetTab = e.target.dataset.tab;
+                
+                // Update active states
+                tabBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.style.borderBottomColor = 'transparent';
+                    b.style.color = '#6b7280';
+                });
+                e.target.classList.add('active');
+                e.target.style.borderBottomColor = '#3b82f6';
+                e.target.style.color = '#3b82f6';
+                
+                // Show corresponding pane
+                tabPanes.forEach(pane => {
+                    pane.style.display = pane.dataset.tab === targetTab ? 'block' : 'none';
+                });
+            });
+        });
+        
+        // Sync full width checkbox with width input
+        fullWidthCheck.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                blockWidthInput.value = '100vw';
+                blockWidthInput.disabled = true;
+            } else {
+                blockWidthInput.disabled = false;
+                if (blockWidthInput.value === '100vw') {
+                    blockWidthInput.value = '';
+                }
+            }
+        });
+        
+        // Sync color picker with text input
+        bgColorPicker.addEventListener('input', (e) => {
+            bgColorText.value = e.target.value;
+        });
+        
+        bgColorText.addEventListener('input', (e) => {
+            const color = e.target.value;
+            if (color.match(/^#[0-9A-Fa-f]{6}$/)) {
+                bgColorPicker.value = color;
+            }
+        });
+        
+        // Clear color button
+        clearColorBtn.addEventListener('click', () => {
+            bgColorText.value = '';
+            bgColorPicker.value = '#000000';
+        });
+        
+        // Browse image button
+        browseImageBtn.addEventListener('click', () => {
+            bgImageFile.click();
+        });
+        
+        // Handle file selection
+        bgImageFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const dataUrl = event.target.result;
+                    bgImageInput.value = dataUrl;
+                    
+                    // Show preview
+                    const previewImg = bgImagePreview.querySelector('img');
+                    previewImg.src = dataUrl;
+                    bgImagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Update preview when URL changes
+        bgImageInput.addEventListener('input', (e) => {
+            const value = e.target.value;
+            if (value && !value.startsWith('linear-gradient') && !value.startsWith('radial-gradient')) {
+                const previewImg = bgImagePreview.querySelector('img');
+                previewImg.src = value;
+                bgImagePreview.style.display = 'block';
+            } else {
+                bgImagePreview.style.display = 'none';
+            }
+        });
         
         // Close on background click
         this.modal.addEventListener('click', (e) => {
@@ -1011,6 +1216,7 @@ export class ColumnSettingsModal {
     open(block) {
         this.targetBlock = block;
         this.tempColumns = this.getCurrentColumns();
+        this.loadBlockSettings();
         this.updatePreview();
         
         // Edge compatibility - create a completely new modal
@@ -1064,18 +1270,50 @@ export class ColumnSettingsModal {
             this.edgeModal.appendChild(edgeContent);
             document.body.appendChild(this.edgeModal);
             
-            // Attach event listeners to the new modal - Column Settings specific
+            // Attach event listeners to the new modal - Block Settings specific
             const closeBtn = edgeContent.querySelector('.modal-close');
             const cancelBtn = edgeContent.querySelector('.modal-cancel');
             const applyBtn = edgeContent.querySelector('.modal-apply');
             const addBtn = edgeContent.querySelector('#add-column-btn');
             const removeBtn = edgeContent.querySelector('#remove-column-btn');
+            const fullWidthCheck = edgeContent.querySelector('#full-width-check');
+            const blockWidthInput = edgeContent.querySelector('#block-width');
+            const bgColorPicker = edgeContent.querySelector('#bg-color-picker');
+            const bgColorText = edgeContent.querySelector('#bg-color-text');
             
             if (closeBtn) closeBtn.addEventListener('click', () => this.close());
             if (cancelBtn) cancelBtn.addEventListener('click', () => this.close());
             if (applyBtn) applyBtn.addEventListener('click', () => this.applyChanges());
             if (addBtn) addBtn.addEventListener('click', () => this.addColumn());
             if (removeBtn) removeBtn.addEventListener('click', () => this.removeColumn());
+            
+            // Add new block settings event listeners for Edge
+            if (fullWidthCheck && blockWidthInput) {
+                fullWidthCheck.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        blockWidthInput.value = '100vw';
+                        blockWidthInput.disabled = true;
+                    } else {
+                        blockWidthInput.disabled = false;
+                        if (blockWidthInput.value === '100vw') {
+                            blockWidthInput.value = '';
+                        }
+                    }
+                });
+            }
+            
+            if (bgColorPicker && bgColorText) {
+                bgColorPicker.addEventListener('input', (e) => {
+                    bgColorText.value = e.target.value;
+                });
+                
+                bgColorText.addEventListener('input', (e) => {
+                    const color = e.target.value;
+                    if (color.match(/^#[0-9A-Fa-f]{6}$/)) {
+                        bgColorPicker.value = color;
+                    }
+                });
+            }
             
             // Close on background click
             this.edgeModal.addEventListener('click', (e) => {
@@ -1127,6 +1365,86 @@ export class ColumnSettingsModal {
         console.log('Modal closed, classes:', this.modal.className);
     }
 
+    loadBlockSettings() {
+        // Get current block settings from styles
+        const blockStyle = this.targetBlock.style;
+        const computedStyle = window.getComputedStyle(this.targetBlock);
+        
+        // Use Edge modal if it exists, otherwise use regular modal
+        const modalToUse = this.edgeModal || this.modal;
+        
+        // Load width settings
+        const width = blockStyle.width || '';
+        const fullWidthCheck = modalToUse.querySelector('#full-width-check');
+        const blockWidthInput = modalToUse.querySelector('#block-width');
+        
+        if (width === '100vw' || this.targetBlock.classList.contains('full-width')) {
+            fullWidthCheck.checked = true;
+            blockWidthInput.value = '100vw';
+            blockWidthInput.disabled = true;
+        } else {
+            fullWidthCheck.checked = false;
+            blockWidthInput.value = width;
+            blockWidthInput.disabled = false;
+        }
+        
+        // Load height
+        const blockHeightInput = modalToUse.querySelector('#block-height');
+        blockHeightInput.value = blockStyle.height || '';
+        
+        // Load background color
+        const bgColorPicker = modalToUse.querySelector('#bg-color-picker');
+        const bgColorText = modalToUse.querySelector('#bg-color-text');
+        const bgColor = blockStyle.backgroundColor || '';
+        
+        if (bgColor && bgColor !== 'transparent') {
+            bgColorText.value = bgColor;
+            // Try to set color picker if it's a valid hex color
+            if (bgColor.match(/^#[0-9A-Fa-f]{6}$/)) {
+                bgColorPicker.value = bgColor;
+            }
+        }
+        
+        // Load background image
+        const bgImageInput = modalToUse.querySelector('#bg-image');
+        const bgImagePreview = modalToUse.querySelector('#bg-image-preview');
+        const bgImage = blockStyle.backgroundImage;
+        if (bgImage && bgImage !== 'none') {
+            // Extract URL from background-image property
+            const urlMatch = bgImage.match(/url\(['"]?(.*?)['"]?\)/);
+            if (urlMatch) {
+                bgImageInput.value = urlMatch[1];
+                // Show preview if it's an image URL
+                if (!urlMatch[1].startsWith('linear-gradient') && !urlMatch[1].startsWith('radial-gradient')) {
+                    const previewImg = bgImagePreview.querySelector('img');
+                    previewImg.src = urlMatch[1];
+                    bgImagePreview.style.display = 'block';
+                }
+            } else {
+                bgImageInput.value = bgImage;
+            }
+        }
+        
+        // Load background size
+        const bgSizeSelect = modalToUse.querySelector('#bg-size');
+        if (bgSizeSelect) {
+            bgSizeSelect.value = blockStyle.backgroundSize || 'cover';
+        }
+        
+        // Load background position
+        const bgPositionSelect = modalToUse.querySelector('#bg-position');
+        if (bgPositionSelect) {
+            bgPositionSelect.value = blockStyle.backgroundPosition || 'center';
+        }
+        
+        // Load content width
+        const contentWidthInput = modalToUse.querySelector('#content-width');
+        const contentWrapper = this.targetBlock.querySelector('.block-content-wrapper');
+        if (contentWrapper) {
+            contentWidthInput.value = contentWrapper.style.maxWidth || '';
+        }
+    }
+    
     getCurrentColumns() {
         // Check for column-container first
         const columnContainer = this.targetBlock.querySelector('.column-container');
@@ -1176,13 +1494,22 @@ export class ColumnSettingsModal {
         const visualDiv = modalToUse.querySelector('#column-visual');
         const removeBtn = modalToUse.querySelector('#remove-column-btn');
         
+        if (!countSpan || !visualDiv || !removeBtn) return;
+        
         countSpan.textContent = this.tempColumns.length;
         
-        // Update visual preview
+        // Update visual preview with improved styling
         visualDiv.innerHTML = '';
         for (let i = 0; i < this.tempColumns.length; i++) {
             const colDiv = document.createElement('div');
-            colDiv.style.cssText = 'flex: 1; background: #e2e8f0; border-radius: 4px;';
+            colDiv.style.cssText = 'flex: 1; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 6px; position: relative;';
+            
+            // Add column number
+            const colNumber = document.createElement('span');
+            colNumber.textContent = i + 1;
+            colNumber.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: bold; font-size: 0.875rem;';
+            colDiv.appendChild(colNumber);
+            
             visualDiv.appendChild(colDiv);
         }
         
@@ -1217,6 +1544,119 @@ export class ColumnSettingsModal {
     }
 
     applyChanges() {
+        console.log('Applying block settings and column changes');
+        
+        // Use Edge modal if it exists, otherwise use regular modal
+        const modalToUse = this.edgeModal || this.modal;
+        
+        // Apply block settings
+        const fullWidthCheck = modalToUse.querySelector('#full-width-check');
+        const blockWidthInput = modalToUse.querySelector('#block-width');
+        const blockHeightInput = modalToUse.querySelector('#block-height');
+        const bgColorText = modalToUse.querySelector('#bg-color-text');
+        const bgImageInput = modalToUse.querySelector('#bg-image');
+        const contentWidthInput = modalToUse.querySelector('#content-width');
+        
+        // Apply width settings
+        if (fullWidthCheck.checked) {
+            this.targetBlock.classList.add('full-width');
+            // Clear inline width styles, let CSS class handle it
+            this.targetBlock.style.width = '';
+            this.targetBlock.style.maxWidth = '';
+            this.targetBlock.style.marginLeft = '';
+            this.targetBlock.style.marginRight = '';
+        } else {
+            this.targetBlock.classList.remove('full-width');
+            this.targetBlock.style.marginLeft = '';
+            this.targetBlock.style.marginRight = '';
+            this.targetBlock.style.maxWidth = '';
+            if (blockWidthInput.value) {
+                this.targetBlock.style.width = blockWidthInput.value;
+            } else {
+                this.targetBlock.style.width = '';
+            }
+        }
+        
+        // Apply height
+        if (blockHeightInput.value) {
+            this.targetBlock.style.height = blockHeightInput.value;
+        } else {
+            this.targetBlock.style.height = '';
+        }
+        
+        // Apply background color
+        if (bgColorText.value) {
+            this.targetBlock.style.backgroundColor = bgColorText.value;
+        } else {
+            this.targetBlock.style.backgroundColor = '';
+        }
+        
+        // Apply background image
+        const bgSizeSelect = modalToUse.querySelector('#bg-size');
+        const bgPositionSelect = modalToUse.querySelector('#bg-position');
+        
+        if (bgImageInput.value) {
+            console.log('Applying background image:', bgImageInput.value.substring(0, 100) + '...');
+            if (bgImageInput.value.startsWith('linear-gradient') || bgImageInput.value.startsWith('radial-gradient')) {
+                // Gradients don't need url() wrapper
+                this.targetBlock.style.backgroundImage = bgImageInput.value;
+            } else {
+                // All other values (URLs and data URLs) need url() wrapper
+                this.targetBlock.style.backgroundImage = `url("${bgImageInput.value}")`;
+            }
+            this.targetBlock.style.backgroundSize = bgSizeSelect.value || 'cover';
+            this.targetBlock.style.backgroundPosition = bgPositionSelect.value || 'center';
+            this.targetBlock.style.backgroundRepeat = 'no-repeat';
+            console.log('Applied background styles:', {
+                backgroundImage: this.targetBlock.style.backgroundImage.substring(0, 50) + '...',
+                backgroundSize: this.targetBlock.style.backgroundSize,
+                backgroundPosition: this.targetBlock.style.backgroundPosition
+            });
+        } else {
+            this.targetBlock.style.backgroundImage = '';
+            this.targetBlock.style.backgroundSize = '';
+            this.targetBlock.style.backgroundPosition = '';
+            this.targetBlock.style.backgroundRepeat = '';
+        }
+        
+        // Apply content width - wrap existing content if needed
+        const hasContentWrapper = this.targetBlock.querySelector('.block-content-wrapper');
+        
+        if (contentWidthInput.value && !hasContentWrapper) {
+            // Need to wrap content
+            const wrapper = document.createElement('div');
+            wrapper.className = 'block-content-wrapper';
+            wrapper.style.maxWidth = contentWidthInput.value;
+            wrapper.style.margin = '0 auto';
+            wrapper.style.padding = '0 20px';
+            
+            // Move all non-control elements into wrapper
+            const elementsToWrap = [];
+            Array.from(this.targetBlock.children).forEach(child => {
+                if (!child.classList.contains('drag-handle') &&
+                    !child.classList.contains('edit-icon') &&
+                    !child.classList.contains('settings-icon') &&
+                    !child.classList.contains('code-icon') &&
+                    !child.classList.contains('delete-icon') &&
+                    !child.classList.contains('resizer-handle')) {
+                    elementsToWrap.push(child);
+                }
+            });
+            
+            elementsToWrap.forEach(el => wrapper.appendChild(el));
+            this.targetBlock.appendChild(wrapper);
+        } else if (contentWidthInput.value && hasContentWrapper) {
+            // Update existing wrapper
+            hasContentWrapper.style.maxWidth = contentWidthInput.value;
+        } else if (!contentWidthInput.value && hasContentWrapper) {
+            // Remove wrapper
+            while (hasContentWrapper.firstChild) {
+                this.targetBlock.insertBefore(hasContentWrapper.firstChild, hasContentWrapper);
+            }
+            hasContentWrapper.remove();
+        }
+        
+        // Now handle column changes
         console.log('Applying column changes:', {
             columnCount: this.tempColumns.length,
             columns: this.tempColumns
@@ -1228,14 +1668,25 @@ export class ColumnSettingsModal {
             controlsHTML.push(el.outerHTML);
         });
         
-        // Clear block content
-        this.targetBlock.innerHTML = '';
+        // Get content wrapper if it exists
+        const contentWrapper = this.targetBlock.querySelector('.block-content-wrapper');
+        const targetContainer = contentWrapper || this.targetBlock;
         
-        // Re-add controls using innerHTML to preserve event handlers
-        const controlsContainer = document.createElement('div');
-        controlsContainer.innerHTML = controlsHTML.join('');
-        while (controlsContainer.firstChild) {
-            this.targetBlock.appendChild(controlsContainer.firstChild);
+        // Clear content (but not controls)
+        if (contentWrapper) {
+            contentWrapper.innerHTML = '';
+        } else {
+            // Remove all non-control elements
+            Array.from(this.targetBlock.children).forEach(child => {
+                if (!child.classList.contains('drag-handle') &&
+                    !child.classList.contains('edit-icon') &&
+                    !child.classList.contains('settings-icon') &&
+                    !child.classList.contains('code-icon') &&
+                    !child.classList.contains('delete-icon') &&
+                    !child.classList.contains('resizer-handle')) {
+                    child.remove();
+                }
+            });
         }
         
         if (this.tempColumns.length === 1) {
@@ -1243,7 +1694,7 @@ export class ColumnSettingsModal {
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = this.tempColumns[0].content;
             while (tempDiv.firstChild) {
-                this.targetBlock.appendChild(tempDiv.firstChild);
+                targetContainer.appendChild(tempDiv.firstChild);
             }
         } else {
             // Multiple columns - create column container
@@ -1259,7 +1710,7 @@ export class ColumnSettingsModal {
                 container.appendChild(column);
             });
             
-            this.targetBlock.appendChild(container);
+            targetContainer.appendChild(container);
         }
         
         // Save state

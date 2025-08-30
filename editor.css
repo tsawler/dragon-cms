@@ -283,6 +283,83 @@
     border: none;
 }
 
+/* Full-width blocks - base styles */
+.dragon-editor .editor-block.full-width {
+    position: relative;
+    padding-left: 0;
+    padding-right: 0;
+    box-sizing: border-box;
+}
+
+/* Desktop mode - true full viewport width (default behavior) */
+.dragon-editor .editable-area.viewport-desktop .editor-block.full-width {
+    width: 100vw;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+}
+
+/* Tablet mode - extend to container edges */
+.dragon-editor .editable-area.viewport-tablet .editor-block.full-width {
+    width: calc(100% + 4rem);
+    margin-left: -2rem;
+    margin-right: -2rem;
+}
+
+/* Mobile mode - extend to container edges */
+.dragon-editor .editable-area.viewport-mobile .editor-block.full-width {
+    width: calc(100% + 4rem);
+    margin-left: -2rem;
+    margin-right: -2rem;
+}
+
+/* Responsive columns - stack on mobile and tablet with higher specificity */
+.dragon-editor .editable-area.viewport-mobile .editor-block .column-container,
+.dragon-editor .editable-area.viewport-tablet .editor-block .column-container,
+.dragon-editor .editable-area.viewport-mobile .editor-block .two-column-container,
+.dragon-editor .editable-area.viewport-tablet .editor-block .two-column-container,
+.dragon-editor .editable-area.viewport-mobile .editor-block .three-column-container,
+.dragon-editor .editable-area.viewport-tablet .editor-block .three-column-container {
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+}
+
+.dragon-editor .editable-area.viewport-mobile .editor-block .column,
+.dragon-editor .editable-area.viewport-tablet .editor-block .column {
+    flex: none !important;
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+}
+
+/* Ensure proper spacing on mobile */
+.dragon-editor .editable-area.viewport-mobile .editor-block .column {
+    min-height: auto !important;
+    padding: 1rem 0 !important;
+}
+
+.dragon-editor .editable-area.viewport-tablet .editor-block .column {
+    padding: 1rem 0 !important;
+}
+
+/* Ensure full-width blocks' content can have padding if needed - but not control buttons */
+.dragon-editor .editor-block.full-width > *:not(.drag-handle):not(.edit-icon):not(.settings-icon):not(.code-icon):not(.delete-icon):not(.resizer-handle) {
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+/* Prevent horizontal scroll from full-width blocks */
+.dragon-editor .editor-container {
+    overflow-x: hidden;
+}
+
+/* Block content wrapper for content width control */
+.dragon-editor .block-content-wrapper {
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
 .dragon-editor .editor-block.drag-over{
     background: #eff6ff;
     border-color: #3b82f6;

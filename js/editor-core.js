@@ -1462,6 +1462,9 @@ export class Editor {
         document.getElementById('mobile-viewport').addEventListener('click', () => this.setViewportSize('375px'));
         document.getElementById('tablet-viewport').addEventListener('click', () => this.setViewportSize('768px'));
         document.getElementById('desktop-viewport').addEventListener('click', () => this.setViewportSize('100%'));
+        
+        // Initialize desktop mode
+        this.editableArea.classList.add('viewport-desktop');
     }
     
     makeExistingBlocksEditable() {
@@ -1513,6 +1516,16 @@ export class Editor {
     setViewportSize(width) {
         this.editableArea.style.maxWidth = width;
         this.editableArea.style.margin = width === '100%' ? '0' : '0 auto';
+        
+        // Add viewport classes for full-width block responsiveness
+        this.editableArea.classList.remove('viewport-mobile', 'viewport-tablet', 'viewport-desktop');
+        if (width === '375px') {
+            this.editableArea.classList.add('viewport-mobile');
+        } else if (width === '768px') {
+            this.editableArea.classList.add('viewport-tablet');
+        } else {
+            this.editableArea.classList.add('viewport-desktop');
+        }
         
         // Update active button
         document.querySelectorAll('.viewport-btn').forEach(btn => btn.classList.remove('active'));
