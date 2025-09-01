@@ -535,8 +535,10 @@ export class FormattingToolbar {
                     img.style.display = 'block';
                     img.style.margin = '10px 0';
                     
-                    // Wrap image in resize container
-                    const resizeContainer = this.createImageResizeContainer(img);
+                    // Use ImageUploader's createImageResizeContainer if available, otherwise fall back to local method
+                    const resizeContainer = editor.imageUploader ? 
+                        editor.imageUploader.createImageResizeContainer(img) : 
+                        this.createImageResizeContainer(img);
                     
                     if (savedRange && currentEditableElement) {
                         try {
@@ -975,8 +977,10 @@ export class FormattingToolbar {
             // Skip if image is already in a resize container
             if (img.closest('.image-resize-container')) return;
             
-            // Create resize container
-            const container = this.createImageResizeContainer(img.cloneNode(true));
+            // Create resize container using ImageUploader if available
+            const container = this.editor.imageUploader ? 
+                this.editor.imageUploader.createImageResizeContainer(img.cloneNode(true)) : 
+                this.createImageResizeContainer(img.cloneNode(true));
             
             // Ensure existing images get default center alignment if they don't have any
             if (!container.classList.contains('align-left') && 

@@ -37,11 +37,11 @@ export class Editor {
         this.snippetPanel = new SnippetPanel(this);
         // this.dragDropManager = new DragDropManager(this);
         this.stateHistory = new StateHistory(this);
+        this.imageUploader = new ImageUploader(this);
         this.formattingToolbar = new FormattingToolbar(this);
         this.styleEditorModal = new StyleEditorModal(this);
         this.setupPanelToggle();
         this.codeEditorModal = new CodeEditorModal(this);
-        this.imageUploader = new ImageUploader(this);
         this.videoSettingsModal = new VideoSettingsModal(this);
         this.columnSettingsModal = new ColumnSettingsModal(this);
         this.confirmationModal = new ConfirmationModal(this);

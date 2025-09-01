@@ -244,6 +244,7 @@ export class ImageSettingsModal {
         if (!this.targetContainer) return;
         
         const computedStyle = window.getComputedStyle(this.targetContainer);
+        const img = this.targetContainer.querySelector('img');
         
         // Load current settings
         const bgColor = this.rgbToHex(computedStyle.backgroundColor);
@@ -256,8 +257,18 @@ export class ImageSettingsModal {
         this.modal.querySelector('#image-border-color').value = this.rgbToHex(computedStyle.borderColor) || '#cccccc';
         this.modal.querySelector('#image-border-color-text').value = this.rgbToHex(computedStyle.borderColor) || '#cccccc';
         this.modal.querySelector('#image-border-style').value = computedStyle.borderStyle || 'solid';
-        this.modal.querySelector('#image-border-radius').value = parseInt(computedStyle.borderRadius) || 0;
-        this.modal.querySelector('#image-border-radius-value').textContent = (parseInt(computedStyle.borderRadius) || 0) + 'px';
+        
+        // Try to get border radius from image first, then container
+        let borderRadius = 0;
+        if (img) {
+            const imgStyle = window.getComputedStyle(img);
+            borderRadius = parseInt(imgStyle.borderRadius) || parseInt(computedStyle.borderRadius) || 0;
+        } else {
+            borderRadius = parseInt(computedStyle.borderRadius) || 0;
+        }
+        
+        this.modal.querySelector('#image-border-radius').value = borderRadius;
+        this.modal.querySelector('#image-border-radius-value').textContent = borderRadius + 'px';
         this.modal.querySelector('#image-opacity').value = Math.round((parseFloat(computedStyle.opacity) || 1) * 100);
         this.modal.querySelector('#image-opacity-value').textContent = Math.round((parseFloat(computedStyle.opacity) || 1) * 100) + '%';
     }
@@ -266,6 +277,7 @@ export class ImageSettingsModal {
         if (!this.targetContainer) return;
         
         const settings = this.getCurrentSettings();
+        const img = this.targetContainer.querySelector('img');
         
         // Apply preview styles
         this.targetContainer.style.backgroundColor = settings.backgroundColor;
@@ -279,6 +291,12 @@ export class ImageSettingsModal {
         }
         
         this.targetContainer.style.borderRadius = settings.borderRadius + 'px';
+        
+        // Apply border radius to the image as well
+        if (img) {
+            img.style.borderRadius = settings.borderRadius + 'px';
+        }
+        
         this.targetContainer.style.opacity = settings.opacity / 100;
         
         // Apply shadow
