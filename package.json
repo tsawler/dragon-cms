@@ -1,0 +1,35 @@
+{
+  "name": "dragon",
+  "version": "1.0.0",
+  "main": "snippets.js",
+  "scripts": {
+    "build": "rollup -c && cp editor.css dist/ && cp snippets.js dist/ && cp index.html dist/ && cp -r assets dist/",
+    "build:watch": "rollup -c --watch",
+    "serve": "python3 -m http.server 8000 --directory dist",
+    "serve:dev": "python3 -m http.server 8000",
+    "dev": "npm run build && npm run serve",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tsawler/dragon-cms.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tsawler/dragon-cms/issues"
+  },
+  "homepage": "https://github.com/tsawler/dragon-cms#readme",
+  "description": "",
+  "devDependencies": {
+    "@babel/cli": "^7.28.3",
+    "@babel/core": "^7.28.3",
+    "@babel/preset-env": "^7.28.3",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "babel-plugin-transform-remove-console": "^6.9.4",
+    "rollup": "^4.50.0"
+  }
+}

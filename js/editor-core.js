@@ -16,6 +16,7 @@ export class Editor {
         this.loadUrl = options.loadUrl || null;
         this.initialContent = options.initialContent || null;
         this.showCodeIcon = options.showCodeIcon !== false; // Default to true
+        this.assetsPath = options.assetsPath || 'assets/'; // Default assets path
         this.editableArea = document.getElementById('editable-area');
         this.currentMode = 'edit';
         this.snippetPanel = null;
@@ -32,8 +33,16 @@ export class Editor {
         
         this.init();
     }
+    
+    // Make assets path available globally for snippets
+    setGlobalAssetsPath() {
+        window.DragonAssetsPath = this.assetsPath;
+    }
 
     init() {
+        // Set the global assets path before initializing snippets
+        this.setGlobalAssetsPath();
+        
         this.snippetPanel = new SnippetPanel(this);
         // this.dragDropManager = new DragDropManager(this);
         this.stateHistory = new StateHistory(this);

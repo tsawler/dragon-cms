@@ -21,7 +21,7 @@
 //     name: 'My Custom Snippet',
 //     type: 'snippet',
 //     preview: 'image',
-//     previewImage: './assets/my-preview.png',  // Any image format!
+//     previewImage: './assets/my-preview.png',  // Any image format! (Note: assets path can be configured)
 //     html: '<div>My content</div>'
 // }
 
@@ -191,7 +191,7 @@ const SNIPPET_LIBRARY = {
                     <text x="60" y="45" text-anchor="middle" fill="#6b7280" font-size="10">Image</text>
                 </svg>
             `),
-            html: '<div class="image-container" style="position: relative; display: inline-block;"><img src="assets/images/vase.jpg" alt="Default Image" style="max-width: 100%; height: auto; display: block;" class="editable-image"><div class="image-upload-zone" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); color: white; display: none; align-items: center; justify-content: center; cursor: pointer; font-size: 14px;">Click to change image</div></div>'
+            html: `<div class="image-container" style="position: relative; display: inline-block;"><img src="${window.DragonAssetsPath || 'assets/'}images/vase.jpg" alt="Default Image" style="max-width: 100%; height: auto; display: block;" class="editable-image"><div class="image-upload-zone" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); color: white; display: none; align-items: center; justify-content: center; cursor: pointer; font-size: 14px;">Click to change image</div></div>`
         },
         {
             id: 'video-snippet',

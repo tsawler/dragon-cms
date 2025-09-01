@@ -12,7 +12,11 @@ class Dragon {
      * @returns {Editor} The editor instance
      */
     New(options = {}) {
-        const finalOptions = options;
+        // Set default values for options
+        const finalOptions = {
+            assetsPath: 'assets/', // Default assets path
+            ...options
+        };
         const containerId = options.containerId || 'dragon-editor';
         
         // Get or create container element

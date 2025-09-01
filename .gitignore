@@ -1,3 +1,5 @@
 .Ds_store
 .claude
 CLAUDE.md
+dist/*
+node_modules/*
