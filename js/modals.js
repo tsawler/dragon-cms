@@ -778,6 +778,19 @@ export class CodeEditorModal {
         const clone = element.cloneNode(true);
         clone.querySelectorAll('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon, .resizer-handle').forEach(el => el.remove());
         
+        // Remove image resize handles and containers
+        clone.querySelectorAll('.image-resize-handle').forEach(el => el.remove());
+        
+        // Clean up image resize containers - extract just the image
+        clone.querySelectorAll('.image-resize-container').forEach(container => {
+            const img = container.querySelector('img');
+            if (img) {
+                // Preserve the image's style
+                const imgClone = img.cloneNode(true);
+                container.replaceWith(imgClone);
+            }
+        });
+        
         // Remove internal editor attributes for cleaner HTML display
         clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
         clone.querySelectorAll('[draggable]').forEach(el => el.removeAttribute('draggable'));
@@ -960,6 +973,15 @@ export class CodeEditorModal {
             
             // Simply call the same method that makes new snippets work
             this.editor.attachDragHandleListeners(this.targetElement);
+            
+            // Re-initialize image resize functionality
+            const images = this.targetElement.querySelectorAll('img');
+            images.forEach(img => {
+                // Only make resizable if not already wrapped
+                if (!img.closest('.image-resize-container')) {
+                    this.editor.makeImageResizable(img);
+                }
+            });
             
             // Apply Firefox fixes for contentEditable elements to ensure formatting toolbar works
             if (this.editor.formattingToolbar && this.editor.formattingToolbar.fixFirefoxEditableElements) {
