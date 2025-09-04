@@ -83,27 +83,40 @@ A powerful, pure JavaScript drag-and-drop website builder with zero dependencies
 
 ## Installation
 
-### Option 1: Download Files
+### Option 1: Use Built Files (Recommended for Production)
 
-1. Download the DragonCMS files:
-   - All JavaScript files from the `js/` directory
-   - `editor.css` for styling
-   - `snippets.js` for components
-   - `assets/` folder for images
+1. Download or clone the repository:
+```bash
+git clone https://github.com/tsawler/dragon-cms.git
+cd dragon-cms
+```
 
-2. Include them in your project:
+2. Install dependencies and build:
+```bash
+npm install
+npm run build
+```
 
+3. Use the built files from the `dist/` folder in your project:
+```html
+<link rel="stylesheet" href="path/to/dist/editor.css">
+<script src="path/to/dist/snippets.js"></script>
+<script src="path/to/dist/dragon.min.js"></script>
+```
+
+### Option 2: Use Source Files (Development)
+
+1. Clone the repository:
+```bash
+git clone https://github.com/tsawler/dragon-cms.git
+cd dragon-cms
+```
+
+2. Use the source files directly:
 ```html
 <link rel="stylesheet" href="path/to/editor.css">
 <script src="path/to/snippets.js"></script>
 <script type="module" src="path/to/js/dragon.js"></script>
-```
-
-### Option 2: Clone Repository
-
-```bash
-git clone https://github.com/yourusername/dragoncms.git
-cd dragoncms
 ```
 
 ### File Structure
@@ -126,6 +139,82 @@ dragoncms/
     ├── column-resizer.js
     └── [other modules]
 ```
+
+## Development
+
+### Build System
+
+DragonCMS uses Rollup and Babel for building and bundling. The build system creates both development and production versions.
+
+#### Available Scripts
+
+```bash
+# Install dependencies
+npm install
+
+# Build for production (creates dist/ folder)
+npm run build
+
+# Build and watch for changes
+npm run build:watch
+
+# Serve built files on localhost:8000
+npm run serve
+
+# Serve development files on localhost:8000  
+npm run serve:dev
+
+# Build and serve (complete development workflow)
+npm run dev
+```
+
+#### Build Output
+
+The build process creates:
+
+- `dist/dragon.js` - Development bundle (unminified)
+- `dist/dragon.min.js` - Production bundle (minified, console logs removed)
+- `dist/editor.css` - Editor styles (copied from source)
+- `dist/snippets.js` - Components (copied from source)
+- `dist/index.html` - Example page (copied from source)
+- `dist/assets/` - Static assets (copied from source)
+
+#### Using Built Files
+
+For production, use the minified bundle:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Website Builder</title>
+    <link rel="stylesheet" href="dist/editor.css">
+</head>
+<body>
+    <div id="editor"></div>
+    
+    <script src="dist/snippets.js"></script>
+    <script src="dist/dragon.min.js"></script>
+    <script>
+        // Note: Built version creates global 'dragon' object
+        const editor = dragon.New({
+            containerId: 'editor'
+        });
+    </script>
+</body>
+</html>
+```
+
+#### Build Configuration
+
+The build is configured through:
+
+- `rollup.config.js` - Rollup bundling configuration
+- `.babelrc` - Babel transpilation settings (ES6+ to ES5)
+- `package.json` - Build scripts and dependencies
+
+Target browsers: `> 1%`, `last 2 versions`, `not dead`, `IE 11`
 
 ## Basic Usage
 
