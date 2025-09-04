@@ -1,5 +1,39 @@
-.Ds_store
-.claude
+# Mac system files
+.DS_Store
+**/.DS_Store
+
+# Editor directories
+.claude/
+.vscode/
+.idea/
+
+# Project instructions
 CLAUDE.md
-dist/*
-node_modules/*
+
+# Build/distribution files
+dist/
+
+# Dependencies
+node_modules/
+
+# Package manager files
+yarn.lock
+pnpm-lock.yaml
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.swp
+*.bak
+*~
+
+# Test coverage
+coverage/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
