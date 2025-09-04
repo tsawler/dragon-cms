@@ -60,7 +60,6 @@ class Dragon {
             <div class="dragon-editor">
             <div class="editor-container">
                 <div class="editor-header">
-                    <h1>${options.title || 'Drag & Drop Editor'}</h1>
                     <div class="editor-controls">
                         <button id="toggle-mode-btn" class="btn btn-primary">Switch to Display Mode</button>
                         <button id="undo-btn" class="btn" title="Undo">↶</button>
