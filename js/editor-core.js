@@ -862,13 +862,16 @@ export class Editor {
             return null; // No insertion point needed for empty block
         }
         
+        // Account for block scroll position if it has one
+        const scrollTop = block.scrollTop || 0;
+        
         for (let i = 0; i < snippets.length; i++) {
             const rect = snippets[i].getBoundingClientRect();
             const midPoint = rect.top + rect.height / 2;
             
             if (y < midPoint) {
                 return { 
-                    y: rect.top - blockRect.top - 5, 
+                    y: rect.top - blockRect.top + scrollTop - 5, 
                     container: block 
                 };
             }
@@ -878,7 +881,7 @@ export class Editor {
         const lastSnippet = snippets[snippets.length - 1];
         const lastRect = lastSnippet.getBoundingClientRect();
         return { 
-            y: lastRect.bottom - blockRect.top + 5, 
+            y: lastRect.bottom - blockRect.top + scrollTop + 5, 
             container: block 
         };
     }
@@ -891,13 +894,16 @@ export class Editor {
             return null; // No insertion point needed for empty area
         }
         
+        // Account for container scroll position
+        const scrollTop = container.scrollTop;
+        
         for (let i = 0; i < blocks.length; i++) {
             const rect = blocks[i].getBoundingClientRect();
             const midPoint = rect.top + rect.height / 2;
             
             if (y < midPoint) {
                 return { 
-                    y: rect.top - containerRect.top - 5, 
+                    y: rect.top - containerRect.top + scrollTop - 5, 
                     container 
                 };
             }
@@ -907,7 +913,7 @@ export class Editor {
         const lastBlock = blocks[blocks.length - 1];
         const lastRect = lastBlock.getBoundingClientRect();
         return { 
-            y: lastRect.bottom - containerRect.top + 5, 
+            y: lastRect.bottom - containerRect.top + scrollTop + 5, 
             container 
         };
     }
