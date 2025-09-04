@@ -1,6 +1,7 @@
 {
   "name": "dragon",
   "version": "1.0.0",
+  "type": "module",
   "main": "snippets.js",
   "scripts": {
     "build": "rollup -c && cp editor.css dist/ && cp snippets.js dist/ && cp index.html dist/ && cp -r assets dist/",
