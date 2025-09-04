@@ -473,6 +473,12 @@ export class Editor {
             modeBtn.textContent = this.currentMode === 'edit' ? 'Switch to Display Mode' : 'Switch to Edit Mode';
         }
         
+        // Hide/show editor header based on mode
+        const editorHeader = document.querySelector('.dragon-editor .editor-header');
+        if (editorHeader) {
+            editorHeader.style.display = this.currentMode === 'edit' ? 'flex' : 'none';
+        }
+        
         // Hide/show snippet panel based on mode
         const panel = document.getElementById('snippet-panel');
         const handle = document.getElementById('new-panel-handle');
@@ -509,6 +515,11 @@ export class Editor {
                 viewportControls.style.display = 'flex';
             }
         }
+        
+        // Dispatch custom event for mode change
+        window.dispatchEvent(new CustomEvent('dragonModeChanged', { 
+            detail: { mode: this.currentMode } 
+        }));
         
         // Refresh column resize dividers when mode changes
         // Temporarily disabled to prevent infinite loops
@@ -913,7 +924,8 @@ export class Editor {
     }
     
     getDragAfterElement(container, y) {
-        const draggableElements = [...container.querySelectorAll('.editor-block:not(.dragging-element), .editor-snippet:not(.dragging-element)')];
+        // Only get direct children blocks of the container (not nested snippets)
+        const draggableElements = [...container.querySelectorAll(':scope > .editor-block:not(.dragging-element)')];
         
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
@@ -1589,5 +1601,19 @@ export class Editor {
                 img.style.height = 'auto';
             }
         });
+    }
+    
+    // Public method to set the mode programmatically
+    setMode(mode) {
+        if (mode === 'edit' || mode === 'display') {
+            if (this.currentMode !== mode) {
+                this.toggleMode();
+            }
+        }
+    }
+    
+    // Public method to get the current mode
+    getMode() {
+        return this.currentMode;
     }
 }

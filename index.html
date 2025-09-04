@@ -16,10 +16,44 @@
             width: 100vw;
             height: 100vh;
         }
+        
+        /* User-defined edit button - NOT part of the Dragon library */
+        #edit-mode-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #edit-mode-btn:hover {
+            background: #0056b3;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        #edit-mode-btn.editing {
+            display: none; /* Hide when in edit mode since header is visible */
+        }
     </style>
 </head>
 <body>
     <div id="my-editor"></div>
+    
+    <!-- User-defined edit button - NOT part of the Dragon library -->
+    <button id="edit-mode-btn" title="Enter Edit Mode">✏️</button>
 
     <!-- Load snippets first -->
     <script src="snippets.js"></script>
@@ -37,6 +71,27 @@
                 showCodeIcon: true,
                 snippetsPath: 'snippets.js',
                 assetsPath: 'assets/'  // Optional, customize path to assets folder
+            });
+            
+            // Start in display mode
+            editor.setMode('display');
+            
+            // User-defined edit button functionality
+            const editBtn = document.getElementById('edit-mode-btn');
+            
+            // Handle edit button clicks
+            editBtn.addEventListener('click', function() {
+                editor.setMode('edit');
+                editBtn.classList.add('editing');
+            });
+            
+            // Listen for mode changes from the editor's internal toggle button
+            window.addEventListener('dragonModeChanged', function(e) {
+                if (e.detail.mode === 'edit') {
+                    editBtn.classList.add('editing');
+                } else {
+                    editBtn.classList.remove('editing');
+                }
             });
 
             // Example: Loading existing content into the editor
