@@ -351,6 +351,13 @@ export class StyleEditorModal {
         this.modal.querySelector('.modal-close').addEventListener('click', () => this.close());
         this.modal.querySelector('.modal-cancel').addEventListener('click', () => this.close());
         this.modal.querySelector('.modal-save').addEventListener('click', () => this.save());
+        
+        // Add background click to close modal
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) {
+                this.close();
+            }
+        });
     }
 
     open(element) {
@@ -1929,7 +1936,10 @@ export class ConfirmationModal {
         const confirmBtn = modalContent.querySelector('.js-modal-confirm');
         
         if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => this.close());
+            cancelBtn.addEventListener('click', () => {
+                if (this.onCancel) this.onCancel();
+                this.close();
+            });
             cancelBtn.addEventListener('mouseover', () => {
                 cancelBtn.style.backgroundColor = '#e5e7eb';
             });
