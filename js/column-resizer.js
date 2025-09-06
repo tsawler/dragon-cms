@@ -94,7 +94,7 @@ export class ColumnResizer {
             container.style.position = 'relative';
             
             // Add dividers between columns (in edit mode only)
-            if (this.editor.currentMode === 'edit' && columns.length > 1) {
+            if (this.editor && this.editor.currentMode === 'edit' && columns.length > 1) {
                 for (let i = 0; i < columns.length - 1; i++) {
                     const divider = document.createElement('div');
                     divider.className = 'column-resize-divider';
@@ -131,7 +131,7 @@ export class ColumnResizer {
     
     handleMouseDown(e) {
         if (!e.target.classList.contains('column-resize-divider')) return;
-        if (this.editor.currentMode !== 'edit') return;
+        if (!this.editor || this.editor.currentMode !== 'edit') return;
         
         e.preventDefault();
         e.stopPropagation();
@@ -143,6 +143,8 @@ export class ColumnResizer {
         const container = this.currentDivider.parentNode;
         if (!container) {
             console.error('No container found for divider');
+            this.isResizing = false;
+            this.currentDivider = null;
             return;
         }
         
@@ -156,6 +158,10 @@ export class ColumnResizer {
         
         if (!this.leftColumn || !this.rightColumn) {
             console.error('Could not find columns for resize');
+            this.isResizing = false;
+            this.currentDivider = null;
+            this.leftColumn = null;
+            this.rightColumn = null;
             return;
         }
         
@@ -272,7 +278,7 @@ export class ColumnResizer {
         document.body.style.userSelect = '';
         
         // Save state after resize
-        if (this.editor.stateHistory) {
+        if (this.editor && this.editor.stateHistory) {
             this.editor.stateHistory.saveState();
         }
         
