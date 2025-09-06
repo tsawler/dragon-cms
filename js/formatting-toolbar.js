@@ -322,20 +322,29 @@ export class FormattingToolbar {
         this.wrapExistingImages();
         
         // Show toolbar when clicking in editable content
-        this.editor.editableArea.addEventListener('click', (e) => {
-            const editableElement = e.target.closest('[contenteditable="true"]');
-            if (editableElement) {
-                this.currentEditableElement = editableElement;
-                this.showToolbar(editableElement);
-                this.updateToolbarState();
-            }
-        });
+        if (this.editor && this.editor.editableArea) {
+            this.editor.editableArea.addEventListener('click', (e) => {
+                const editableElement = e.target.closest('[contenteditable="true"]');
+                if (editableElement) {
+                    this.currentEditableElement = editableElement;
+                    this.showToolbar(editableElement);
+                    this.updateToolbarState();
+                }
+            });
+        }
 
         // Hide toolbar when clicking outside
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.formatting-toolbar') && !e.target.closest('[contenteditable="true"]')) {
-                this.hideToolbar();
+            // Don't hide if clicking on the toolbar itself or its contents
+            if (this.toolbar && (this.toolbar.contains(e.target) || e.target === this.toolbar)) {
+                return;
             }
+            // Don't hide if clicking in editable content
+            if (e.target.closest('[contenteditable="true"]')) {
+                return;
+            }
+            // Hide toolbar for all other clicks
+            this.hideToolbar();
             
             // Deselect images when clicking outside of them
             if (!e.target.closest('.image-resize-container') && !e.target.closest('.image-alignment-toolbar')) {
@@ -367,6 +376,10 @@ export class FormattingToolbar {
 
     setupToolbarControls() {
         // Setup buttons
+        if (!this.toolbar) {
+            console.warn('Formatting toolbar element not found');
+            return;
+        }
         this.toolbar.querySelectorAll('button[data-command]').forEach(button => {
             button.addEventListener('mousedown', (e) => {
                 // Only prevent default on the button itself, not child elements
@@ -402,8 +415,22 @@ export class FormattingToolbar {
         });
         fontFamily.addEventListener('change', (e) => {
             e.stopPropagation();
-            document.execCommand('fontName', false, e.target.value);
-            this.editor.stateHistory.saveState();
+            if (e.target && e.target.value) {
+                try {
+                    document.execCommand('fontName', false, e.target.value);
+                } catch (error) {
+                    console.warn('Font change failed:', error.message);
+                }
+            } else {
+                try {
+                    document.execCommand('fontName', false, '');
+                } catch (error) {
+                    console.warn('Font change failed:', error.message);
+                }
+            }
+            if (this.editor && this.editor.stateHistory) {
+                this.editor.stateHistory.saveState();
+            }
         });
 
         // Setup font size
@@ -432,7 +459,7 @@ export class FormattingToolbar {
         });
         textColor.addEventListener('change', (e) => {
             e.stopPropagation();
-            if (this.currentEditableElement) {
+            if (this.currentEditableElement && e.target && e.target.value) {
                 // Try execCommand first for compatibility
                 try {
                     document.execCommand('foreColor', false, e.target.value);
@@ -445,13 +472,17 @@ export class FormattingToolbar {
                         span.style.color = e.target.value;
                         try {
                             range.surroundContents(span);
-                        } catch (e) {
+                        } catch (err) {
                             // If surrounding fails, just style the entire element
-                            this.currentEditableElement.style.color = e.target.value;
+                            if (this.currentEditableElement && e.target && e.target.value) {
+                                this.currentEditableElement.style.color = e.target.value;
+                            }
                         }
                     } else {
                         // No selection, style the entire element
-                        this.currentEditableElement.style.color = e.target.value;
+                        if (this.currentEditableElement && e.target && e.target.value) {
+                            this.currentEditableElement.style.color = e.target.value;
+                        }
                     }
                 }
                 this.editor.stateHistory.saveState();
@@ -465,7 +496,7 @@ export class FormattingToolbar {
         });
         backgroundColor.addEventListener('change', (e) => {
             e.stopPropagation();
-            if (this.currentEditableElement) {
+            if (this.currentEditableElement && e.target && e.target.value) {
                 // Try execCommand first for compatibility
                 try {
                     document.execCommand('hiliteColor', false, e.target.value);
@@ -478,13 +509,17 @@ export class FormattingToolbar {
                         span.style.backgroundColor = e.target.value;
                         try {
                             range.surroundContents(span);
-                        } catch (e) {
+                        } catch (err) {
                             // If surrounding fails, just style the entire element
-                            this.currentEditableElement.style.backgroundColor = e.target.value;
+                            if (this.currentEditableElement && e.target && e.target.value) {
+                                this.currentEditableElement.style.backgroundColor = e.target.value;
+                            }
                         }
                     } else {
                         // No selection, style the entire element
-                        this.currentEditableElement.style.backgroundColor = e.target.value;
+                        if (this.currentEditableElement && e.target && e.target.value) {
+                            this.currentEditableElement.style.backgroundColor = e.target.value;
+                        }
                     }
                 }
                 this.editor.stateHistory.saveState();
@@ -496,12 +531,25 @@ export class FormattingToolbar {
         if (command === 'createLink') {
             const url = prompt('Enter URL:');
             if (url) {
-                document.execCommand(command, false, url);
+                const sanitizedUrl = this.sanitizeURL(url);
+                if (sanitizedUrl) {
+                    try {
+                        document.execCommand(command, false, sanitizedUrl);
+                    } catch (error) {
+                        console.warn('Link creation failed:', error.message);
+                    }
+                } else {
+                    console.warn('Dangerous URL protocol blocked:', url.split(':')[0] + ':');
+                }
             }
         } else if (command === 'insertImage') {
             this.insertImage();
         } else {
-            document.execCommand(command, false, null);
+            try {
+                document.execCommand(command, false, null);
+            } catch (error) {
+                console.warn('Command execution failed:', error.message);
+            }
         }
         
         this.updateToolbarState();
@@ -523,7 +571,7 @@ export class FormattingToolbar {
         
         input.onchange = (e) => {
             const file = e.target.files[0];
-            if (file && file.type.startsWith('image/')) {
+            if (file && this.validateImageFile(file)) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     
@@ -599,6 +647,9 @@ export class FormattingToolbar {
 
     updateToolbarState() {
         // Update button states based on current selection
+        if (!this.toolbar) {
+            return;
+        }
         this.toolbar.querySelectorAll('button[data-command]').forEach(button => {
             const command = button.dataset.command;
             // Skip custom commands that don't have queryCommandState
@@ -611,8 +662,11 @@ export class FormattingToolbar {
 
         // Update format select
         const formatSelect = document.getElementById('format-select');
+        if (!formatSelect) {
+            return;
+        }
         const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
+        if (selection.rangeCount > 0 && selection.anchorNode) {
             const element = selection.anchorNode.nodeType === Node.TEXT_NODE 
                 ? selection.anchorNode.parentNode 
                 : selection.anchorNode;
@@ -624,9 +678,13 @@ export class FormattingToolbar {
     }
 
     showToolbar(element) {
+        if (!this.toolbar) {
+            return;
+        }
+        
         // Save current selection when showing toolbar
         const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
+        if (selection && selection.rangeCount > 0 && typeof selection.getRangeAt === 'function') {
             this.savedRange = selection.getRangeAt(0).cloneRange();
         }
         
@@ -650,7 +708,9 @@ export class FormattingToolbar {
     }
 
     hideToolbar() {
-        this.toolbar.style.display = 'none';
+        if (this.toolbar) {
+            this.toolbar.style.display = 'none';
+        }
         this.currentEditableElement = null;
         this.savedRange = null;
     }
@@ -870,7 +930,7 @@ export class FormattingToolbar {
         
         input.onchange = (e) => {
             const file = e.target.files[0];
-            if (file && file.type.startsWith('image/')) {
+            if (file && this.validateImageFile(file)) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const img = container.querySelector('img');
@@ -970,6 +1030,11 @@ export class FormattingToolbar {
     }
     
     wrapExistingImages() {
+        // Check if editor and editableArea exist
+        if (!this.editor || !this.editor.editableArea) {
+            return;
+        }
+        
         // Find all images that are not already in resize containers
         const existingImages = this.editor.editableArea.querySelectorAll('img:not(.image-resize-container img)');
         
@@ -1084,5 +1149,74 @@ export class FormattingToolbar {
         });
         this.selectedImageContainer = null;
         this.hideAlignmentToolbar();
+    }
+    
+    validateImageFile(file) {
+        // Check file object exists
+        if (!file) {
+            return false;
+        }
+        
+        // Check file size (max 10MB)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            console.warn('Image file too large. Maximum size is 10MB.');
+            return false;
+        }
+        
+        // Check MIME type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+        if (!allowedTypes.includes(file.type.toLowerCase())) {
+            console.warn('Invalid image file type. Allowed: JPEG, PNG, GIF, WebP, SVG.');
+            return false;
+        }
+        
+        // Check file extension as additional validation
+        const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+        const fileName = file.name.toLowerCase();
+        const hasValidExtension = allowedExtensions.some(ext => fileName.endsWith(ext));
+        
+        if (!hasValidExtension) {
+            console.warn('Invalid file extension. Allowed: .jpg, .jpeg, .png, .gif, .webp, .svg');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    sanitizeURL(url) {
+        if (!url || typeof url !== 'string') {
+            return null;
+        }
+        
+        // Trim and normalize
+        url = url.trim();
+        if (!url) {
+            return null;
+        }
+        
+        // Block dangerous protocols
+        const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:', 'about:'];
+        const lowerUrl = url.toLowerCase();
+        
+        for (const protocol of dangerousProtocols) {
+            if (lowerUrl.startsWith(protocol)) {
+                return null;
+            }
+        }
+        
+        // Allow safe protocols
+        const allowedPattern = /^(https?:\/\/|mailto:|tel:|\/\/|\/|#)/i;
+        
+        if (allowedPattern.test(url)) {
+            return url;
+        }
+        
+        // Auto-add https:// for domain-like strings
+        if (/^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}/.test(url)) {
+            return 'https://' + url;
+        }
+        
+        return null;
     }
 }
