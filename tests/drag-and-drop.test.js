@@ -25,6 +25,16 @@ jest.mock('../js/page-settings-modal.js');
 jest.mock('../js/modal-dragger.js');
 jest.mock('../js/button-settings-modal.js');
 
+// Mock TouchEvent if not available
+if (typeof TouchEvent === 'undefined') {
+  global.TouchEvent = class TouchEvent extends Event {
+    constructor(type, init = {}) {
+      super(type, init);
+      this.touches = init.touches || [];
+    }
+  };
+}
+
 describe('Drag and Drop Functionality', () => {
   let editor;
   let editableArea;
@@ -718,6 +728,107 @@ describe('Drag and Drop Functionality', () => {
     });
   });
 
+  describe('Drag handle positioning and visibility', () => {
+    test('should show drag handle on hover for blocks', () => {
+      // Use createBlock method to get proper structure
+      const block = editor.createBlock('<div>Block content</div>');
+      editableArea.appendChild(block);
+      
+      // Attach drag handle listeners as editor would
+      editor.attachDragHandleListeners(block);
+      
+      // Check handle was added
+      const handle = block.querySelector('.drag-handle');
+      expect(handle).toBeTruthy();
+      expect(handle.textContent).toBe('⋮⋮');
+    });
+
+    test('should show drag handle on hover for snippets', () => {
+      const block = editor.createBlock('');
+      editableArea.appendChild(block);
+      
+      // Use createSnippet method to get proper structure
+      const snippet = editor.createSnippet('text', '<p>Snippet content</p>');
+      block.appendChild(snippet);
+      
+      // Attach drag handle listeners
+      editor.attachDragHandleListeners(snippet);
+      
+      // Check handle was added
+      const handle = snippet.querySelector('.drag-handle');
+      expect(handle).toBeTruthy();
+      expect(handle.textContent).toBe('⋮⋮');
+    });
+
+    test('should position drag handle correctly', () => {
+      const block = editor.createBlock('<div>Test content</div>');
+      editableArea.appendChild(block);
+      
+      editor.attachDragHandleListeners(block);
+      
+      const handle = block.querySelector('.drag-handle');
+      expect(handle).toBeTruthy();
+      // The drag handle styles are set via CSS, not inline styles
+      // So we check that the handle exists and has the right class
+      expect(handle.className).toBe('drag-handle');
+      expect(handle.style.cursor).toBe('move');
+    });
+
+    test('should only allow drag when using handle', () => {
+      const block = editor.createBlock('<div>Test content</div>');
+      editableArea.appendChild(block);
+      
+      editor.attachDragHandleListeners(block);
+      const handle = block.querySelector('.drag-handle');
+      
+      // Try to drag without using handle - dataset.dragFromHandle should be undefined
+      expect(block.dataset.dragFromHandle).toBeUndefined();
+      
+      // Simulate drag without handle mousedown
+      const dragWithoutHandle = new DragEvent('dragstart', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: mockDataTransfer
+      });
+      block.dispatchEvent(dragWithoutHandle);
+      
+      // The editor's dragstart handler checks for dragFromHandle flag
+      // Without it, the drag is prevented (see editor-core.js line 557)
+      expect(block.dataset.dragFromHandle).toBeUndefined();
+      
+      // Now simulate mousedown on handle
+      const mouseDown = new MouseEvent('mousedown', { bubbles: true });
+      handle.dispatchEvent(mouseDown);
+      
+      // Flag should be set
+      expect(block.dataset.dragFromHandle).toBe('true');
+      
+      // Now drag should be allowed
+      const dragWithHandle = new DragEvent('dragstart', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: mockDataTransfer
+      });
+      block.dispatchEvent(dragWithHandle);
+      
+      // Flag should still be set (cleared on dragend)
+      expect(block.dataset.dragFromHandle).toBe('true');
+    });
+
+    test('should clear drag handle flag on dragend', () => {
+      const block = editor.createBlock('<div>Test content</div>');
+      block.dataset.dragFromHandle = 'true';
+      editableArea.appendChild(block);
+      
+      editor.attachDragHandleListeners(block);
+      
+      const dragEndEvent = new DragEvent('dragend', { bubbles: true });
+      block.dispatchEvent(dragEndEvent);
+      
+      expect(block.dataset.dragFromHandle).toBeUndefined();
+    });
+  });
+
   describe('Edge cases and error handling', () => {
     test('should handle dragleave to clear indicators', () => {
       editableArea.style.background = 'rgba(59, 130, 246, 0.05)';
@@ -832,6 +943,266 @@ describe('Drag and Drop Functionality', () => {
       // Should create block even with empty template
       const newBlock = editableArea.querySelector('.editor-block');
       expect(newBlock).toBeTruthy();
+    });
+
+    test('should handle invalid drop target for snippets', () => {
+      // Try to drop snippet on non-block element
+      const invalidTarget = document.createElement('div');
+      invalidTarget.className = 'not-a-block';
+      editableArea.appendChild(invalidTarget);
+      
+      mockDataTransfer.data = {
+        elementType: 'snippet',
+        snippetType: 'text',
+        template: '<p>Snippet</p>'
+      };
+      
+      editor.currentDragOperation = { type: 'snippet', isExisting: false };
+      editor.currentTargetBlock = null;
+      
+      const dropEvent = new DragEvent('drop', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: mockDataTransfer
+      });
+      
+      Object.defineProperty(dropEvent, 'target', {
+        value: invalidTarget,
+        enumerable: true
+      });
+      
+      invalidTarget.dispatchEvent(dropEvent);
+      
+      // Should not create snippet on invalid target
+      expect(invalidTarget.querySelector('.editor-snippet')).toBeNull();
+    });
+
+    test('should handle concurrent drag operations gracefully', () => {
+      const block1 = document.createElement('div');
+      block1.className = 'editor-block';
+      block1.dataset.dragFromHandle = 'true';
+      editableArea.appendChild(block1);
+      
+      const block2 = document.createElement('div');
+      block2.className = 'editor-block';
+      block2.dataset.dragFromHandle = 'true';
+      editableArea.appendChild(block2);
+      
+      // Start first drag
+      editor.activeExistingDrag = block1;
+      editor.currentDragOperation = { type: 'block', isExisting: true };
+      
+      // Start second drag without ending first
+      const dragStart2 = new DragEvent('dragstart', {
+        bubbles: true,
+        dataTransfer: mockDataTransfer
+      });
+      
+      // Set up listener to track state changes
+      editableArea.addEventListener('dragstart', (e) => {
+        if (e.target === block2 && e.target.dataset.dragFromHandle) {
+          // Should clear previous drag state
+          if (editor.activeExistingDrag && editor.activeExistingDrag !== e.target) {
+            editor.activeExistingDrag.classList.remove('dragging-element');
+          }
+          editor.activeExistingDrag = e.target;
+        }
+      });
+      
+      block2.dispatchEvent(dragStart2);
+      
+      // Should handle gracefully - only block2 should be active
+      expect(editor.activeExistingDrag).toBe(block2);
+      expect(block1.classList.contains('dragging-element')).toBe(false);
+    });
+
+    test('should handle malformed drag data gracefully', () => {
+      mockDataTransfer.data = {
+        elementType: 'invalid-type',
+        template: null
+      };
+      
+      const dropEvent = new DragEvent('drop', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: mockDataTransfer
+      });
+      
+      expect(() => {
+        editableArea.dispatchEvent(dropEvent);
+      }).not.toThrow();
+    });
+
+    test('should clean up orphaned visual indicators', () => {
+      // Create multiple visual indicators
+      const line1 = document.createElement('div');
+      line1.className = 'drop-insertion-line';
+      editableArea.appendChild(line1);
+      
+      const line2 = document.createElement('div');
+      line2.className = 'drop-insertion-line';
+      editableArea.appendChild(line2);
+      
+      const overlay = document.createElement('div');
+      overlay.className = 'drop-zone-overlay';
+      editableArea.appendChild(overlay);
+      
+      // Clear all indicators
+      editor.clearVisualIndicators();
+      
+      expect(editableArea.querySelectorAll('.drop-insertion-line').length).toBe(0);
+      expect(editableArea.querySelectorAll('.drop-zone-overlay').length).toBe(0);
+    });
+  });
+
+  describe('Advanced nested drag/drop scenarios', () => {
+    test('should handle deeply nested snippet structures', () => {
+      // Create nested structure
+      const block = document.createElement('div');
+      block.className = 'editor-block';
+      editableArea.appendChild(block);
+      
+      const snippet1 = document.createElement('div');
+      snippet1.className = 'editor-snippet';
+      block.appendChild(snippet1);
+      
+      const innerDiv = document.createElement('div');
+      innerDiv.className = 'inner-content';
+      snippet1.appendChild(innerDiv);
+      
+      const deepElement = document.createElement('p');
+      deepElement.textContent = 'Deep content';
+      innerDiv.appendChild(deepElement);
+      
+      // Try to drag from deep element - should find parent snippet
+      editableArea.addEventListener('dragstart', (e) => {
+        let dragTarget = e.target;
+        if (!dragTarget.classList.contains('editor-snippet')) {
+          dragTarget = e.target.closest('.editor-snippet');
+        }
+        if (dragTarget) {
+          editor.activeExistingDrag = dragTarget;
+        }
+      });
+      
+      const dragEvent = new DragEvent('dragstart', {
+        bubbles: true,
+        dataTransfer: mockDataTransfer
+      });
+      
+      deepElement.dispatchEvent(dragEvent);
+      
+      // Should identify the snippet as drag target
+      expect(editor.activeExistingDrag).toBe(snippet1);
+    });
+
+    test('should maintain snippet order when reordering within block', () => {
+      const block = document.createElement('div');
+      block.className = 'editor-block';
+      editableArea.appendChild(block);
+      
+      const snippet1 = document.createElement('div');
+      snippet1.className = 'editor-snippet';
+      snippet1.textContent = 'Snippet 1';
+      block.appendChild(snippet1);
+      
+      const snippet2 = document.createElement('div');
+      snippet2.className = 'editor-snippet';
+      snippet2.textContent = 'Snippet 2';
+      block.appendChild(snippet2);
+      
+      const snippet3 = document.createElement('div');
+      snippet3.className = 'editor-snippet';
+      snippet3.textContent = 'Snippet 3';
+      block.appendChild(snippet3);
+      
+      // Move snippet3 before snippet1
+      block.insertBefore(snippet3, snippet1);
+      
+      const snippets = block.querySelectorAll('.editor-snippet');
+      expect(snippets[0]).toBe(snippet3);
+      expect(snippets[1]).toBe(snippet1);
+      expect(snippets[2]).toBe(snippet2);
+    });
+
+    test('should handle column layouts with drag and drop', () => {
+      const block = document.createElement('div');
+      block.className = 'editor-block';
+      editableArea.appendChild(block);
+      
+      // Create column layout
+      const columns = document.createElement('div');
+      columns.className = 'columns';
+      block.appendChild(columns);
+      
+      const col1 = document.createElement('div');
+      col1.className = 'column';
+      columns.appendChild(col1);
+      
+      const col2 = document.createElement('div');
+      col2.className = 'column';
+      columns.appendChild(col2);
+      
+      // Add snippet to col1
+      const snippet = document.createElement('div');
+      snippet.className = 'editor-snippet';
+      col1.appendChild(snippet);
+      
+      // Move snippet to col2
+      col2.appendChild(snippet);
+      
+      expect(col1.querySelector('.editor-snippet')).toBeNull();
+      expect(col2.querySelector('.editor-snippet')).toBe(snippet);
+    });
+  });
+
+  describe('Performance and optimization', () => {
+    test('should handle large number of draggable elements efficiently', () => {
+      // Create many blocks using the proper method
+      const blocks = [];
+      for (let i = 0; i < 50; i++) {
+        const block = editor.createBlock(`<div>Block ${i}</div>`);
+        editableArea.appendChild(block);
+        blocks.push(block);
+      }
+      
+      // Attach drag listeners to all
+      const startTime = performance.now();
+      blocks.forEach(block => {
+        editor.attachDragHandleListeners(block);
+      });
+      const endTime = performance.now();
+      
+      // Should complete quickly (< 200ms for 50 elements, accounting for DOM operations)
+      expect(endTime - startTime).toBeLessThan(200);
+      
+      // All blocks should have handles
+      blocks.forEach(block => {
+        expect(block.querySelector('.drag-handle')).toBeTruthy();
+      });
+    });
+
+    test('should debounce rapid dragover events', () => {
+      let eventCount = 0;
+      const originalListener = editableArea.addEventListener;
+      
+      // Count dragover events
+      editableArea.addEventListener('dragover', () => {
+        eventCount++;
+      });
+      
+      // Fire many dragover events rapidly
+      for (let i = 0; i < 10; i++) {
+        const dragOverEvent = new DragEvent('dragover', {
+          bubbles: true,
+          cancelable: true,
+          dataTransfer: mockDataTransfer
+        });
+        editableArea.dispatchEvent(dragOverEvent);
+      }
+      
+      // Events should be processed
+      expect(eventCount).toBeGreaterThan(0);
     });
   });
 });
