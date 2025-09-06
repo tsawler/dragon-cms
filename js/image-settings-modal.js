@@ -103,9 +103,10 @@ export class ImageSettingsModal {
         });
         
         bgColorText.addEventListener('input', () => {
-            if (bgColorText.value.match(/^#[0-9A-Fa-f]{6}$/) || bgColorText.value.toLowerCase() === 'transparent') {
-                if (bgColorText.value.toLowerCase() !== 'transparent') {
-                    bgColor.value = bgColorText.value;
+            const value = bgColorText.value.trim();
+            if (value.match(/^#[0-9A-Fa-f]{6}$/) || value.toLowerCase() === 'transparent') {
+                if (value.toLowerCase() !== 'transparent') {
+                    bgColor.value = value;
                 }
                 this.updatePreview();
             }
@@ -118,8 +119,9 @@ export class ImageSettingsModal {
         });
         
         borderColorText.addEventListener('input', () => {
-            if (borderColorText.value.match(/^#[0-9A-Fa-f]{6}$/)) {
-                borderColor.value = borderColorText.value;
+            const value = borderColorText.value.trim();
+            if (value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                borderColor.value = value;
                 this.updatePreview();
             }
         });
@@ -169,29 +171,29 @@ export class ImageSettingsModal {
         
         // Add hover effects for buttons
         cancelBtn.addEventListener('mouseenter', () => {
-            cancelBtn.style.background = '#f8f8f8';
+            cancelBtn.style.backgroundColor = '#f8f8f8';
             cancelBtn.style.borderColor = '#999';
         });
         cancelBtn.addEventListener('mouseleave', () => {
-            cancelBtn.style.background = 'white';
+            cancelBtn.style.backgroundColor = 'white';
             cancelBtn.style.borderColor = '#ddd';
         });
         
         resetBtn.addEventListener('mouseenter', () => {
-            resetBtn.style.background = '#f8f8f8';
+            resetBtn.style.backgroundColor = '#f8f8f8';
             resetBtn.style.borderColor = '#999';
         });
         resetBtn.addEventListener('mouseleave', () => {
-            resetBtn.style.background = 'white';
+            resetBtn.style.backgroundColor = 'white';
             resetBtn.style.borderColor = '#ddd';
         });
         
         applyBtn.addEventListener('mouseenter', () => {
-            applyBtn.style.background = '#2563eb';
+            applyBtn.style.backgroundColor = '#2563eb';
             applyBtn.style.borderColor = '#2563eb';
         });
         applyBtn.addEventListener('mouseleave', () => {
-            applyBtn.style.background = '#3b82f6';
+            applyBtn.style.backgroundColor = '#3b82f6';
             applyBtn.style.borderColor = '#3b82f6';
         });
         
@@ -285,7 +287,10 @@ export class ImageSettingsModal {
         
         // Apply border using shorthand to ensure all properties are set together
         if (settings.borderWidth > 0) {
-            this.targetContainer.style.border = `${settings.borderWidth}px ${settings.borderStyle} ${settings.borderColor}`;
+            // Validate border style to prevent CSS injection
+            const validBorderStyles = ['solid', 'dashed', 'dotted', 'double'];
+            const borderStyle = validBorderStyles.includes(settings.borderStyle) ? settings.borderStyle : 'solid';
+            this.targetContainer.style.border = `${settings.borderWidth}px ${borderStyle} ${settings.borderColor}`;
         } else {
             this.targetContainer.style.border = 'none';
         }
@@ -313,23 +318,35 @@ export class ImageSettingsModal {
     }
 
     getCurrentSettings() {
-        const bgColorText = this.modal.querySelector('#image-bg-color-text').value;
+        // Add null checks for all elements
+        const bgColorTextEl = this.modal.querySelector('#image-bg-color-text');
+        const bgColorEl = this.modal.querySelector('#image-bg-color');
+        const paddingEl = this.modal.querySelector('#image-padding');
+        const borderWidthEl = this.modal.querySelector('#image-border-width');
+        const borderColorEl = this.modal.querySelector('#image-border-color');
+        const borderStyleEl = this.modal.querySelector('#image-border-style');
+        const borderRadiusEl = this.modal.querySelector('#image-border-radius');
+        const shadowEl = this.modal.querySelector('#image-shadow');
+        const opacityEl = this.modal.querySelector('#image-opacity');
+        
+        const bgColorText = bgColorTextEl ? bgColorTextEl.value : 'transparent';
+        
         return {
-            backgroundColor: bgColorText.toLowerCase() === 'transparent' ? 'transparent' : this.modal.querySelector('#image-bg-color').value,
-            padding: parseInt(this.modal.querySelector('#image-padding').value),
-            borderWidth: parseInt(this.modal.querySelector('#image-border-width').value),
-            borderColor: this.modal.querySelector('#image-border-color').value,
-            borderStyle: this.modal.querySelector('#image-border-style').value,
-            borderRadius: parseInt(this.modal.querySelector('#image-border-radius').value),
-            shadow: this.modal.querySelector('#image-shadow').value,
-            opacity: parseInt(this.modal.querySelector('#image-opacity').value)
+            backgroundColor: bgColorText.toLowerCase() === 'transparent' ? 'transparent' : (bgColorEl ? bgColorEl.value : '#ffffff'),
+            padding: parseInt(paddingEl ? paddingEl.value : '10') || 10,
+            borderWidth: parseInt(borderWidthEl ? borderWidthEl.value : '0') || 0,
+            borderColor: borderColorEl ? borderColorEl.value : '#cccccc',
+            borderStyle: borderStyleEl ? borderStyleEl.value : 'solid',
+            borderRadius: parseInt(borderRadiusEl ? borderRadiusEl.value : '0') || 0,
+            shadow: shadowEl ? shadowEl.value : 'none',
+            opacity: parseInt(opacityEl ? opacityEl.value : '100') || 100
         };
     }
 
     applySettings() {
         if (this.targetContainer) {
             this.updatePreview();
-            if (this.editor && this.editor.stateHistory) {
+            if (this.editor && this.editor.stateHistory && this.editor.stateHistory.saveState) {
                 this.editor.stateHistory.saveState();
             }
         }
