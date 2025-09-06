@@ -529,18 +529,32 @@ export class FormattingToolbar {
 
     executeCommand(command) {
         if (command === 'createLink') {
-            const url = prompt('Enter URL:');
-            if (url) {
-                const sanitizedUrl = this.sanitizeURL(url);
-                if (sanitizedUrl) {
-                    try {
-                        document.execCommand(command, false, sanitizedUrl);
-                    } catch (error) {
-                        console.warn('Link creation failed:', error.message);
-                    }
-                } else {
-                    console.warn('Dangerous URL protocol blocked:', url.split(':')[0] + ':');
-                }
+            console.log('FormattingToolbar executeCommand createLink called');
+            
+            // Check if the current selection is within an existing link
+            const existingLink = this.getSelectedLink();
+            console.log('Existing link found:', existingLink);
+            
+            // Save current selection before showing modal
+            const selection = window.getSelection();
+            console.log('Current selection:', selection.toString());
+            console.log('Selection range count:', selection.rangeCount);
+            
+            if (selection && selection.rangeCount > 0) {
+                this.savedRange = selection.getRangeAt(0).cloneRange();
+                console.log('Saved range:', this.savedRange);
+                console.log('Saved range text:', this.savedRange.toString());
+            } else {
+                console.warn('No selection to save');
+            }
+            
+            console.log('currentEditableElement:', this.currentEditableElement);
+            
+            // Show the link settings modal with saved range
+            if (this.editor && this.editor.linkSettingsModal) {
+                this.editor.linkSettingsModal.show(existingLink, this.savedRange, this, this.currentEditableElement);
+            } else {
+                console.warn('Link settings modal not available');
             }
         } else if (command === 'insertImage') {
             this.insertImage();
@@ -1205,18 +1219,55 @@ export class FormattingToolbar {
             }
         }
         
-        // Allow safe protocols
+        // Allow safe protocols (including relative URLs and anchors)
         const allowedPattern = /^(https?:\/\/|mailto:|tel:|\/\/|\/|#)/i;
         
         if (allowedPattern.test(url)) {
             return url;
         }
         
-        // Auto-add https:// for domain-like strings
-        if (/^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}/.test(url)) {
+        // Auto-add https:// for domain-like strings (more permissive)
+        // Matches: domain.com, subdomain.domain.com, localhost:3000, IP addresses, etc.
+        if (/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*(:[0-9]+)?(\/.*)?\/?$/.test(url)) {
             return 'https://' + url;
         }
         
-        return null;
+        // If nothing matches, still allow it but warn (better than breaking functionality)
+        console.warn('URL format not recognized, allowing but recommend using full URLs:', url);
+        return url;
+    }
+    
+    getSelectedLink() {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) {
+            return null;
+        }
+        
+        try {
+            // Check if the selection is within a link element
+            const range = selection.getRangeAt(0);
+            let element = range.commonAncestorContainer;
+            
+            // Ensure element exists
+            if (!element) {
+                return null;
+            }
+            
+            // If it's a text node, get its parent
+            if (element.nodeType === Node.TEXT_NODE) {
+                element = element.parentNode;
+            }
+            
+            // Ensure element still exists and has closest method
+            if (!element || !element.closest) {
+                return null;
+            }
+            
+            // Check if the element itself is a link or find the closest link ancestor
+            return element.closest('a[href]');
+        } catch (error) {
+            console.warn('Error finding selected link:', error.message);
+            return null;
+        }
     }
 }

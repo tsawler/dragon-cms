@@ -61,6 +61,9 @@ describe('FormattingToolbar', () => {
                     container.appendChild(img);
                     return container;
                 })
+            },
+            linkSettingsModal: {
+                show: jest.fn()
             }
         };
         
@@ -252,16 +255,20 @@ describe('FormattingToolbar', () => {
         test('should handle createLink command with user input', () => {
             toolbar.executeCommand('createLink');
             
-            expect(global.prompt).toHaveBeenCalledWith('Enter URL:');
-            expect(document.execCommand).toHaveBeenCalledWith('createLink', false, 'https://example.com');
+            // Should show the link settings modal instead of using prompt
+            expect(mockEditor.linkSettingsModal.show).toHaveBeenCalledWith(null, expect.any(Object), expect.any(FormattingToolbar), expect.any(Object));
         });
 
-        test('should not create link when user cancels prompt', () => {
-            global.prompt.mockReturnValue(null);
+        test('should handle createLink command for existing links', () => {
+            // Mock existing link element
+            const mockLink = document.createElement('a');
+            mockLink.href = 'https://existing.com';
+            jest.spyOn(toolbar, 'getSelectedLink').mockReturnValue(mockLink);
             
             toolbar.executeCommand('createLink');
             
-            expect(document.execCommand).not.toHaveBeenCalledWith('createLink', false, null);
+            // Should show the modal with the existing link
+            expect(mockEditor.linkSettingsModal.show).toHaveBeenCalledWith(mockLink, expect.any(Object), toolbar, expect.any(Object));
         });
 
         test('should handle insertImage command', () => {
@@ -777,17 +784,11 @@ describe('FormattingToolbar', () => {
     });
 
     describe('Security and Input Validation', () => {
-        test('should sanitize dangerous URLs in createLink', () => {
-            global.prompt.mockReturnValue('javascript:alert("XSS")');
-            const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-            
+        test('should show link modal instead of using direct URL input', () => {
             toolbar.executeCommand('createLink');
             
-            // Should NOT call execCommand with dangerous URL - should be blocked
-            expect(document.execCommand).not.toHaveBeenCalledWith('createLink', false, 'javascript:alert("XSS")');
-            expect(consoleSpy).toHaveBeenCalledWith('Dangerous URL protocol blocked:', 'javascript:');
-            
-            consoleSpy.mockRestore();
+            // Should show the link settings modal, which handles URL sanitization internally
+            expect(mockEditor.linkSettingsModal.show).toHaveBeenCalledWith(null, expect.any(Object), expect.any(FormattingToolbar), expect.any(Object));
         });
 
         test('should handle malicious font names', () => {

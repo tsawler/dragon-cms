@@ -2,7 +2,7 @@ import { StateHistory } from './state-history.js';
 import { FormattingToolbar } from './formatting-toolbar.js';
 import { ImageUploader } from './image-uploader.js';
 import { VideoSettingsModal } from './video-settings-modal.js';
-import { StyleEditorModal, CodeEditorModal, ColumnSettingsModal, ConfirmationModal } from './modals.js';
+import { StyleEditorModal, CodeEditorModal, ColumnSettingsModal, ConfirmationModal, LinkSettingsModal } from './modals.js';
 import { SnippetPanel } from './snippet-panel.js';
 import { ColumnResizer } from './column-resizer.js';
 import { PageSettingsModal } from './page-settings-modal.js';
@@ -59,6 +59,7 @@ export class Editor {
         this.modalDragger = new ModalDragger();
         
         this.buttonSettingsModal = new ButtonSettingsModal(this);
+        this.linkSettingsModal = new LinkSettingsModal(this);
         
         this.attachEventListeners();
         this.setupMutationObserver();

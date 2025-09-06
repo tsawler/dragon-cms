@@ -1981,3 +1981,276 @@ export class ConfirmationModal {
         this.onCancel = null;
     }
 }
+
+export class LinkSettingsModal {
+    constructor(editor) {
+        this.editor = editor;
+        this.targetLink = null;
+        this.modal = null;
+        this.createModal();
+    }
+
+    createModal() {
+        this.modal = document.createElement('div');
+        this.modal.className = 'modal';
+        this.modal.innerHTML = `
+            <div class="modal-content" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h2>Link Settings</h2>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="link-url">URL</label>
+                        <input type="url" id="link-url" placeholder="https://example.com">
+                    </div>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; cursor: pointer;">
+                            <input type="checkbox" id="link-new-window" style="margin: 0; width: auto;">
+                            <span>Open in new window</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+                    <button class="btn modal-remove" style="background-color: #ef4444; color: white; border: 1px solid #ef4444;">Remove Link</button>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn modal-cancel" style="padding: 0.5rem 1rem; border: 1px solid #d1d5db; background: white; color: #374151;">Cancel</button>
+                        <button class="btn btn-success modal-apply" style="padding: 0.5rem 1rem; background: #10b981; color: white; border: 1px solid #10b981;">Apply</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(this.modal);
+        this.attachListeners();
+    }
+
+    attachListeners() {
+        const closeBtn = this.modal.querySelector('.modal-close');
+        const cancelBtn = this.modal.querySelector('.modal-cancel');
+        const applyBtn = this.modal.querySelector('.modal-apply');
+        const removeBtn = this.modal.querySelector('.modal-remove');
+
+        closeBtn.addEventListener('click', () => this.close());
+        cancelBtn.addEventListener('click', () => this.close());
+        applyBtn.addEventListener('click', () => this.apply());
+        removeBtn.addEventListener('click', () => this.removeLink());
+
+        // Close on background click
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) {
+                this.close();
+            }
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.modal.style.display !== 'none') {
+                this.close();
+            }
+        });
+    }
+
+    show(linkElement, savedRange = null, formattingToolbar = null, currentEditableElement = null) {
+        this.targetLink = linkElement;
+        this.savedRange = savedRange;
+        this.formattingToolbar = formattingToolbar;
+        this.currentEditableElement = currentEditableElement;
+        this.modal.style.display = 'flex';
+        
+        // Load current link settings
+        if (linkElement) {
+            const urlInput = this.modal.querySelector('#link-url');
+            const newWindowCheckbox = this.modal.querySelector('#link-new-window');
+            const footer = this.modal.querySelector('.modal-footer');
+            
+            urlInput.value = linkElement.href || linkElement.getAttribute('href') || '';
+            newWindowCheckbox.checked = linkElement.target === '_blank';
+            
+            // Show remove button for existing links and restore footer layout
+            this.modal.querySelector('.modal-remove').style.display = 'inline-block';
+            if (footer) {
+                footer.style.justifyContent = 'space-between';
+            }
+        } else {
+            // Hide remove button for new links and adjust footer layout
+            const removeBtn = this.modal.querySelector('.modal-remove');
+            const footer = this.modal.querySelector('.modal-footer');
+            if (removeBtn) {
+                removeBtn.style.display = 'none';
+            }
+            // When no remove button, center the Cancel/Apply buttons
+            if (footer) {
+                footer.style.justifyContent = 'flex-end';
+            }
+            this.modal.querySelector('#link-url').value = '';
+            this.modal.querySelector('#link-new-window').checked = false;
+        }
+
+        // Focus the URL input
+        setTimeout(() => {
+            this.modal.querySelector('#link-url').focus();
+        }, 100);
+    }
+
+    close() {
+        this.modal.style.display = 'none';
+        this.targetLink = null;
+    }
+
+    apply() {
+        console.log('LinkSettingsModal apply() called');
+        const urlInput = this.modal.querySelector('#link-url');
+        const newWindowCheckbox = this.modal.querySelector('#link-new-window');
+        const url = urlInput.value.trim();
+        
+        console.log('URL entered:', url);
+
+        if (!url) {
+            alert('Please enter a URL');
+            return;
+        }
+
+        // Sanitize URL (reuse the sanitization logic from formatting toolbar)
+        const sanitizedUrl = this.sanitizeURL(url);
+        console.log('Sanitized URL:', sanitizedUrl);
+        if (!sanitizedUrl) {
+            alert('Invalid or dangerous URL. Please enter a valid URL.');
+            return;
+        }
+
+        if (this.targetLink) {
+            // Update existing link
+            this.targetLink.href = sanitizedUrl;
+            this.targetLink.setAttribute('href', sanitizedUrl);
+            
+            if (newWindowCheckbox.checked) {
+                this.targetLink.target = '_blank';
+                this.targetLink.setAttribute('target', '_blank');
+            } else {
+                this.targetLink.removeAttribute('target');
+            }
+        } else {
+            // Create new link using saved range
+            console.log('Creating new link');
+            console.log('savedRange:', this.savedRange);
+            console.log('formattingToolbar:', this.formattingToolbar);
+            console.log('currentEditableElement (saved):', this.currentEditableElement);
+            console.log('currentEditableElement (from toolbar):', this.formattingToolbar?.currentEditableElement);
+            
+            try {
+                if (this.savedRange && this.currentEditableElement) {
+                    console.log('Restoring selection');
+                    // Restore the saved selection first
+                    this.currentEditableElement.focus();
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(this.savedRange);
+                    
+                    console.log('Current selection after restore:', selection.toString());
+                    
+                    // Now create the link
+                    console.log('Calling execCommand createLink with:', sanitizedUrl);
+                    const result = document.execCommand('createLink', false, sanitizedUrl);
+                    console.log('execCommand result:', result);
+                    
+                    // Find the newly created link and set target if needed
+                    if (newWindowCheckbox.checked) {
+                        // The selection should now contain the newly created link
+                        const currentSelection = window.getSelection();
+                        if (currentSelection.rangeCount > 0) {
+                            const range = currentSelection.getRangeAt(0);
+                            let link = null;
+                            
+                            // Try different ways to find the link
+                            if (range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE) {
+                                link = range.commonAncestorContainer.querySelector('a');
+                            } else if (range.commonAncestorContainer.parentNode) {
+                                link = range.commonAncestorContainer.parentNode.closest('a');
+                            }
+                            
+                            if (link) {
+                                link.target = '_blank';
+                                link.setAttribute('target', '_blank');
+                            }
+                        }
+                    }
+                } else {
+                    // Fallback to execCommand without selection restoration
+                    console.log('Using fallback execCommand');
+                    const result = document.execCommand('createLink', false, sanitizedUrl);
+                    console.log('Fallback execCommand result:', result);
+                }
+            } catch (error) {
+                console.warn('Link creation failed:', error.message);
+                alert('Failed to create link. Please try again.');
+                return;
+            }
+        }
+
+        // Save state for undo/redo
+        if (this.editor && this.editor.stateHistory) {
+            this.editor.stateHistory.saveState();
+        }
+
+        this.close();
+    }
+
+    removeLink() {
+        if (this.targetLink) {
+            // Move all child nodes out of the link element
+            const parent = this.targetLink.parentNode;
+            while (this.targetLink.firstChild) {
+                parent.insertBefore(this.targetLink.firstChild, this.targetLink);
+            }
+            
+            // Remove the now-empty link element
+            parent.removeChild(this.targetLink);
+            
+            // Save state for undo/redo
+            if (this.editor && this.editor.stateHistory) {
+                this.editor.stateHistory.saveState();
+            }
+        }
+        
+        this.close();
+    }
+
+    sanitizeURL(url) {
+        if (!url || typeof url !== 'string') {
+            return null;
+        }
+        
+        // Trim and normalize
+        url = url.trim();
+        if (!url) {
+            return null;
+        }
+        
+        // Block dangerous protocols
+        const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:', 'about:'];
+        const lowerUrl = url.toLowerCase();
+        
+        for (const protocol of dangerousProtocols) {
+            if (lowerUrl.startsWith(protocol)) {
+                return null;
+            }
+        }
+        
+        // Allow safe protocols (including relative URLs and anchors)
+        const allowedPattern = /^(https?:\/\/|mailto:|tel:|\/\/|\/|#)/i;
+        
+        if (allowedPattern.test(url)) {
+            return url;
+        }
+        
+        // Auto-add https:// for domain-like strings (more permissive)
+        if (/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*(:[0-9]+)?(\/.*)?\/?$/.test(url)) {
+            return 'https://' + url;
+        }
+        
+        // If nothing matches, still allow it but warn
+        console.warn('URL format not recognized, allowing but recommend using full URLs:', url);
+        return url;
+    }
+}
