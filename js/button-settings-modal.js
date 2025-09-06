@@ -125,6 +125,7 @@ export class ButtonSettingsModal {
         borderRadiusNumber.addEventListener('input', (e) => {
             let value = parseInt(e.target.value) || 0;
             value = Math.max(0, Math.min(50, value)); // Clamp between 0 and 50
+            e.target.value = value; // Update the input to show clamped value
             borderRadiusSlider.value = value;
             borderRadiusValue.textContent = value;
             if (this.targetButton) {
@@ -150,12 +151,13 @@ export class ButtonSettingsModal {
             }
         });
         
-        // Close on Escape key
-        document.addEventListener('keydown', (e) => {
+        // Close on Escape key (store handler to avoid memory leaks)
+        this.escapeHandler = (e) => {
             if (e.key === 'Escape' && this.modal.classList.contains('active')) {
                 this.cancel();
             }
-        });
+        };
+        document.addEventListener('keydown', this.escapeHandler);
     }
 
     open(button) {
@@ -283,9 +285,13 @@ export class ButtonSettingsModal {
     }
 
     close() {
-        // Handle Edge modal
-        if (this.edgeModal) {
-            document.body.removeChild(this.edgeModal);
+        // Handle Edge modal with null check
+        if (this.edgeModal && document.body.contains(this.edgeModal)) {
+            try {
+                document.body.removeChild(this.edgeModal);
+            } catch (e) {
+                // Modal might already be cleaned up
+            }
             this.edgeModal = null;
         }
         
@@ -294,6 +300,12 @@ export class ButtonSettingsModal {
         this.modal.style.display = '';
         this.targetButton = null;
         this.originalValues = null;
+        
+        // Clean up event listener to prevent memory leaks
+        if (this.escapeHandler) {
+            document.removeEventListener('keydown', this.escapeHandler);
+            this.escapeHandler = null;
+        }
         
         // Reset modal position if it was dragged
         const modalContent = this.modal.querySelector('.modal-content');
@@ -338,14 +350,50 @@ export class ButtonSettingsModal {
         return hex;
     }
 
+    sanitizeURL(url) {
+        if (!url || typeof url !== 'string') return '';
+        
+        const trimmedUrl = url.trim();
+        if (!trimmedUrl) return '';
+        
+        // Block dangerous protocols
+        const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:', 'about:'];
+        const lowerUrl = trimmedUrl.toLowerCase();
+        
+        for (const protocol of dangerousProtocols) {
+            if (lowerUrl.startsWith(protocol)) {
+                console.warn('Dangerous URL protocol blocked:', protocol);
+                return '';
+            }
+        }
+        
+        // Allow http, https, mailto, tel, and protocol-relative URLs
+        const allowedPattern = /^(https?:\/\/|mailto:|tel:|\/\/|\/|#)/i;
+        if (!allowedPattern.test(trimmedUrl)) {
+            // If no protocol specified, assume https
+            return 'https://' + trimmedUrl;
+        }
+        
+        return trimmedUrl;
+    }
+
     applyChanges() {
-        const text = document.getElementById('button-text').value;
-        const url = document.getElementById('button-url').value;
-        const bgColor = document.getElementById('button-bg-color').value;
-        const textColor = document.getElementById('button-text-color').value;
-        const borderRadius = document.getElementById('button-border-radius').value;
-        const size = document.getElementById('button-size').value;
-        const target = document.getElementById('button-target').value;
+        // Add null checks for DOM elements
+        const textEl = document.getElementById('button-text');
+        const urlEl = document.getElementById('button-url');
+        const bgColorEl = document.getElementById('button-bg-color');
+        const textColorEl = document.getElementById('button-text-color');
+        const borderRadiusEl = document.getElementById('button-border-radius');
+        const sizeEl = document.getElementById('button-size');
+        const targetEl = document.getElementById('button-target');
+        
+        const text = textEl ? textEl.value : '';
+        const url = this.sanitizeURL(urlEl ? urlEl.value : '');
+        const bgColor = bgColorEl ? bgColorEl.value : '#3b82f6';
+        const textColor = textColorEl ? textColorEl.value : '#ffffff';
+        const borderRadius = borderRadiusEl ? borderRadiusEl.value : '4';
+        const size = sizeEl ? sizeEl.value : 'md';
+        const target = targetEl ? targetEl.value : '_self';
         
         // Update button
         this.targetButton.textContent = text;
@@ -371,12 +419,18 @@ export class ButtonSettingsModal {
         
         // Remove any existing click handlers
         this.targetButton.onclick = null;
-        // Remove event listeners by cloning and replacing the button
-        const newButton = this.targetButton.cloneNode(true);
-        this.targetButton.parentNode.replaceChild(newButton, this.targetButton);
         
-        // Save state
-        this.editor.stateHistory.saveState();
+        // Remove event listeners by cloning and replacing the button (with null checks)
+        if (this.targetButton && this.targetButton.parentNode) {
+            const newButton = this.targetButton.cloneNode(true);
+            this.targetButton.parentNode.replaceChild(newButton, this.targetButton);
+            this.targetButton = newButton; // Update reference to the new button
+        }
+        
+        // Save state (with null check)
+        if (this.editor && this.editor.stateHistory && this.editor.stateHistory.saveState) {
+            this.editor.stateHistory.saveState();
+        }
         this.close();
     }
     
@@ -543,12 +597,18 @@ export class ButtonSettingsModal {
         
         // Remove any existing click handlers
         this.targetButton.onclick = null;
-        // Remove event listeners by cloning and replacing the button
-        const newButton = this.targetButton.cloneNode(true);
-        this.targetButton.parentNode.replaceChild(newButton, this.targetButton);
         
-        // Save state
-        this.editor.stateHistory.saveState();
+        // Remove event listeners by cloning and replacing the button (with null checks)
+        if (this.targetButton && this.targetButton.parentNode) {
+            const newButton = this.targetButton.cloneNode(true);
+            this.targetButton.parentNode.replaceChild(newButton, this.targetButton);
+            this.targetButton = newButton; // Update reference to the new button
+        }
+        
+        // Save state (with null check)
+        if (this.editor && this.editor.stateHistory && this.editor.stateHistory.saveState) {
+            this.editor.stateHistory.saveState();
+        }
         this.close();
     }
     
