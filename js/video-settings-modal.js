@@ -70,11 +70,16 @@ export class VideoSettingsModal {
     }
 
     convertToEmbedUrl(url) {
+        // Handle null/undefined inputs
+        if (!url || typeof url !== 'string') {
+            return url || '';
+        }
+        
         // YouTube conversions
         // Standard watch URL: https://www.youtube.com/watch?v=VIDEO_ID&t=123s
         // Short URL: https://youtu.be/VIDEO_ID?t=123
         // Already embed URL: https://www.youtube.com/embed/VIDEO_ID
-        const youtubeWatchRegex = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\\?v=([a-zA-Z0-9_-]+)([&?].*)?/;
+        const youtubeWatchRegex = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)([&?].*)?/;
         const youtubeShortRegex = /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([a-zA-Z0-9_-]+)(\?.*)?/;
         const youtubeEmbedRegex = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]+)/;
         
@@ -90,7 +95,7 @@ export class VideoSettingsModal {
             let embedUrl = `https://www.youtube.com/embed/${match[1]}`;
             // Preserve timestamp if present
             if (match[2]) {
-                const timeMatch = match[2].match(/[?&]t=(\\d+)/);
+                const timeMatch = match[2].match(/[?&]t=(\d+)/);
                 if (timeMatch) {
                     embedUrl += `?start=${timeMatch[1]}`;
                 }
@@ -103,7 +108,7 @@ export class VideoSettingsModal {
             let embedUrl = `https://www.youtube.com/embed/${match[1]}`;
             // Preserve timestamp if present
             if (match[2]) {
-                const timeMatch = match[2].match(/[?&]t=(\\d+)/);
+                const timeMatch = match[2].match(/[?&]t=(\d+)/);
                 if (timeMatch) {
                     embedUrl += `?start=${timeMatch[1]}`;
                 }
@@ -167,7 +172,10 @@ export class VideoSettingsModal {
                 // Convert to embed-friendly URL
                 const embedUrl = this.convertToEmbedUrl(url);
                 this.editor.setupVideoSnippet(this.targetSnippet, embedUrl);
-                this.editor.stateHistory.saveState();
+                // Safe state history save
+                if (this.editor.stateHistory && this.editor.stateHistory.saveState) {
+                    this.editor.stateHistory.saveState();
+                }
             }
         }
         
