@@ -455,7 +455,10 @@ export class FormattingToolbar {
             // Save current selection before showing modal
             const selection = window.getSelection();
             if (selection && selection.rangeCount > 0) {
-                this.savedRange = selection.getRangeAt(0).cloneRange();
+                const range = selection.getRangeAt(0);
+                if (range && typeof range.cloneRange === 'function') {
+                    this.savedRange = range.cloneRange();
+                }
             }
             
             // Show the link settings modal with saved range
@@ -475,7 +478,9 @@ export class FormattingToolbar {
         }
         
         this.updateToolbarState();
-        this.editor.stateHistory.saveState();
+        if (this.editor && this.editor.stateHistory && this.editor.stateHistory.saveState) {
+            this.editor.stateHistory.saveState();
+        }
     }
     
     insertImage() {
@@ -564,7 +569,9 @@ export class FormattingToolbar {
         } else if (tag === 'blockquote') {
             document.execCommand('formatBlock', false, '<blockquote>');
         }
-        this.editor.stateHistory.saveState();
+        if (this.editor && this.editor.stateHistory && this.editor.stateHistory.saveState) {
+            this.editor.stateHistory.saveState();
+        }
     }
 
     updateToolbarState() {
@@ -578,8 +585,10 @@ export class FormattingToolbar {
             if (command === 'insertImage') {
                 return;
             }
-            const isActive = document.queryCommandState(command);
-            button.classList.toggle('active', isActive);
+            if (typeof document.queryCommandState === 'function') {
+                const isActive = document.queryCommandState(command);
+                button.classList.toggle('active', isActive);
+            }
         });
 
         // Update format select
@@ -607,7 +616,10 @@ export class FormattingToolbar {
         // Save current selection when showing toolbar
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0 && typeof selection.getRangeAt === 'function') {
-            this.savedRange = selection.getRangeAt(0).cloneRange();
+            const range = selection.getRangeAt(0);
+            if (range && typeof range.cloneRange === 'function') {
+                this.savedRange = range.cloneRange();
+            }
         }
         
         const rect = element.getBoundingClientRect();
