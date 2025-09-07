@@ -2086,6 +2086,12 @@ export class LinkSettingsModal {
     apply() {
         const urlInput = this.modal.querySelector('#link-url');
         const newWindowCheckbox = this.modal.querySelector('#link-new-window');
+        
+        if (!urlInput || !newWindowCheckbox) {
+            console.warn('Modal form elements not found');
+            return;
+        }
+        
         const url = urlInput.value.trim();
 
         if (!url) {
