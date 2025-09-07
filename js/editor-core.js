@@ -808,6 +808,7 @@ export class Editor {
         area.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
         area.querySelectorAll('.drop-insertion-line').forEach(el => el.remove());
         area.querySelectorAll('.drop-zone-overlay').forEach(el => el.remove());
+        area.querySelectorAll('.drop-indicator').forEach(el => el.remove()); // Also clean up test indicators
         
         // Reset main area styling
         area.style.background = '';
@@ -1443,10 +1444,20 @@ export class Editor {
     }
     
     setupViewportControls() {
-        // Setup viewport control buttons
-        document.getElementById('mobile-viewport').addEventListener('click', () => this.setViewportSize('375px'));
-        document.getElementById('tablet-viewport').addEventListener('click', () => this.setViewportSize('768px'));
-        document.getElementById('desktop-viewport').addEventListener('click', () => this.setViewportSize('100%'));
+        // Setup viewport control buttons if they exist
+        const mobileBtn = document.getElementById('mobile-viewport');
+        const tabletBtn = document.getElementById('tablet-viewport');
+        const desktopBtn = document.getElementById('desktop-viewport');
+        
+        if (mobileBtn) {
+            mobileBtn.addEventListener('click', () => this.setViewportSize('375px'));
+        }
+        if (tabletBtn) {
+            tabletBtn.addEventListener('click', () => this.setViewportSize('768px'));
+        }
+        if (desktopBtn) {
+            desktopBtn.addEventListener('click', () => this.setViewportSize('100%'));
+        }
         
         // Initialize desktop mode
         this.editableArea.classList.add('viewport-desktop');
