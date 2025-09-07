@@ -1643,57 +1643,67 @@ export class ColumnSettingsModal {
             this.targetBlock.style.marginLeft = '';
             this.targetBlock.style.marginRight = '';
         } else {
-            this.targetBlock.classList.remove('full-width');
-            this.targetBlock.style.marginLeft = '';
-            this.targetBlock.style.marginRight = '';
-            this.targetBlock.style.maxWidth = '';
-            if (blockWidthInput.value) {
-                this.targetBlock.style.width = blockWidthInput.value;
-            } else {
-                this.targetBlock.style.width = '';
+            if (this.targetBlock) {
+                this.targetBlock.classList.remove('full-width');
+                this.targetBlock.style.marginLeft = '';
+                this.targetBlock.style.marginRight = '';
+                this.targetBlock.style.maxWidth = '';
+            }
+            if (this.targetBlock) {
+                if (blockWidthInput.value) {
+                    this.targetBlock.style.width = blockWidthInput.value;
+                } else {
+                    this.targetBlock.style.width = '';
+                }
             }
         }
         
         // Apply height
-        if (blockHeightInput.value) {
-            this.targetBlock.style.height = blockHeightInput.value;
-        } else {
-            this.targetBlock.style.height = '';
+        if (this.targetBlock) {
+            if (blockHeightInput.value) {
+                this.targetBlock.style.height = blockHeightInput.value;
+            } else {
+                this.targetBlock.style.height = '';
+            }
         }
         
         // Apply background color
-        if (bgColorText.value) {
-            this.targetBlock.style.backgroundColor = bgColorText.value;
-        } else {
-            this.targetBlock.style.backgroundColor = '';
+        if (this.targetBlock) {
+            if (bgColorText.value) {
+                this.targetBlock.style.backgroundColor = bgColorText.value;
+            } else {
+                this.targetBlock.style.backgroundColor = '';
+            }
         }
         
         // Apply background image
         const bgSizeSelect = modalToUse.querySelector('#bg-size');
         const bgPositionSelect = modalToUse.querySelector('#bg-position');
         
-        if (bgImageInput.value) {
-            if (bgImageInput.value.startsWith('linear-gradient') || bgImageInput.value.startsWith('radial-gradient')) {
-                // Gradients don't need url() wrapper
-                this.targetBlock.style.backgroundImage = bgImageInput.value;
+        if (this.targetBlock) {
+            if (bgImageInput.value) {
+                if (bgImageInput.value.startsWith('linear-gradient') || bgImageInput.value.startsWith('radial-gradient')) {
+                    // Gradients don't need url() wrapper
+                    this.targetBlock.style.backgroundImage = bgImageInput.value;
+                } else {
+                    // All other values (URLs and data URLs) need url() wrapper
+                    this.targetBlock.style.backgroundImage = `url("${bgImageInput.value}")`;
+                }
+                this.targetBlock.style.backgroundSize = bgSizeSelect.value || 'cover';
+                this.targetBlock.style.backgroundPosition = bgPositionSelect.value || 'center';
+                this.targetBlock.style.backgroundRepeat = 'no-repeat';
             } else {
-                // All other values (URLs and data URLs) need url() wrapper
-                this.targetBlock.style.backgroundImage = `url("${bgImageInput.value}")`;
+                this.targetBlock.style.backgroundImage = '';
+                this.targetBlock.style.backgroundSize = '';
+                this.targetBlock.style.backgroundPosition = '';
+                this.targetBlock.style.backgroundRepeat = '';
             }
-            this.targetBlock.style.backgroundSize = bgSizeSelect.value || 'cover';
-            this.targetBlock.style.backgroundPosition = bgPositionSelect.value || 'center';
-            this.targetBlock.style.backgroundRepeat = 'no-repeat';
-        } else {
-            this.targetBlock.style.backgroundImage = '';
-            this.targetBlock.style.backgroundSize = '';
-            this.targetBlock.style.backgroundPosition = '';
-            this.targetBlock.style.backgroundRepeat = '';
         }
         
         // Apply content width - wrap existing content if needed
-        const hasContentWrapper = this.targetBlock.querySelector('.block-content-wrapper');
+        const hasContentWrapper = this.targetBlock ? this.targetBlock.querySelector('.block-content-wrapper') : null;
         
-        if (contentWidthInput.value && !hasContentWrapper) {
+        if (this.targetBlock && contentWidthInput.value && !hasContentWrapper) {
             // Need to wrap content
             const wrapper = document.createElement('div');
             wrapper.className = 'block-content-wrapper';
@@ -1716,10 +1726,10 @@ export class ColumnSettingsModal {
             
             elementsToWrap.forEach(el => wrapper.appendChild(el));
             this.targetBlock.appendChild(wrapper);
-        } else if (contentWidthInput.value && hasContentWrapper) {
+        } else if (this.targetBlock && contentWidthInput.value && hasContentWrapper) {
             // Update existing wrapper
             hasContentWrapper.style.maxWidth = contentWidthInput.value;
-        } else if (!contentWidthInput.value && hasContentWrapper) {
+        } else if (this.targetBlock && !contentWidthInput.value && hasContentWrapper) {
             // Remove wrapper
             while (hasContentWrapper.firstChild) {
                 this.targetBlock.insertBefore(hasContentWrapper.firstChild, hasContentWrapper);
@@ -1728,16 +1738,16 @@ export class ColumnSettingsModal {
         }
         
         // Now handle column changes
-        
-        // Save current block controls as HTML strings
-        const controlsHTML = [];
-        this.targetBlock.querySelectorAll('.drag-handle, .edit-icon, .settings-icon, .code-icon, .delete-icon, .resizer-handle').forEach(el => {
-            controlsHTML.push(el.outerHTML);
-        });
-        
-        // Get content wrapper if it exists
-        const contentWrapper = this.targetBlock.querySelector('.block-content-wrapper');
-        const targetContainer = contentWrapper || this.targetBlock;
+        if (this.targetBlock) {
+            // Save current block controls as HTML strings
+            const controlsHTML = [];
+            this.targetBlock.querySelectorAll('.drag-handle, .edit-icon, .settings-icon, .code-icon, .delete-icon, .resizer-handle').forEach(el => {
+                controlsHTML.push(el.outerHTML);
+            });
+            
+            // Get content wrapper if it exists
+            const contentWrapper = this.targetBlock.querySelector('.block-content-wrapper');
+            const targetContainer = contentWrapper || this.targetBlock;
         
         // Clear content (but not controls)
         if (contentWrapper) {
@@ -1779,9 +1789,12 @@ export class ColumnSettingsModal {
             
             targetContainer.appendChild(container);
         }
+        }
         
         // Save state
-        this.editor.stateHistory.saveState();
+        if (this.editor && this.editor.stateHistory && this.editor.stateHistory.saveState) {
+            this.editor.stateHistory.saveState();
+        }
         
         // Refresh column resize dividers after changes
         setTimeout(() => {
