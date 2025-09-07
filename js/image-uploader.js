@@ -82,6 +82,9 @@ export class ImageUploader {
     }
 
     handleFileDrop(e, snippet) {
+        if (!e.dataTransfer || !e.dataTransfer.files) {
+            return;
+        }
         const file = e.dataTransfer.files[0];
         if (file && file.type.startsWith('image/')) {
             this.processImage(file, snippet);
@@ -89,6 +92,12 @@ export class ImageUploader {
     }
 
     processImage(file, snippet) {
+        // Check if FileReader is available
+        if (typeof FileReader === 'undefined') {
+            console.warn('FileReader not available');
+            return;
+        }
+        
         const reader = new FileReader();
         reader.onload = (e) => {
             const existingImg = snippet.querySelector('.editable-image');
@@ -138,8 +147,16 @@ export class ImageUploader {
                 snippet.classList.add('has-image-container');
             }
             
-            this.editor.stateHistory.saveState();
+            // Save state if available
+            if (this.editor && this.editor.stateHistory) {
+                this.editor.stateHistory.saveState();
+            }
         };
+        
+        reader.onerror = () => {
+            console.warn('Error reading image file');
+        };
+        
         reader.readAsDataURL(file);
     }
 
@@ -285,11 +302,20 @@ export class ImageUploader {
         container.style.width = 'fit-content';
         container.style.height = 'fit-content';
         
-        // Ensure mobile-friendly responsive behavior
-        img.style.maxWidth = '100%';
-        img.style.height = 'auto';
-        
-        container.appendChild(img);
+        // Handle null img gracefully
+        if (img) {
+            // Ensure mobile-friendly responsive behavior
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+            container.appendChild(img);
+        } else {
+            // Create placeholder img if none provided
+            const placeholderImg = document.createElement('img');
+            placeholderImg.style.maxWidth = '100%';
+            placeholderImg.style.height = 'auto';
+            placeholderImg.alt = 'Image placeholder';
+            container.appendChild(placeholderImg);
+        }
         
         // Create resize handles
         const handlePositions = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
