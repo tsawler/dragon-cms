@@ -1423,7 +1423,6 @@ export class ColumnSettingsModal {
     }
 
     close() {
-        console.log('ColumnSettingsModal.close() called');
         
         // Handle Edge modal
         if (this.edgeModal) {
@@ -1440,10 +1439,8 @@ export class ColumnSettingsModal {
         // Reset modal position if it was dragged
         const modalContent = this.modal.querySelector('.modal-content');
         if (modalContent && window.dragon && window.dragon.modalDragger) {
-            console.log('Resetting modal position...');
             window.dragon.modalDragger.resetModalPosition(modalContent);
         }
-        console.log('Modal closed, classes:', this.modal.className);
     }
 
     loadBlockSettings() {
@@ -1625,7 +1622,6 @@ export class ColumnSettingsModal {
     }
 
     applyChanges() {
-        console.log('Applying block settings and column changes');
         
         // Use Edge modal if it exists, otherwise use regular modal
         const modalToUse = this.edgeModal || this.modal;
@@ -1677,7 +1673,6 @@ export class ColumnSettingsModal {
         const bgPositionSelect = modalToUse.querySelector('#bg-position');
         
         if (bgImageInput.value) {
-            console.log('Applying background image:', bgImageInput.value.substring(0, 100) + '...');
             if (bgImageInput.value.startsWith('linear-gradient') || bgImageInput.value.startsWith('radial-gradient')) {
                 // Gradients don't need url() wrapper
                 this.targetBlock.style.backgroundImage = bgImageInput.value;
@@ -1688,11 +1683,6 @@ export class ColumnSettingsModal {
             this.targetBlock.style.backgroundSize = bgSizeSelect.value || 'cover';
             this.targetBlock.style.backgroundPosition = bgPositionSelect.value || 'center';
             this.targetBlock.style.backgroundRepeat = 'no-repeat';
-            console.log('Applied background styles:', {
-                backgroundImage: this.targetBlock.style.backgroundImage.substring(0, 50) + '...',
-                backgroundSize: this.targetBlock.style.backgroundSize,
-                backgroundPosition: this.targetBlock.style.backgroundPosition
-            });
         } else {
             this.targetBlock.style.backgroundImage = '';
             this.targetBlock.style.backgroundSize = '';
@@ -1738,10 +1728,6 @@ export class ColumnSettingsModal {
         }
         
         // Now handle column changes
-        console.log('Applying column changes:', {
-            columnCount: this.tempColumns.length,
-            columns: this.tempColumns
-        });
         
         // Save current block controls as HTML strings
         const controlsHTML = [];
@@ -1800,7 +1786,6 @@ export class ColumnSettingsModal {
         // Refresh column resize dividers after changes
         setTimeout(() => {
             if (this.editor.columnResizer) {
-                console.log('Triggering column resizer setup after column changes');
                 this.editor.columnResizer.setupResizeDividers();
             }
         }, 200);
@@ -2099,12 +2084,9 @@ export class LinkSettingsModal {
     }
 
     apply() {
-        console.log('LinkSettingsModal apply() called');
         const urlInput = this.modal.querySelector('#link-url');
         const newWindowCheckbox = this.modal.querySelector('#link-new-window');
         const url = urlInput.value.trim();
-        
-        console.log('URL entered:', url);
 
         if (!url) {
             alert('Please enter a URL');
@@ -2113,7 +2095,6 @@ export class LinkSettingsModal {
 
         // Sanitize URL (reuse the sanitization logic from formatting toolbar)
         const sanitizedUrl = this.sanitizeURL(url);
-        console.log('Sanitized URL:', sanitizedUrl);
         if (!sanitizedUrl) {
             alert('Invalid or dangerous URL. Please enter a valid URL.');
             return;
@@ -2132,27 +2113,16 @@ export class LinkSettingsModal {
             }
         } else {
             // Create new link using saved range
-            console.log('Creating new link');
-            console.log('savedRange:', this.savedRange);
-            console.log('formattingToolbar:', this.formattingToolbar);
-            console.log('currentEditableElement (saved):', this.currentEditableElement);
-            console.log('currentEditableElement (from toolbar):', this.formattingToolbar?.currentEditableElement);
-            
             try {
                 if (this.savedRange && this.currentEditableElement) {
-                    console.log('Restoring selection');
                     // Restore the saved selection first
                     this.currentEditableElement.focus();
                     const selection = window.getSelection();
                     selection.removeAllRanges();
                     selection.addRange(this.savedRange);
                     
-                    console.log('Current selection after restore:', selection.toString());
-                    
                     // Now create the link
-                    console.log('Calling execCommand createLink with:', sanitizedUrl);
-                    const result = document.execCommand('createLink', false, sanitizedUrl);
-                    console.log('execCommand result:', result);
+                    document.execCommand('createLink', false, sanitizedUrl);
                     
                     // Find the newly created link and set target if needed
                     if (newWindowCheckbox.checked) {
@@ -2177,9 +2147,7 @@ export class LinkSettingsModal {
                     }
                 } else {
                     // Fallback to execCommand without selection restoration
-                    console.log('Using fallback execCommand');
-                    const result = document.execCommand('createLink', false, sanitizedUrl);
-                    console.log('Fallback execCommand result:', result);
+                    document.execCommand('createLink', false, sanitizedUrl);
                 }
             } catch (error) {
                 console.warn('Link creation failed:', error.message);

@@ -100,7 +100,6 @@ describe('API Integration Methods', () => {
       });
       
       expect(mockAlert).toHaveBeenCalledWith('Page published successfully!');
-      expect(console.log).toHaveBeenCalledWith('Publish result:', 'Success message');
     });
 
     test('should handle publish error response', async () => {
@@ -245,7 +244,6 @@ describe('API Integration Methods', () => {
       
       expect(editor.editableArea.innerHTML).toBe(mockPageData.content);
       expect(mockAlert).toHaveBeenCalledWith('Page loaded successfully from URL!');
-      expect(console.log).toHaveBeenCalledWith('Loaded page data:', mockPageData);
     });
 
     test('should handle load error response', async () => {

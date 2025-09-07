@@ -185,14 +185,12 @@ export class Editor {
     loadInitialContent() {
         if (!this.initialContent) return;
         
-        console.log('Loading initial content...');
         
         // Set the content
         this.editableArea.innerHTML = this.initialContent;
         
         // Process all blocks to add controls
         const blocks = this.editableArea.querySelectorAll('.editor-block');
-        console.log('Loading initial content - found blocks:', blocks.length);
         blocks.forEach(block => {
             if (!block.querySelector('.drag-handle')) {
                 this.addBlockControls(block);
@@ -202,7 +200,6 @@ export class Editor {
         
         // Process all snippets to add controls
         const snippets = this.editableArea.querySelectorAll('.editor-snippet');
-        console.log('Loading initial content - found snippets:', snippets.length);
         snippets.forEach(snippet => {
             if (!snippet.querySelector('.drag-handle')) {
                 this.addSnippetControls(snippet);
@@ -230,7 +227,6 @@ export class Editor {
             this.stateHistory.saveState();
         }
         
-        console.log('Initial content loaded successfully');
     }
 
     addBlockControls(block) {
@@ -354,17 +350,14 @@ export class Editor {
     attachDragHandleListeners(element) {
         const dragHandle = element.querySelector('.drag-handle');
         if (!dragHandle) {
-            console.log('No drag handle found for element:', element);
             return;
         }
         
         // Check if listeners are already attached to prevent duplicates
         if (element.dataset.dragListenersAttached === 'true') {
-            console.log('Drag listeners already attached to element:', element);
             return;
         }
         
-        console.log('Attaching drag listeners to:', element, 'handle:', dragHandle);
         
         // Make the element draggable all the time
         element.draggable = true;
@@ -372,14 +365,12 @@ export class Editor {
         
         // Simple approach: just mark when drag is from handle
         dragHandle.addEventListener('mousedown', (e) => {
-            console.log('Drag handle mousedown - setting flag');
             element.dataset.dragFromHandle = 'true';
             e.stopPropagation();
         });
         
         // Clear flag on dragend
         element.addEventListener('dragend', (e) => {
-            console.log('Element dragend - clearing flag');
             delete element.dataset.dragFromHandle;
         });
         
@@ -388,7 +379,6 @@ export class Editor {
             // Use setTimeout to let dragstart fire first
             setTimeout(() => {
                 if (element.dataset.dragFromHandle && !element.classList.contains('dragging-element')) {
-                    console.log('Mouseup - clearing unused flag');
                     delete element.dataset.dragFromHandle;
                 }
             }, 10);
@@ -545,17 +535,14 @@ export class Editor {
                 ? e.target 
                 : e.target.closest('.editor-block, .editor-snippet');
             
-            console.log('dragstart event - e.target:', e.target, 'draggedElement:', draggedElement);
             
             // Dragstart for existing elements
             if (draggedElement) {
                 // Save state before moving existing elements
                 this.stateHistory.saveState();
-                console.log('Processing existing element drag, dragFromHandle:', draggedElement.dataset.dragFromHandle);
                 
                 // Check if drag was initiated from handle
                 if (draggedElement.dataset.dragFromHandle !== 'true') {
-                    console.log('Not from drag handle, preventing');
                     e.preventDefault();
                     return;
                 }
@@ -567,10 +554,6 @@ export class Editor {
                     nextSibling: draggedElement.nextSibling
                 };
                 
-                console.log('Stored original position:', {
-                    parent: this.originalPosition.parent.tagName + '.' + this.originalPosition.parent.className,
-                    nextSibling: this.originalPosition.nextSibling ? this.originalPosition.nextSibling.tagName : 'null'
-                });
                 
                 e.dataTransfer.effectAllowed = 'move';
                 
@@ -578,19 +561,16 @@ export class Editor {
                 if (draggedElement.classList.contains('editor-block')) {
                     e.dataTransfer.setData('elementType', 'block');
                     this.currentDragOperation = { type: 'block', isExisting: true, element: draggedElement };
-                    console.log('Set as existing block');
                 } else {
                     e.dataTransfer.setData('elementType', 'snippet');
                     e.dataTransfer.setData('snippetType', 'existing');
                     e.dataTransfer.setData('isExisting', 'true');
                     this.currentDragOperation = { type: 'snippet', isExisting: true, element: draggedElement };
-                    console.log('Set as existing snippet with element:', draggedElement);
                 }
                 e.dataTransfer.setData('template', draggedElement.outerHTML);
                 
                 // Add the dragging class
                 draggedElement.classList.add('dragging-element');
-                console.log('Added dragging-element class to:', draggedElement);
                 
                 // Store reference for drop detection
                 this.activeExistingDrag = draggedElement;
@@ -600,7 +580,6 @@ export class Editor {
         // Remove the problematic mouseup handler - let HTML5 drag and drop handle it
         
         area.addEventListener('dragend', (e) => {
-            console.log('Area dragend fired');
             if (e.target.classList.contains('editor-block') || e.target.classList.contains('editor-snippet')) {
                 e.target.classList.remove('dragging-element');
                 delete e.target.dataset.dragFromHandle;
@@ -616,7 +595,6 @@ export class Editor {
 
         area.addEventListener('dragover', (e) => {
             e.preventDefault();
-            // console.log('Dragover - currentDragOperation:', this.currentDragOperation?.type, this.currentDragOperation?.isExisting);
             
             const elementType = e.dataTransfer.getData('elementType') || this.currentDragOperation?.type || this.getCurrentDragType(e);
             
@@ -700,7 +678,6 @@ export class Editor {
         
         area.addEventListener('dragenter', (e) => {
             e.preventDefault();
-            console.log('Dragenter - allowing drop');
         });
         
         area.addEventListener('dragleave', (e) => {
@@ -710,7 +687,6 @@ export class Editor {
         });
 
         area.addEventListener('drop', (e) => {
-            console.log('Drop event fired, currentDragOperation:', this.currentDragOperation);
             e.preventDefault();
             
             // Capture dragging element BEFORE clearing visual indicators
@@ -719,16 +695,13 @@ export class Editor {
             // Fallback to element stored in currentDragOperation
             if (!draggingElement && this.currentDragOperation?.element) {
                 draggingElement = this.currentDragOperation.element;
-                console.log('Using element from currentDragOperation');
             }
             
             // Additional fallback - look for the activeExistingDrag
             if (!draggingElement && this.activeExistingDrag) {
                 draggingElement = this.activeExistingDrag;
-                console.log('Using activeExistingDrag element');
             }
             
-            console.log('Dragging element:', draggingElement);
             
             // Clear all visual indicators
             this.clearVisualIndicators();
@@ -739,12 +712,10 @@ export class Editor {
             
             const isExistingFromTransfer = e.dataTransfer.getData('isExisting') === 'true';
             const isExisting = this.currentDragOperation?.isExisting || isExistingFromTransfer;
-            console.log('Drop data - elementType:', elementType, 'snippetType:', snippetType, 'isExisting:', isExisting);
             
             // For existing elements, override snippetType to 'existing'
             if (isExisting && elementType === 'snippet') {
                 snippetType = 'existing';
-                console.log('Overrode snippetType to existing');
             }
 
             if (elementType === 'block') {
@@ -780,31 +751,24 @@ export class Editor {
                     closestBlock = this.currentTargetBlock || e.target.closest('.editor-block');
                 }
                 
-                console.log('Target block for snippet:', closestBlock);
                 
                 if (closestBlock) {
                     if (isExisting && draggingElement && draggingElement.classList.contains('editor-snippet')) {
                         // Moving an existing snippet
-                        console.log('Moving existing snippet:', draggingElement);
                         
                         // Insert existing snippet at the correct position within the block
                         const afterElement = this.getSnippetInsertionPoint(closestBlock, e.clientY);
-                        console.log('Insertion point:', afterElement);
                         
                         if (afterElement == null) {
                             closestBlock.appendChild(draggingElement);
-                            console.log('Appended snippet to block');
                         } else {
                             closestBlock.insertBefore(draggingElement, afterElement);
-                            console.log('Inserted snippet before element');
                         }
                         
                         this.originalPosition = null; // Clear since drop was successful
-                        console.log('Existing snippet moved successfully');
                     } else {
                         // Creating a new snippet from the panel
                         const snippet = this.createSnippet(snippetType, template);
-                        console.log('Created new snippet, draggable:', snippet.draggable, 'has drag handle:', !!snippet.querySelector('.drag-handle'));
                         
                         // Insert snippet at the correct position within the block
                         const afterElement = this.getSnippetInsertionPoint(closestBlock, e.clientY);
@@ -817,12 +781,10 @@ export class Editor {
                         if (snippetType === 'image') {
                             this.imageUploader.setupImageSnippet(snippet);
                         }
-                        console.log('New snippet created successfully');
                     }
                 } else {
                     // Invalid drop - restore to original position for existing elements
                     if (isExisting) {
-                        console.log('Invalid drop target, restoring original position');
                         this.restoreOriginalPosition();
                     }
                 }
@@ -1047,7 +1009,6 @@ export class Editor {
             if (response.ok) {
                 const result = await response.text();
                 alert('Page published successfully!');
-                console.log('Publish result:', result);
             } else {
                 const errorText = await response.text();
                 throw new Error(`Server responded with ${response.status}: ${errorText}`);
@@ -1106,7 +1067,6 @@ export class Editor {
                 this.stateHistory.saveState();
                 
                 alert('Page loaded successfully from URL!');
-                console.log('Loaded page data:', pageData);
             } else {
                 const errorText = await response.text();
                 throw new Error(`Server responded with ${response.status}: ${errorText}`);

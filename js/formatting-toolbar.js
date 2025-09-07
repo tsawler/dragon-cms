@@ -20,31 +20,17 @@ export class FormattingToolbar {
         
         // Add debug function
         window.debugTextSelection = () => {
-            console.log('=== Text Selection Debug ===');
-            console.log('Body classes:', document.body.className);
-            console.log('Body user-select:', window.getComputedStyle(document.body).userSelect);
-            console.log('Body cursor:', window.getComputedStyle(document.body).cursor);
             
             // Check editable elements
             const editableElements = document.querySelectorAll('[contenteditable="true"]');
-            console.log('Found editable elements:', editableElements.length);
             
             editableElements.forEach((el, index) => {
-                const styles = window.getComputedStyle(el);
-                console.log(`Editable element ${index}:`, {
-                    element: el,
-                    userSelect: styles.userSelect,
-                    pointerEvents: styles.pointerEvents,
-                    contentEditable: el.contentEditable,
-                    classes: el.className
-                });
+                // Check element styles for debugging if needed
             });
             
             // Check if body has any problematic styles
             if (document.body.classList.contains('column-resizing')) {
-                console.log('❌ Body has column-resizing class - this disables text selection!');
                 document.body.classList.remove('column-resizing');
-                console.log('✅ Removed column-resizing class');
             }
         };
         
@@ -53,7 +39,6 @@ export class FormattingToolbar {
             const editableElements = document.querySelectorAll('[contenteditable="true"]');
             if (editableElements.length > 0) {
                 const firstEl = editableElements[0];
-                console.log('Focusing first editable element:', firstEl);
                 firstEl.focus();
                 
                 // Try to place cursor at the end
@@ -63,98 +48,67 @@ export class FormattingToolbar {
                 range.collapse(false);
                 selection.removeAllRanges();
                 selection.addRange(range);
-                console.log('Cursor placed at end of first editable element');
             }
         };
         
         // Add click debugging
         window.debugClicks = () => {
-            console.log('Adding click debug handler...');
             
             // Debug focus events
             document.addEventListener('focus', (e) => {
                 if (e.target && e.target.closest && e.target.closest('[contenteditable="true"]')) {
-                    console.log('🎯 FOCUS event on editable:', e.target);
-                    console.trace('Focus event stack:');
                 }
             }, true);
             
             // Debug blur events  
             document.addEventListener('blur', (e) => {
                 if (e.target && e.target.closest && e.target.closest('[contenteditable="true"]')) {
-                    console.log('👋 BLUR event on editable:', e.target);
                 }
             }, true);
             
             document.addEventListener('click', (e) => {
                 if (e.target.closest('[contenteditable="true"]')) {
-                    console.log('=== CLICK DEBUG ===');
-                    console.log('Clicked element:', e.target);
-                    console.log('Event target tagName:', e.target.tagName);
-                    console.log('Event target classes:', e.target.className);
-                    console.log('Is contenteditable?:', e.target.contentEditable);
-                    console.log('Closest editable:', e.target.closest('[contenteditable="true"]'));
-                    console.log('Event default prevented?:', e.defaultPrevented);
                     
                     // Check selection immediately and after delay
                     const immediateSelection = window.getSelection();
-                    console.log('Immediate selection range count:', immediateSelection.rangeCount);
                     if (immediateSelection.rangeCount > 0) {
                         const immediateRange = immediateSelection.getRangeAt(0);
-                        console.log('Immediate range start:', immediateRange.startOffset);
                     }
                     
                     // Check multiple times to see when the cursor gets reset
                     setTimeout(() => {
                         const selection1 = window.getSelection();
                         if (selection1.rangeCount > 0) {
-                            console.log('Selection at 1ms:', selection1.getRangeAt(0).startOffset);
                         }
                     }, 1);
                     
                     setTimeout(() => {
                         const selection5 = window.getSelection();
                         if (selection5.rangeCount > 0) {
-                            console.log('Selection at 5ms:', selection5.getRangeAt(0).startOffset);
                         }
                     }, 5);
                     
                     setTimeout(() => {
                         const selection = window.getSelection();
-                        console.log('Selection after click (10ms):');
-                        console.log('  Range count:', selection.rangeCount);
                         if (selection.rangeCount > 0) {
                             const range = selection.getRangeAt(0);
-                            console.log('  Range container:', range.commonAncestorContainer);
-                            console.log('  Range start:', range.startOffset);
-                            console.log('  Range end:', range.endOffset);
-                            console.log('  Range collapsed:', range.collapsed);
                         }
-                        console.log('  Active element:', document.activeElement);
                     }, 10);
                     
-                    console.log('===================');
                 }
             }, true); // Use capture phase to see events before they're potentially blocked
         };
         
         // Add function to manually test cursor positioning
         window.testManualCursor = (position = 10) => {
-            console.log(`Manually setting cursor to position ${position}...`);
             
             const editableElement = document.querySelector('[contenteditable="true"]');
             if (!editableElement) {
-                console.log('No editable element found');
                 return;
             }
             
-            console.log('Editable element:', editableElement);
-            console.log('Text content:', editableElement.textContent);
-            console.log('Inner HTML:', editableElement.innerHTML);
             
             const textNode = editableElement.firstChild;
-            console.log('First child (text node):', textNode);
-            console.log('Text node data:', textNode?.data);
             
             if (textNode && textNode.nodeType === Node.TEXT_NODE) {
                 const range = document.createRange();
@@ -167,18 +121,15 @@ export class FormattingToolbar {
                     selection.removeAllRanges();
                     selection.addRange(range);
                     
-                    console.log('✅ Manual cursor set successfully');
                     
                     // Check if it worked
                     setTimeout(() => {
                         const newSelection = window.getSelection();
                         if (newSelection.rangeCount > 0) {
                             const newRange = newSelection.getRangeAt(0);
-                            console.log('Cursor position after manual set:', newRange.startOffset);
                         }
                     }, 10);
                 } catch (error) {
-                    console.log('❌ Error setting cursor:', error);
                 }
             }
         };
@@ -186,52 +137,31 @@ export class FormattingToolbar {
         // Test if the editable element is actually working
         window.testEditableElement = () => {
             const editableElement = document.querySelector('[contenteditable="true"]');
-            console.log('=== EDITABLE ELEMENT TEST ===');
-            console.log('Element:', editableElement);
-            console.log('contentEditable:', editableElement?.contentEditable);
-            console.log('isContentEditable:', editableElement?.isContentEditable);
-            console.log('spellcheck:', editableElement?.spellcheck);
             
             // Check parent elements for draggable
             let parent = editableElement?.parentElement;
             while (parent) {
                 if (parent.draggable) {
-                    console.log('Found draggable parent:', parent, 'draggable:', parent.draggable);
                 }
                 parent = parent.parentElement;
             }
             
-            console.log('Computed styles:');
             if (editableElement) {
                 const styles = window.getComputedStyle(editableElement);
-                console.log('  user-select:', styles.userSelect);
-                console.log('  pointer-events:', styles.pointerEvents);
-                console.log('  white-space:', styles.whiteSpace);
-                console.log('  word-break:', styles.wordBreak);
             }
         };
         
         // Test Firefox cursor and structure
         window.testFirefoxStructure = () => {
-            console.log('=== FIREFOX STRUCTURE TEST ===');
             
             const editableElement = document.querySelector('[contenteditable="true"]');
             if (!editableElement) return;
             
-            console.log('Editable element HTML:', editableElement.outerHTML);
-            console.log('Parent structure:');
             
             let current = editableElement;
             let level = 0;
             while (current && level < 5) {
-                console.log(`  Level ${level}:`, {
-                    tagName: current.tagName,
-                    className: current.className,
-                    draggable: current.draggable,
-                    style: current.style.cssText,
-                    computedCursor: window.getComputedStyle(current).cursor,
-                    computedPointerEvents: window.getComputedStyle(current).pointerEvents
-                });
+                // Debug element properties if needed
                 current = current.parentElement;
                 level++;
             }
@@ -239,7 +169,6 @@ export class FormattingToolbar {
         
         // Test creating a simple contenteditable element
         window.testSimpleEditable = () => {
-            console.log('Creating simple contenteditable test...');
             
             // Create a simple test element
             const testDiv = document.createElement('div');
@@ -250,18 +179,14 @@ export class FormattingToolbar {
             // Add it to the page
             document.body.appendChild(testDiv);
             
-            console.log('✅ Simple test element added (yellow with red border)');
-            console.log('Test clicking in it to see if cursor positioning works');
             
             window.removeTestElement = () => {
                 testDiv.remove();
-                console.log('Test element removed');
             };
         };
         
         // Complete Firefox fix for nested draggable elements
         window.fixFirefoxDraggable = () => {
-            console.log('Applying complete Firefox draggable fix...');
             
             const editableElement = document.querySelector('[contenteditable="true"]');
             if (!editableElement) return;
@@ -280,11 +205,9 @@ export class FormattingToolbar {
                 current = current.parentElement;
             }
             
-            console.log(`Found ${draggableAncestors.length} draggable ancestors:`, draggableAncestors.map(a => a.element.className));
             
             // Disable all draggable ancestors
             draggableAncestors.forEach((ancestor, index) => {
-                console.log(`  Disabling draggable on: ${ancestor.element.className}`);
                 ancestor.element.draggable = false;
                 ancestor.element.style.cursor = 'default';
             });
@@ -298,12 +221,10 @@ export class FormattingToolbar {
             editableElement.contentEditable = false;
             setTimeout(() => {
                 editableElement.contentEditable = true;
-                console.log('✅ Complete Firefox fix applied. Test clicking now!');
             }, 50);
             
             // Store restore function
             window.restoreAllDraggable = () => {
-                console.log('Restoring all draggable elements...');
                 draggableAncestors.forEach(ancestor => {
                     ancestor.element.draggable = ancestor.originalDraggable;
                     ancestor.element.style.cursor = ancestor.originalCursor;
@@ -311,7 +232,6 @@ export class FormattingToolbar {
                 editableElement.style.cursor = '';
                 editableElement.style.userSelect = '';
                 editableElement.style.mozUserSelect = '';
-                console.log('✅ All draggable elements restored');
             };
         };
         
@@ -529,26 +449,14 @@ export class FormattingToolbar {
 
     executeCommand(command) {
         if (command === 'createLink') {
-            console.log('FormattingToolbar executeCommand createLink called');
-            
             // Check if the current selection is within an existing link
             const existingLink = this.getSelectedLink();
-            console.log('Existing link found:', existingLink);
             
             // Save current selection before showing modal
             const selection = window.getSelection();
-            console.log('Current selection:', selection.toString());
-            console.log('Selection range count:', selection.rangeCount);
-            
             if (selection && selection.rangeCount > 0) {
                 this.savedRange = selection.getRangeAt(0).cloneRange();
-                console.log('Saved range:', this.savedRange);
-                console.log('Saved range text:', this.savedRange.toString());
-            } else {
-                console.warn('No selection to save');
             }
-            
-            console.log('currentEditableElement:', this.currentEditableElement);
             
             // Show the link settings modal with saved range
             if (this.editor && this.editor.linkSettingsModal) {

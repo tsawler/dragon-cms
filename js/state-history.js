@@ -16,7 +16,6 @@ export class StateHistory {
         
         // Don't save if the state is identical to the current state
         if (this.history.length > 0 && this.history[this.currentIndex] === state) {
-            console.log('StateHistory: Skipping duplicate state save');
             return;
         }
         
@@ -32,7 +31,6 @@ export class StateHistory {
             this.currentIndex++;
         }
         
-        console.log('StateHistory: Saved state, total states:', this.history.length, 'current index:', this.currentIndex);
     }
 
     undo() {

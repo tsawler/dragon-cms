@@ -9,7 +9,6 @@ window.dragon = dragon;
 document.addEventListener('DOMContentLoaded', () => {
     // Only auto-initialize if the old structure exists and hasn't been initialized by dragon.New()
     if (document.getElementById('editable-area') && !document.querySelector('.dragon-initialized')) {
-        console.log('Auto-initializing Dragon editor for backwards compatibility');
         const editor = new Editor();
         window.editor = editor; // Make it globally accessible for debugging
     }

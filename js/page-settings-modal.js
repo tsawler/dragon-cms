@@ -833,7 +833,6 @@ export class PageSettingsModal {
                     
                     document.head.appendChild(styleElement);
                     
-                    console.log('Applied sanitized custom CSS');
                 }
             } catch (error) {
                 console.error('Error applying custom CSS:', error);
@@ -878,7 +877,6 @@ export class PageSettingsModal {
                     
                     document.head.appendChild(scriptElement);
                     
-                    console.log('Applied sanitized custom JavaScript');
                 }
             } catch (error) {
                 console.error('Error applying custom JavaScript:', error);
@@ -1011,7 +1009,6 @@ export class PageSettingsModal {
         // Close modal
         this.hide();
         
-        console.log('Page settings saved:', this.pageData);
     }
     
     // Security Methods
@@ -1173,18 +1170,15 @@ export class PageSettingsModal {
     
     enableJavaScriptExecution(enabled = false) {
         this.securityConfig.enableJavaScript = enabled;
-        console.log(`JavaScript execution ${enabled ? 'enabled' : 'disabled'}`);
     }
     
     enableAdvancedCSS(enabled = false) {
         this.securityConfig.enableAdvancedCSS = enabled;
-        console.log(`Advanced CSS features ${enabled ? 'enabled' : 'disabled'}`);
     }
     
     addAllowedCSSDomain(domain) {
         if (domain && !this.securityConfig.allowedCSSDomains.includes(domain)) {
             this.securityConfig.allowedCSSDomains.push(domain);
-            console.log(`Added allowed CSS domain: ${domain}`);
         }
     }
     
