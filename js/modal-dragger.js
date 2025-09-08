@@ -24,6 +24,9 @@ export class ModalDragger {
     }
 
     handleMouseDown(e) {
+        // Don't start new drag if already dragging
+        if (this.isDragging) return;
+
         const modalHeader = e.target.closest('.modal-header');
         if (!modalHeader) return;
 
@@ -40,10 +43,18 @@ export class ModalDragger {
         this.startX = e.clientX;
         this.startY = e.clientY;
         
-        // Get the current position of the modal
-        const rect = modalContent.getBoundingClientRect();
-        this.startLeft = rect.left;
-        this.startTop = rect.top;
+        try {
+            // Get the current position of the modal
+            const rect = modalContent.getBoundingClientRect();
+            this.startLeft = rect.left;
+            this.startTop = rect.top;
+        } catch (error) {
+            // Handle getBoundingClientRect errors gracefully
+            console.warn('Error getting modal position:', error);
+            this.isDragging = false;
+            this.currentModal = null;
+            return;
+        }
         
         // Add dragging class and set initial position
         modalContent.classList.add('dragging', 'dragged');
