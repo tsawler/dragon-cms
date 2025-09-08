@@ -73,7 +73,7 @@ const SNIPPET_LIBRARY = {
                     <text x="100" y="60" text-anchor="middle" fill="white" font-size="12">Hero subtitle goes here</text>
                 </svg>
             `),
-            html: '<div class="hero-container" style="padding: 60px 20px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"><h1 style="color: white; font-size: 3rem; margin-bottom: 1rem;" contenteditable="true">Hero Title</h1><p style="color: white; font-size: 1.25rem;" contenteditable="true">Hero subtitle goes here</p></div>'
+            html: '<div class="hero-container default-hero-bg" style="padding: 60px 20px; text-align: center;"><h1 style="color: white; font-size: 3rem; margin-bottom: 1rem;" contenteditable="true">Hero Title</h1><p style="color: white; font-size: 1.25rem;" contenteditable="true">Hero subtitle goes here</p></div>'
         }
     ],
     

@@ -276,6 +276,10 @@
 
 .dragon-editor .editable-area[data-mode="edit"] .editor-block:hover{
     border-color: #cbd5e1;
+}
+
+/* Only apply hover background when no background image is set */
+.dragon-editor .editable-area[data-mode="edit"] .editor-block:hover:not([style*="background-image"]) {
     background: #fafafa;
 }
 
@@ -1669,4 +1673,17 @@ body.image-resizing * {
         -ms-transform: translate(-50%, -50%);
         transform: translate(-50%, -50%);
     }
+}
+
+/* Hero block default background */
+/* This class provides the default gradient for hero blocks */
+/* It can be overridden by the Block Settings modal background settings */
+.dragon-editor .hero-container.default-hero-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* When a background image or color is set via Block Settings, remove the default */
+.dragon-editor .editor-block[style*="background-image"] .hero-container.default-hero-bg,
+.dragon-editor .editor-block[style*="background-color"] .hero-container.default-hero-bg {
+    background: transparent;
 }
