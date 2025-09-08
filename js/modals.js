@@ -1765,6 +1765,10 @@ export class ColumnSettingsModal {
             if (bgColor.match(/^#[0-9A-Fa-f]{6}$/)) {
                 bgColorPicker.value = bgColor;
             }
+        } else {
+            // Clear background color inputs if no background color
+            bgColorText.value = '';
+            bgColorPicker.value = '#000000'; // Reset to default color picker value
         }
         
         // Load background image
@@ -1784,6 +1788,14 @@ export class ColumnSettingsModal {
                 }
             } else {
                 bgImageInput.value = bgImage;
+            }
+        } else {
+            // Clear background image input and preview if no background image
+            bgImageInput.value = '';
+            bgImagePreview.style.display = 'none';
+            const previewImg = bgImagePreview.querySelector('img');
+            if (previewImg) {
+                previewImg.src = '';
             }
         }
         
