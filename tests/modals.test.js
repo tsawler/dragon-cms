@@ -77,8 +77,17 @@ describe('Modal Classes', () => {
 
     test('should have style editing controls', () => {
       const modalBody = styleModal.modal.querySelector('.modal-body');
-      expect(modalBody.querySelector('.style-padding')).toBeInTheDocument();
-      expect(modalBody.querySelector('.style-margin')).toBeInTheDocument();
+      // Check for enhanced granular padding controls
+      expect(modalBody.querySelector('.style-padding-top')).toBeInTheDocument();
+      expect(modalBody.querySelector('.style-padding-right')).toBeInTheDocument();
+      expect(modalBody.querySelector('.style-padding-bottom')).toBeInTheDocument();
+      expect(modalBody.querySelector('.style-padding-left')).toBeInTheDocument();
+      // Check for enhanced granular margin controls  
+      expect(modalBody.querySelector('.style-margin-top')).toBeInTheDocument();
+      expect(modalBody.querySelector('.style-margin-right')).toBeInTheDocument();
+      expect(modalBody.querySelector('.style-margin-bottom')).toBeInTheDocument();
+      expect(modalBody.querySelector('.style-margin-left')).toBeInTheDocument();
+      // Check for other existing controls
       expect(modalBody.querySelector('.style-border-width')).toBeInTheDocument();
       expect(modalBody.querySelector('.style-background')).toBeInTheDocument();
     });
@@ -857,12 +866,28 @@ describe('Modal Classes', () => {
       const targetElement = document.createElement('div');
       styleModal.open(targetElement);
       
-      const paddingInput = styleModal.modal.querySelector('.style-padding');
-      paddingInput.value = 'invalid-value';
-      paddingInput.dispatchEvent(new Event('input'));
+      // Test with the new granular padding controls
+      const paddingTopInput = styleModal.modal.querySelector('.style-padding-top');
+      const paddingTopUnit = styleModal.modal.querySelector('.style-padding-top-unit');
       
-      // Style should not be applied for invalid values
-      expect(targetElement.style.padding).not.toBe('invalid-value');
+      // Set a valid number value
+      paddingTopInput.value = '10';
+      paddingTopUnit.value = 'px';
+      
+      // Apply the changes
+      styleModal.save();
+      
+      // Style should be applied correctly
+      expect(targetElement.style.paddingTop).toBe('10px');
+      
+      // Now test with invalid input (non-numeric)
+      const newElement = document.createElement('div');
+      styleModal.open(newElement);
+      paddingTopInput.value = 'invalid';
+      styleModal.save();
+      
+      // Invalid values should not be applied (HTML number input won't accept non-numeric)
+      expect(newElement.style.paddingTop).toBe('');
     });
 
     test('should handle empty form values', () => {

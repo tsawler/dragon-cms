@@ -279,13 +279,140 @@ export class StyleEditorModal {
                     <button class="modal-close">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Padding (px)</label>
-                        <input type="number" class="style-padding" placeholder="e.g., 10">
+                    <!-- Padding Section -->
+                    <div class="form-section" style="margin-bottom: 2rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb;">
+                        <h3 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #374151;">Padding</h3>
+                        <div class="spacing-controls" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                            <div class="form-group" style="margin: 0;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Top</label>
+                                <div style="display: flex; gap: 0.25rem;">
+                                    <input type="number" class="style-padding-top" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
+                                    <select class="style-padding-top-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
+                                        <option value="px">px</option>
+                                        <option value="em">em</option>
+                                        <option value="rem">rem</option>
+                                        <option value="%">%</option>
+                                        <option value="vh">vh</option>
+                                        <option value="vw">vw</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Right</label>
+                                <div style="display: flex; gap: 0.25rem;">
+                                    <input type="number" class="style-padding-right" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
+                                    <select class="style-padding-right-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
+                                        <option value="px">px</option>
+                                        <option value="em">em</option>
+                                        <option value="rem">rem</option>
+                                        <option value="%">%</option>
+                                        <option value="vh">vh</option>
+                                        <option value="vw">vw</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Bottom</label>
+                                <div style="display: flex; gap: 0.25rem;">
+                                    <input type="number" class="style-padding-bottom" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
+                                    <select class="style-padding-bottom-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
+                                        <option value="px">px</option>
+                                        <option value="em">em</option>
+                                        <option value="rem">rem</option>
+                                        <option value="%">%</option>
+                                        <option value="vh">vh</option>
+                                        <option value="vw">vw</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Left</label>
+                                <div style="display: flex; gap: 0.25rem;">
+                                    <input type="number" class="style-padding-left" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
+                                    <select class="style-padding-left-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
+                                        <option value="px">px</option>
+                                        <option value="em">em</option>
+                                        <option value="rem">rem</option>
+                                        <option value="%">%</option>
+                                        <option value="vh">vh</option>
+                                        <option value="vw">vw</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 0.75rem; text-align: center;">
+                            <button type="button" class="link-all-padding" style="background: none; border: none; color: #3b82f6; cursor: pointer; font-size: 0.75rem; text-decoration: underline;">Link all sides</button>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Margin (px)</label>
-                        <input type="number" class="style-margin" placeholder="e.g., 10">
+                    
+                    <!-- Margin Section -->
+                    <div class="form-section" style="margin-bottom: 2rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb;">
+                        <h3 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #374151;">Margin</h3>
+                        <div class="spacing-controls" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                            <div class="form-group" style="margin: 0;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Top</label>
+                                <div style="display: flex; gap: 0.25rem;">
+                                    <input type="number" class="style-margin-top" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
+                                    <select class="style-margin-top-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
+                                        <option value="px">px</option>
+                                        <option value="em">em</option>
+                                        <option value="rem">rem</option>
+                                        <option value="%">%</option>
+                                        <option value="vh">vh</option>
+                                        <option value="vw">vw</option>
+                                        <option value="auto">auto</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Right</label>
+                                <div style="display: flex; gap: 0.25rem;">
+                                    <input type="number" class="style-margin-right" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
+                                    <select class="style-margin-right-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
+                                        <option value="px">px</option>
+                                        <option value="em">em</option>
+                                        <option value="rem">rem</option>
+                                        <option value="%">%</option>
+                                        <option value="vh">vh</option>
+                                        <option value="vw">vw</option>
+                                        <option value="auto">auto</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Bottom</label>
+                                <div style="display: flex; gap: 0.25rem;">
+                                    <input type="number" class="style-margin-bottom" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
+                                    <select class="style-margin-bottom-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
+                                        <option value="px">px</option>
+                                        <option value="em">em</option>
+                                        <option value="rem">rem</option>
+                                        <option value="%">%</option>
+                                        <option value="vh">vh</option>
+                                        <option value="vw">vw</option>
+                                        <option value="auto">auto</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Left</label>
+                                <div style="display: flex; gap: 0.25rem;">
+                                    <input type="number" class="style-margin-left" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
+                                    <select class="style-margin-left-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
+                                        <option value="px">px</option>
+                                        <option value="em">em</option>
+                                        <option value="rem">rem</option>
+                                        <option value="%">%</option>
+                                        <option value="vh">vh</option>
+                                        <option value="vw">vw</option>
+                                        <option value="auto">auto</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 0.75rem; text-align: center;">
+                            <button type="button" class="link-all-margin" style="background: none; border: none; color: #3b82f6; cursor: pointer; font-size: 0.75rem; text-decoration: underline;">Link all sides</button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Border Width (px)</label>
@@ -338,7 +465,7 @@ export class StyleEditorModal {
                 </div>
                 <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
                     <button class="btn modal-cancel" style="padding: 0.5rem 1rem; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Cancel</button>
-                    <button class="btn btn-primary modal-save" style="padding: 0.5rem 1rem; border: 1px solid #3b82f6; background: #3b82f6; color: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Save</button>
+                    <button class="btn btn-primary modal-save" style="padding: 0.5rem 1rem; border: 1px solid #3b82f6; background: #3b82f6; color: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Apply</button>
                 </div>
             </div>
         `;
@@ -352,12 +479,67 @@ export class StyleEditorModal {
         this.modal.querySelector('.modal-cancel').addEventListener('click', () => this.close());
         this.modal.querySelector('.modal-save').addEventListener('click', () => this.save());
         
+        // Add "Link all sides" functionality for padding
+        const linkPaddingBtn = this.modal.querySelector('.link-all-padding');
+        linkPaddingBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.linkAllSides('padding');
+        });
+
+        // Add "Link all sides" functionality for margin
+        const linkMarginBtn = this.modal.querySelector('.link-all-margin');
+        linkMarginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.linkAllSides('margin');
+        });
+
+        // Add listeners for automatic linking when first side is changed
+        ['padding', 'margin'].forEach(type => {
+            const topInput = this.modal.querySelector(`.style-${type}-top`);
+            const topUnit = this.modal.querySelector(`.style-${type}-top-unit`);
+            
+            topInput.addEventListener('input', () => this.autoLinkSides(type, 'top'));
+            topUnit.addEventListener('change', () => this.autoLinkSides(type, 'top'));
+        });
+        
         // Add background click to close modal
         this.modal.addEventListener('click', (e) => {
             if (e.target === this.modal) {
                 this.close();
             }
         });
+    }
+
+    linkAllSides(type) {
+        const topValue = this.modal.querySelector(`.style-${type}-top`).value;
+        const topUnit = this.modal.querySelector(`.style-${type}-top-unit`).value;
+        
+        if (topValue) {
+            ['right', 'bottom', 'left'].forEach(side => {
+                this.modal.querySelector(`.style-${type}-${side}`).value = topValue;
+                this.modal.querySelector(`.style-${type}-${side}-unit`).value = topUnit;
+            });
+        }
+    }
+
+    autoLinkSides(type, changedSide) {
+        // Auto-link if other sides are empty and changed side has a value
+        const changedValue = this.modal.querySelector(`.style-${type}-${changedSide}`).value;
+        const changedUnit = this.modal.querySelector(`.style-${type}-${changedSide}-unit`).value;
+        
+        if (changedValue) {
+            const otherSides = ['top', 'right', 'bottom', 'left'].filter(side => side !== changedSide);
+            const allOthersEmpty = otherSides.every(side => 
+                !this.modal.querySelector(`.style-${type}-${side}`).value
+            );
+            
+            if (allOthersEmpty) {
+                otherSides.forEach(side => {
+                    this.modal.querySelector(`.style-${type}-${side}`).value = changedValue;
+                    this.modal.querySelector(`.style-${type}-${side}-unit`).value = changedUnit;
+                });
+            }
+        }
     }
 
     open(element) {
@@ -432,8 +614,13 @@ export class StyleEditorModal {
         }
         
         const styles = window.getComputedStyle(element);
-        this.modal.querySelector('.style-padding').value = parseInt(styles.padding) || '';
-        this.modal.querySelector('.style-margin').value = parseInt(styles.margin) || '';
+        
+        // Load granular padding values
+        this.loadSpacingValues(element, styles, 'padding');
+        
+        // Load granular margin values
+        this.loadSpacingValues(element, styles, 'margin');
+        
         this.modal.querySelector('.style-border-width').value = parseInt(styles.borderWidth) || '';
         this.modal.querySelector('.style-border-radius').value = parseInt(styles.borderRadius) || '';
         this.modal.querySelector('.style-width').value = element.style.width || '';
@@ -441,6 +628,102 @@ export class StyleEditorModal {
         this.modal.querySelector('.style-transition').value = element.style.transition || '';
         this.modal.querySelector('.style-visibility').value = element.style.visibility || '';
         this.modal.querySelector('.style-display').value = element.style.display || '';
+    }
+
+    loadSpacingValues(element, styles, type) {
+        // Parse individual side values from computed styles
+        const sides = ['top', 'right', 'bottom', 'left'];
+        const property = type === 'padding' ? 'padding' : 'margin';
+        
+        sides.forEach(side => {
+            const cssProperty = `${property}${side.charAt(0).toUpperCase() + side.slice(1)}`;
+            const computedValue = styles[cssProperty] || '0px';
+            
+            // Parse the value and unit
+            const parsed = this.parseValueUnit(computedValue);
+            
+            const valueInput = this.modal.querySelector(`.style-${type}-${side}`);
+            const unitSelect = this.modal.querySelector(`.style-${type}-${side}-unit`);
+            
+            if (valueInput && unitSelect) {
+                valueInput.value = parsed.value || '';
+                unitSelect.value = parsed.unit || 'px';
+            }
+        });
+    }
+
+    parseValueUnit(cssValue) {
+        // Handle common cases like "10px", "1.5em", "auto", "0"
+        if (!cssValue) {
+            return { value: '', unit: 'px' };
+        }
+        if (cssValue === 'auto') {
+            return { value: '', unit: 'auto' };
+        }
+        if (cssValue === '0') {
+            return { value: 0, unit: 'px' };
+        }
+        
+        const match = cssValue.match(/^(-?[\d.]+)([a-z%]+)?$/i);
+        if (match) {
+            return {
+                value: parseFloat(match[1]) || '',
+                unit: match[2] || 'px'
+            };
+        }
+        
+        return { value: '', unit: 'px' };
+    }
+
+    applySpacingStyles(modalElement, type) {
+        const sides = ['top', 'right', 'bottom', 'left'];
+        const cssProperty = type === 'padding' ? 'padding' : 'margin';
+        
+        // Get values for all sides
+        const sideValues = sides.map(side => {
+            const valueInput = modalElement.querySelector(`.style-${type}-${side}`);
+            const unitSelect = modalElement.querySelector(`.style-${type}-${side}-unit`);
+            
+            if (!valueInput || !unitSelect) return null;
+            
+            const value = valueInput.value.trim();
+            const unit = unitSelect.value;
+            
+            // Handle auto for margin (even with empty value)
+            if (unit === 'auto' && type === 'margin') {
+                return 'auto';
+            }
+            
+            if (!value) return null;
+            
+            return `${value}${unit}`;
+        });
+        
+        // Apply individual side values
+        sides.forEach((side, index) => {
+            const sideProperty = `${cssProperty}${side.charAt(0).toUpperCase() + side.slice(1)}`;
+            const value = sideValues[index];
+            
+            if (value !== null) {
+                this.targetElement.style[sideProperty] = value;
+            } else {
+                // Clear the individual property if no value is set
+                this.targetElement.style[sideProperty] = '';
+            }
+        });
+        
+        // Check if all sides have the same value - if so, use shorthand
+        const nonNullValues = sideValues.filter(v => v !== null);
+        if (nonNullValues.length > 0) {
+            const allSame = nonNullValues.every(v => v === nonNullValues[0]);
+            if (allSame && nonNullValues.length === 4) {
+                // All sides have the same value, use shorthand
+                this.targetElement.style[cssProperty] = nonNullValues[0];
+            }
+        } else {
+            // Clear the shorthand property if all sides are empty
+            this.targetElement.style[cssProperty] = '';
+        }
     }
 
     close() {
@@ -467,8 +750,12 @@ export class StyleEditorModal {
             // Use Edge modal if it exists, otherwise use regular modal
             const modalToUse = this.edgeModal || this.modal;
             
-            const padding = modalToUse.querySelector('.style-padding').value;
-            const margin = modalToUse.querySelector('.style-margin').value;
+            // Apply granular padding
+            this.applySpacingStyles(modalToUse, 'padding');
+            
+            // Apply granular margin
+            this.applySpacingStyles(modalToUse, 'margin');
+            
             const borderWidth = modalToUse.querySelector('.style-border-width').value;
             const borderColor = modalToUse.querySelector('.style-border-color').value;
             const borderRadius = modalToUse.querySelector('.style-border-radius').value;
@@ -478,9 +765,6 @@ export class StyleEditorModal {
             const transition = modalToUse.querySelector('.style-transition').value;
             const visibility = modalToUse.querySelector('.style-visibility').value;
             const display = modalToUse.querySelector('.style-display').value;
-
-            if (padding) this.targetElement.style.padding = padding + 'px';
-            if (margin) this.targetElement.style.margin = margin + 'px';
             if (borderWidth) {
                 this.targetElement.style.border = `${borderWidth}px solid ${borderColor}`;
             }
