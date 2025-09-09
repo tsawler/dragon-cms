@@ -1440,6 +1440,14 @@ export class Editor {
         // Add drag handle functionality
         this.attachDragHandleListeners(block);
         
+        // Apply Firefox fixes to newly created block's editable elements
+        if (this.formattingToolbar) {
+            // Use setTimeout to ensure the element is in DOM before applying fixes
+            setTimeout(() => {
+                this.formattingToolbar.fixFirefoxEditableElements();
+            }, 0);
+        }
+        
         return block;
     }
     
@@ -1506,6 +1514,11 @@ export class Editor {
                 }
             });
         });
+        
+        // Apply Firefox contenteditable fixes after making blocks editable
+        if (this.formattingToolbar) {
+            this.formattingToolbar.fixFirefoxEditableElements();
+        }
     }
     
     
