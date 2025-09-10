@@ -1464,35 +1464,6 @@ const editor = dragon.New({
 });
 ```
 
-### Performance Optimization
-
-For large documents:
-
-```javascript
-// Disable state history for better performance
-const editor = dragon.New({
-    containerId: 'editor',
-    enableHistory: false  // If this option is added
-});
-
-// Or limit history size
-editor.stateHistory.maxStates = 10; // Limit undo states
-```
-
-### Debugging
-
-Enable debug mode for detailed logging:
-
-```javascript
-// Add to your initialization
-window.DEBUG_DRAGON = true;
-
-const editor = dragon.New({
-    containerId: 'editor',
-    debug: true  // If debug option is implemented
-});
-```
-
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
