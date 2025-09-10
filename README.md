@@ -135,6 +135,7 @@ dragoncms/
 ├── editor.css              # Editor styles
 ├── snippets.js             # Block and snippet definitions
 ├── fonts.js                # Google Fonts configuration
+├── blocks.js               # Custom blocks configuration
 ├── assets/                 # Images and resources
 │   └── images/
 └── js/                     # Core JavaScript modules
@@ -205,6 +206,7 @@ npm run test:coverage   # Generate test coverage report
 DragonCMS includes a comprehensive test suite covering:
 - Core editor functionality
 - Font system and Google Fonts integration
+- Custom blocks system and configuration
 - State management and history
 - Modal components and UI interactions
 - Callback system
@@ -221,6 +223,7 @@ The build process creates:
 - `dist/snippets.js` - Components (unminified)
 - `dist/snippets.min.js` - Components (minified)
 - `dist/fonts.js` - Google Fonts configuration (copied from source)
+- `dist/blocks.js` - Custom blocks configuration (copied from source)
 - `dist/index.html` - Example page (copied from source)
 - `dist/assets/` - Static assets (copied from source)
 
@@ -766,6 +769,213 @@ googleFontLinks: [
 ]
 ```
 
+### Custom Blocks
+
+DragonCMS supports user-defined custom blocks through the `blocks.js` configuration file. Custom blocks are container elements that can hold other content and appear in the editor's block panel alongside default blocks.
+
+#### Adding Custom Blocks
+
+Custom blocks are defined in the `blocks.js` file using a simple configuration format:
+
+```javascript
+// In blocks.js
+window.DragonBlocks = {
+    customBlocks: [
+        {
+            id: 'custom-card-block',
+            name: 'Card Block',
+            type: 'block',
+            preview: 'text',
+            description: 'A card-style container with shadow and padding',
+            category: 'layout',
+            html: `
+                <div class="editor-block card-block" style="
+                    background: white;
+                    border-radius: 12px;
+                    padding: 30px;
+                    margin: 20px 0;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    border: 1px solid #e5e7eb;
+                ">
+                    <div class="card-content">
+                        <h3>Card Title</h3>
+                        <p>This is a custom card block. Add your content here.</p>
+                    </div>
+                </div>
+            `
+        }
+    ],
+    
+    // Methods for managing blocks
+    getAllCustomBlocks() { return this.customBlocks; },
+    getBlocksByCategory(category) { /* ... */ },
+    getBlockById(id) { /* ... */ },
+    getCategories() { /* ... */ },
+    addCustomBlock(block) { /* ... */ }
+};
+```
+
+#### Block Configuration Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `id` | string | ✓ | Unique identifier for the block |
+| `name` | string | ✓ | Display name in the editor panel |
+| `type` | string | ✓ | Must be 'block' for container elements |
+| `html` | string | ✓ | The HTML structure of the block |
+| `preview` | string | ✓ | 'text' or 'image' - how to display in panel |
+| `description` | string | ✗ | Tooltip description |
+| `category` | string | ✗ | Category for organization (e.g., 'layout', 'marketing') |
+| `previewImage` | string | ✗ | SVG data URL for image preview |
+
+#### Built-in Custom Blocks
+
+DragonCMS includes several pre-configured custom blocks:
+
+**Layout Blocks:**
+- **Card Block** - Card-style container with shadow and padding
+- **Feature Grid** - Multi-column grid layout for features
+
+**Marketing Blocks:**
+- **CTA Section** - Call-to-action container with centered content
+- **Testimonial Block** - Customer testimonial with avatar layout
+- **Pricing Table** - Multi-tier pricing comparison
+
+**Content Blocks:**
+- Various content-focused containers with predefined styling
+
+#### Creating Custom Blocks
+
+1. **Basic Block Structure:**
+   ```javascript
+   {
+       id: 'my-custom-block',
+       name: 'My Custom Block',
+       type: 'block',
+       preview: 'text',
+       category: 'layout',
+       html: `
+           <div class="editor-block my-custom-block">
+               <h2>Custom Block Title</h2>
+               <p>Add your content here</p>
+           </div>
+       `
+   }
+   ```
+
+2. **Advanced Block with Styling:**
+   ```javascript
+   {
+       id: 'hero-section-block',
+       name: 'Hero Section',
+       type: 'block',
+       preview: 'text',
+       description: 'Full-width hero section with gradient background',
+       category: 'marketing',
+       html: `
+           <div class="editor-block hero-section" style="
+               background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+               color: white;
+               text-align: center;
+               padding: 80px 20px;
+               min-height: 400px;
+               display: flex;
+               align-items: center;
+               justify-content: center;
+           ">
+               <div>
+                   <h1 style="font-size: 48px; margin-bottom: 20px;">Hero Title</h1>
+                   <p style="font-size: 20px; margin-bottom: 30px;">Your compelling message here</p>
+                   <button style="
+                       background: white;
+                       color: #667eea;
+                       border: none;
+                       padding: 15px 40px;
+                       font-size: 18px;
+                       border-radius: 30px;
+                       cursor: pointer;
+                   ">Get Started</button>
+               </div>
+           </div>
+       `
+   }
+   ```
+
+#### Block Categories
+
+Organize blocks using categories:
+
+- **layout** - Structural containers and layout blocks
+- **marketing** - CTA, testimonial, pricing blocks
+- **content** - Content-focused containers
+- **media** - Image galleries, video containers
+- **custom** - User-specific blocks
+
+#### Integration with Editor
+
+Custom blocks automatically integrate with the editor:
+
+- **Block Panel** - Appear in left sidebar with "Custom Blocks" separator
+- **Drag & Drop** - Full drag and drop functionality
+- **Block Settings** - Access to gear icon settings (layout, columns, background)
+- **Content Editing** - All text elements are editable
+- **Column Management** - Support for adding/removing columns
+- **Responsive Design** - Blocks adapt to tablet/mobile preview modes
+
+#### Block Loading
+
+For production builds, ensure `blocks.js` is loaded before the Dragon library:
+
+```html
+<!-- Development -->
+<script src="fonts.js"></script>
+<script src="blocks.js"></script>
+<script src="snippets.js"></script>
+<script type="module" src="js/dragon.js"></script>
+
+<!-- Production -->
+<script src="fonts.js"></script>
+<script src="blocks.js"></script>
+<script src="snippets.min.js"></script>
+<script src="dragon.min.js"></script>
+```
+
+#### Dynamic Block Management
+
+The block system includes methods for runtime management:
+
+```javascript
+// Get all custom blocks
+const blocks = window.DragonBlocks.getAllCustomBlocks();
+
+// Get blocks by category
+const layoutBlocks = window.DragonBlocks.getBlocksByCategory('layout');
+
+// Get specific block
+const cardBlock = window.DragonBlocks.getBlockById('custom-card-block');
+
+// Get all available categories
+const categories = window.DragonBlocks.getCategories();
+
+// Add new block dynamically
+const success = window.DragonBlocks.addCustomBlock({
+    id: 'new-block',
+    name: 'New Block',
+    type: 'block',
+    html: '<div class="editor-block">New content</div>'
+});
+```
+
+#### Best Practices
+
+1. **Use semantic HTML structure** with proper accessibility
+2. **Include responsive design patterns** (flexbox, grid, percentages)
+3. **Provide meaningful descriptions** for better user experience
+4. **Use consistent naming conventions** for IDs and classes
+5. **Test blocks across devices** using preview modes
+6. **Avoid inline scripts** for security (use external initialization if needed)
+7. **Use appropriate categories** for better organization
+
 ### Custom Styles
 
 Override default styles by adding CSS after the editor.css:
@@ -1019,6 +1229,7 @@ npm run test:coverage
 
 **Test Structure:**
 - `tests/fonts.test.js` - Google Fonts system tests
+- `tests/blocks.test.js` - Custom blocks system tests
 - `tests/callbacks.test.js` - onChange/onRender callback tests  
 - `tests/editor-core.test.js` - Core editor functionality tests
 - `tests/modals.test.js` - Modal component tests
@@ -1039,6 +1250,7 @@ Follow the existing test patterns. All tests should:
 - [ ] Test HTML editor functionality
 - [ ] Check undo/redo behavior
 - [ ] Test font customization with Google Fonts
+- [ ] Test custom blocks functionality and integration
 - [ ] Verify save/load if configured
 - [ ] Test custom snippets
 - [ ] Test callback functionality (onChange/onRender)
