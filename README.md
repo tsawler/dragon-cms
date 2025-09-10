@@ -48,7 +48,8 @@ A powerful, pure JavaScript drag-and-drop website builder with zero dependencies
 ### Developer Features
 - **Programmatic API** - Full control via JavaScript
 - **Custom Snippets** - Create your own components
-- **Event System** - Listen to editor mode changes
+- **Event System** - Listen to editor mode changes and content modifications
+- **Callback System** - onChange and onRender callbacks for content tracking
 - **Flexible Configuration** - Customize paths, assets, and behavior
 - **Save/Load Integration** - Connect to your backend API
 
