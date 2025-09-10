@@ -434,6 +434,39 @@ window.getSnippets = function() {
 };
 ```
 
+### Using Callbacks for Custom Behavior
+
+```javascript
+const editor = dragon.New({
+    containerId: 'editor',
+    cssPath: 'editor.css',
+    onChange: (event) => {
+        // Auto-save on changes
+        if (event.type.includes('added') || event.type.includes('deleted')) {
+            autoSave(event.html);
+        }
+        
+        // Track analytics
+        analytics.track('editor_change', {
+            action: event.type,
+            timestamp: event.timestamp
+        });
+    },
+    onRender: (event) => {
+        // Apply custom enhancements to rendered elements
+        if (event.type === 'block') {
+            // Add animation classes
+            event.element.classList.add('fade-in');
+        }
+        
+        // Initialize third-party libraries
+        if (event.element.querySelector('.chart-container')) {
+            initializeCharts(event.element);
+        }
+    }
+});
+```
+
 ### Programmatic Content Manipulation
 
 ```javascript
@@ -492,6 +525,8 @@ Creates a new DragonCMS editor instance.
 | `initialContent` | string | `null` | Initial HTML content to load |
 | `publishUrl` | string | `null` | API endpoint for saving |
 | `loadUrl` | string | `null` | API endpoint for loading |
+| `onChange` | function | `null` | Callback when content changes (add/delete/move) |
+| `onRender` | function | `null` | Callback when element is rendered |
 
 #### Returns
 An `Editor` instance with the following methods:
@@ -548,6 +583,46 @@ Fired when the editor mode changes.
 window.addEventListener('dragonModeChanged', (e) => {
     console.log('New mode:', e.detail.mode);
     // e.detail.mode is 'edit' or 'display'
+});
+```
+
+### Callbacks
+
+#### onChange Callback
+Triggered when content changes (blocks/snippets added, deleted, or moved).
+
+```javascript
+const editor = dragon.New({
+    containerId: 'editor',
+    onChange: (event) => {
+        console.log('Content changed:', event);
+        // event.type: 'block-added', 'block-deleted', 'block-moved',
+        //             'snippet-added', 'snippet-deleted', 'snippet-moved'
+        // event.element: The affected element (null for deletions)
+        // event.html: Current HTML content of the editor
+        // event.timestamp: ISO timestamp of the change
+    }
+});
+```
+
+#### onRender Callback
+Triggered when a new block or snippet is rendered.
+
+```javascript
+const editor = dragon.New({
+    containerId: 'editor',
+    onRender: (event) => {
+        console.log('Element rendered:', event);
+        // event.type: 'block' or 'snippet'
+        // event.element: The rendered DOM element
+        // event.timestamp: ISO timestamp of the render
+        
+        // Example: Add custom initialization
+        if (event.type === 'snippet') {
+            // Initialize any custom JavaScript for the snippet
+            initializeCustomSnippet(event.element);
+        }
+    }
 });
 ```
 

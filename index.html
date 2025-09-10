@@ -70,7 +70,13 @@
                 cssPath: 'editor.css',
                 showCodeIcon: true,
                 snippetsPath: 'snippets.js',
-                assetsPath: 'assets/'  // Optional, customize path to assets folder
+                assetsPath: 'assets/',  // Optional, customize path to assets folder
+                 onChange: function() {
+                    console.log("onChange called...");
+                },
+                OffscreenCanvasRenderingContext2D: function() {
+                    console.log("onRender called...");
+                }
             });
             
             // Start in display mode

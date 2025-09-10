@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dragon Editor - Simple Example</title>
+    <link rel="icon" href="data:,">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        #my-editor {
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        /* User-defined edit button - NOT part of the Dragon library */
+        #edit-mode-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+            transition: all 0.2s ease;
+            display: none; /* Hidden by default, shown when in display mode */
+        }
+        
+        #edit-mode-btn:hover {
+            background: #0056b3;
+            transform: scale(1.05);
+        }
+        
+        #edit-mode-btn.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="my-editor"></div>
+    
+    <!-- User-defined edit button - NOT part of the Dragon library -->
+    <button id="edit-mode-btn" title="Enter Edit Mode">✏️</button>
+
+    <!-- Load the dragon library (built version) -->
+    <link rel="stylesheet" href="editor.min.css">
+    <script src="snippets.min.js"></script>
+    <script src="dragon.min.js"></script>
+    
+    <script>
+        // Initialize the Dragon editor when the page loads
+        window.addEventListener('load', function() {
+            // Simple, flexible usage - all options in one object
+            const editor = dragon.New({
+                containerId: 'my-editor',  // Optional, defaults to 'dragon-editor'
+                showCodeIcon: true,
+                assetsPath: 'assets/'  // Optional, customize path to assets folder
+            });
+            
+            // Start in display mode
+            editor.setMode('display');
+            
+            // User-defined edit button functionality
+            const editBtn = document.getElementById('edit-mode-btn');
+            
+            // Show edit button when in display mode
+            editBtn.classList.add('show');
+            
+            editBtn.addEventListener('click', function() {
+                editor.setMode('edit');
+                editBtn.classList.remove('show');
+            });
+            
+            // Listen for mode changes from the editor
+            window.addEventListener('dragonModeChanged', function(e) {
+                if (e.detail.mode === 'display') {
+                    editBtn.classList.add('show');
+                } else {
+                    editBtn.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -83,7 +83,9 @@ describe('Editor Core Methods', () => {
       options: { assetsPath: 'assets/', showCodeIcon: true },
       // Mock the methods we don't need for these specific tests
       attachDragHandleListeners: jest.fn(),
-      setupVideoSnippet: jest.fn()
+      setupVideoSnippet: jest.fn(),
+      triggerOnRender: jest.fn(),
+      triggerOnChange: jest.fn()
     };
     
     // Import the actual methods from the Editor prototype
