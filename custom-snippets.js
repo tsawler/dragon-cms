@@ -41,8 +41,10 @@ window.DragonSnippets = {
                     padding: 16px;
                     margin: 16px 0;
                     display: flex;
-                    align-items: center;
+                    align-items: flex-start;
                     gap: 12px;
+                    max-width: 100%;
+                    box-sizing: border-box;
                 ">
                     <div style="
                         background: #3b82f6;
@@ -50,13 +52,22 @@ window.DragonSnippets = {
                         border-radius: 50%;
                         width: 24px;
                         height: 24px;
+                        min-width: 24px;
                         display: flex;
                         align-items: center;
                         justify-content: center;
                         font-size: 14px;
                         font-weight: bold;
+                        flex-shrink: 0;
                     ">i</div>
-                    <p style="margin: 0; color: #1e40af; font-weight: 500;">
+                    <p style="
+                        margin: 0; 
+                        color: #1e40af; 
+                        font-weight: 500;
+                        flex: 1;
+                        word-wrap: break-word;
+                        line-height: 1.5;
+                    ">
                         This is an important message or alert for your visitors.
                     </p>
                 </div>
@@ -78,21 +89,47 @@ window.DragonSnippets = {
                     padding: 24px;
                     margin: 16px 0;
                     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                    max-width: 100%;
+                    box-sizing: border-box;
                 ">
-                    <div style="display: flex; align-items: center; margin-bottom: 16px;">
-                        <img src="https://via.placeholder.com/48x48/3b82f6/ffffff?text=JS" 
-                             style="
-                                 width: 48px; 
-                                 height: 48px; 
-                                 border-radius: 50%; 
-                                 margin-right: 12px;
-                             " 
-                             alt="Customer avatar">
-                        <div>
-                            <h4 style="margin: 0; font-size: 16px; font-weight: 600; color: #111827;">
+                    <div style="
+                        display: flex; 
+                        align-items: center; 
+                        margin-bottom: 16px;
+                        flex-wrap: wrap;
+                        gap: 12px;
+                    ">
+                        <div style="
+                            width: 48px; 
+                            height: 48px; 
+                            border-radius: 50%; 
+                            background: #3b82f6;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            font-weight: 600;
+                            font-size: 18px;
+                            flex-shrink: 0;
+                        ">
+                            JS
+                        </div>
+                        <div style="min-width: 0; flex: 1;">
+                            <h4 style="
+                                margin: 0; 
+                                font-size: 16px; 
+                                font-weight: 600; 
+                                color: #111827;
+                                word-wrap: break-word;
+                            ">
                                 John Smith
                             </h4>
-                            <p style="margin: 0; font-size: 14px; color: #6b7280;">
+                            <p style="
+                                margin: 0; 
+                                font-size: 14px; 
+                                color: #6b7280;
+                                word-wrap: break-word;
+                            ">
                                 CEO, TechCorp
                             </p>
                         </div>
@@ -105,6 +142,7 @@ window.DragonSnippets = {
                         color: #374151; 
                         line-height: 1.6; 
                         font-style: italic;
+                        word-wrap: break-word;
                     ">
                         "This product has completely transformed how we work. The team is more efficient and our customers are happier than ever!"
                     </p>

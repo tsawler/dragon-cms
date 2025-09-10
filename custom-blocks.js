@@ -62,17 +62,22 @@ window.DragonBlocks = {
                     background: #f9fafb;
                 ">
                     <div class="feature-grid" style="
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        gap: 30px;
+                        display: flex;
+                        flex-wrap: wrap;
+                        justify-content: center;
+                        gap: 20px;
                         max-width: 1200px;
                         margin: 0 auto;
+                        padding: 0 10px;
                     ">
                         <div class="feature-item" style="
                             background: white;
                             padding: 25px;
                             border-radius: 8px;
                             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                            flex: 1 1 250px;
+                            min-width: 250px;
+                            max-width: 400px;
                         ">
                             <h4 style="margin: 0 0 10px 0; color: #1f2937;">Feature 1</h4>
                             <p style="margin: 0; color: #6b7280;">Description of feature 1</p>
@@ -82,6 +87,9 @@ window.DragonBlocks = {
                             padding: 25px;
                             border-radius: 8px;
                             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                            flex: 1 1 250px;
+                            min-width: 250px;
+                            max-width: 400px;
                         ">
                             <h4 style="margin: 0 0 10px 0; color: #1f2937;">Feature 2</h4>
                             <p style="margin: 0; color: #6b7280;">Description of feature 2</p>
@@ -91,6 +99,9 @@ window.DragonBlocks = {
                             padding: 25px;
                             border-radius: 8px;
                             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                            flex: 1 1 250px;
+                            min-width: 250px;
+                            max-width: 400px;
                         ">
                             <h4 style="margin: 0 0 10px 0; color: #1f2937;">Feature 3</h4>
                             <p style="margin: 0; color: #6b7280;">Description of feature 3</p>
@@ -100,6 +111,9 @@ window.DragonBlocks = {
                             padding: 25px;
                             border-radius: 8px;
                             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                            flex: 1 1 250px;
+                            min-width: 250px;
+                            max-width: 400px;
                         ">
                             <h4 style="margin: 0 0 10px 0; color: #1f2937;">Feature 4</h4>
                             <p style="margin: 0; color: #6b7280;">Description of feature 4</p>
@@ -113,19 +127,20 @@ window.DragonBlocks = {
             name: 'Call to Action',
             type: 'block',
             preview: 'text',
-            description: 'Centered call-to-action section with gradient background',
+            description: 'Centered call-to-action section with black background',
             category: 'marketing',
             html: `
                 <div class="editor-block cta-block" style="
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    padding: 60px 40px;
+                    background: #000000;
+                    border: 0;
+                    padding: 40px 20px;
                     text-align: center;
                     color: white;
                     margin: 40px 0;
                 ">
                     <div class="cta-content" style="max-width: 600px; margin: 0 auto;">
                         <h2 style="
-                            font-size: 36px;
+                            font-size: clamp(24px, 5vw, 36px);
                             font-weight: bold;
                             margin: 0 0 20px 0;
                             line-height: 1.2;
@@ -138,7 +153,7 @@ window.DragonBlocks = {
                         ">Join thousands of users who are already using our platform to build amazing things.</p>
                         <button style="
                             background: white;
-                            color: #667eea;
+                            color: #000000;
                             border: none;
                             padding: 15px 40px;
                             font-size: 18px;
@@ -236,7 +251,7 @@ window.DragonBlocks = {
             category: 'marketing',
             html: `
                 <div class="editor-block pricing-block" style="
-                    padding: 60px 40px;
+                    padding: 40px 20px;
                     background: #f9fafb;
                 ">
                     <div style="max-width: 1000px; margin: 0 auto; text-align: center;">
@@ -251,17 +266,21 @@ window.DragonBlocks = {
                             margin: 0 0 50px 0;
                         ">Select the perfect plan for your needs</p>
                         <div style="
-                            display: grid;
-                            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                            gap: 30px;
+                            display: flex;
+                            flex-wrap: wrap;
+                            justify-content: center;
+                            gap: 20px;
                             margin-top: 40px;
+                            padding: 0 20px;
                         ">
                             <div class="pricing-card" style="
                                 background: white;
                                 border-radius: 12px;
-                                padding: 40px 30px;
+                                padding: 30px 20px;
                                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                                 position: relative;
+                                flex: 0 0 280px;
+                                width: 280px;
                             ">
                                 <h3 style="
                                     font-size: 24px;
@@ -303,7 +322,12 @@ window.DragonBlocks = {
                                 box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
                                 position: relative;
                                 border: 2px solid #667eea;
-                                transform: scale(1.05);
+                                flex: 0 0 280px;
+                                width: 280px;
+                                transform: translateY(-15px) scale(1.05);
+                                z-index: 1;
+                                margin-top: -5px;
+                                margin-bottom: 10px;
                             ">
                                 <div style="
                                     position: absolute;
@@ -354,9 +378,11 @@ window.DragonBlocks = {
                             <div class="pricing-card" style="
                                 background: white;
                                 border-radius: 12px;
-                                padding: 40px 30px;
+                                padding: 30px 20px;
                                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                                 position: relative;
+                                flex: 0 0 280px;
+                                width: 280px;
                             ">
                                 <h3 style="
                                     font-size: 24px;

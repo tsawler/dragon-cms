@@ -258,7 +258,7 @@ describe('Custom Blocks System', () => {
             expect(featureGrid).toBeDefined();
             expect(featureGrid.name).toBe('Feature Grid');
             expect(featureGrid.html).toContain('feature-grid');
-            expect(featureGrid.html).toContain('grid-template-columns');
+            expect(featureGrid.html).toContain('flex');
         });
 
         test('pricing block should have multiple pricing cards', () => {
