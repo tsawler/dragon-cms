@@ -99,9 +99,15 @@ npm run build
 
 3. Use the built files from the `dist/` folder in your project:
 ```html
+<!-- For production (minified) -->
+<link rel="stylesheet" href="path/to/dist/editor.min.css">
+<script src="path/to/dist/snippets.min.js"></script>
+<script src="path/to/dist/dragon.min.js"></script>
+
+<!-- For development (unminified) -->
 <link rel="stylesheet" href="path/to/dist/editor.css">
 <script src="path/to/dist/snippets.js"></script>
-<script src="path/to/dist/dragon.min.js"></script>
+<script src="path/to/dist/dragon.js"></script>
 ```
 
 ### Option 2: Use Source Files (Development)
@@ -174,14 +180,16 @@ The build process creates:
 
 - `dist/dragon.js` - Development bundle (unminified)
 - `dist/dragon.min.js` - Production bundle (minified, console logs removed)
-- `dist/editor.css` - Editor styles (copied from source)
-- `dist/snippets.js` - Components (copied from source)
+- `dist/editor.css` - Editor styles (unminified)
+- `dist/editor.min.css` - Editor styles (minified)
+- `dist/snippets.js` - Components (unminified)
+- `dist/snippets.min.js` - Components (minified)
 - `dist/index.html` - Example page (copied from source)
 - `dist/assets/` - Static assets (copied from source)
 
 #### Using Built Files
 
-For production, use the minified bundle:
+For production, use the minified bundles:
 
 ```html
 <!DOCTYPE html>
@@ -189,12 +197,12 @@ For production, use the minified bundle:
 <head>
     <meta charset="UTF-8">
     <title>My Website Builder</title>
-    <link rel="stylesheet" href="dist/editor.css">
+    <link rel="stylesheet" href="dist/editor.min.css">
 </head>
 <body>
     <div id="editor"></div>
     
-    <script src="dist/snippets.js"></script>
+    <script src="dist/snippets.min.js"></script>
     <script src="dist/dragon.min.js"></script>
     <script>
         // Note: Built version creates global 'dragon' object
@@ -210,11 +218,16 @@ For production, use the minified bundle:
 
 The build is configured through:
 
-- `rollup.config.js` - Rollup bundling configuration
+- `rollup.config.js` - Rollup bundling configuration for JavaScript
+- `postcss.config.js` - PostCSS configuration for CSS minification
 - `.babelrc` - Babel transpilation settings (ES6+ to ES5)
 - `package.json` - Build scripts and dependencies
 
 Target browsers: `> 1%`, `last 2 versions`, `not dead`, `IE 11`
+
+**Minification:**
+- JavaScript: Terser (removes console logs in production)
+- CSS: cssnano (optimizes and minifies styles)
 
 ## Basic Usage
 
