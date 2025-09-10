@@ -71,8 +71,7 @@ This project is **still in development**, and has not yet reached a stable relea
 <body>
     <div id="editor"></div>
 
-    <!-- Note that fonts.js, custom-blocks.js, and custom-snippets.js are all OPTIONAL. See the 
-         customization section, below. -->
+    <!-- Note that fonts.js, custom-blocks.js, and custom-snippets.js are all OPTIONAL. See the customization section, below. -->
     <script src="fonts.js"></script>
     <script src="custom-blocks.js"></script>
     <script src="custom-snippets.js"></script>
