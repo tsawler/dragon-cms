@@ -836,7 +836,47 @@ window.DragonBlocks = {
 | `preview` | string | ✓ | 'text' or 'image' - how to display in panel |
 | `description` | string | ✗ | Tooltip description |
 | `category` | string | ✗ | Category for organization (e.g., 'layout', 'marketing') |
-| `previewImage` | string | ✗ | SVG data URL for image preview |
+| `previewImage` | string | ✗ | **Required if preview='image'** - See preview options below |
+
+#### Preview Options
+
+**Text Preview (`preview: 'text'`):**
+- Shows the block name as text in the editor panel
+- Simple and straightforward - no additional configuration needed
+- Best for most use cases
+
+**Image Preview (`preview: 'image'`):**
+- Shows a custom icon/image in the editor panel instead of text
+- Requires `previewImage` property with one of these formats:
+
+**Supported Image Formats:**
+- **File path**: `'./assets/my-preview.png'` (PNG, JPG, WebP, GIF, SVG files)
+- **Absolute URL**: `'https://example.com/preview.jpg'`
+- **Data URL**: `'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...'`
+- **SVG data URL**: `svgToDataUrl('<svg>...</svg>')` (for inline SVG)
+
+**Example with Image Preview:**
+```javascript
+{
+    id: 'hero-block',
+    name: 'Hero Section',
+    type: 'block',
+    preview: 'image',
+    previewImage: './assets/hero-icon.png',  // Simple file path
+    html: '<div class="editor-block hero">Hero content</div>'
+}
+```
+
+**Example with Text Preview:**
+```javascript
+{
+    id: 'card-block',
+    name: 'Card Block',
+    type: 'block',
+    preview: 'text',  // No previewImage needed
+    html: '<div class="editor-block card">Card content</div>'
+}
+```
 
 #### Built-in Custom Blocks
 
@@ -1054,7 +1094,47 @@ window.DragonSnippets = {
 | `description` | string | ✗ | Tooltip description |
 | `category` | string | ✗ | Category for organization (e.g., 'content', 'marketing') |
 | `snippetType` | string | ✗ | Sub-type (e.g., 'text', 'media', 'button') |
-| `previewImage` | string | ✗ | SVG data URL for image preview |
+| `previewImage` | string | ✗ | **Required if preview='image'** - See preview options below |
+
+#### Preview Options
+
+**Text Preview (`preview: 'text'`):**
+- Shows the snippet name as text in the editor panel
+- Simple and straightforward - no additional configuration needed
+- Best for most use cases
+
+**Image Preview (`preview: 'image'`):**
+- Shows a custom icon/image in the editor panel instead of text
+- Requires `previewImage` property with one of these formats:
+
+**Supported Image Formats:**
+- **File path**: `'./assets/my-preview.png'` (PNG, JPG, WebP, GIF, SVG files)
+- **Absolute URL**: `'https://example.com/preview.jpg'`
+- **Data URL**: `'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...'`
+- **SVG data URL**: `svgToDataUrl('<svg>...</svg>')` (for inline SVG)
+
+**Example with Image Preview:**
+```javascript
+{
+    id: 'testimonial-card',
+    name: 'Testimonial Card',
+    type: 'snippet',
+    preview: 'image',
+    previewImage: './assets/testimonial-icon.svg',  // Simple file path
+    html: '<div class="testimonial">Customer testimonial content</div>'
+}
+```
+
+**Example with Text Preview:**
+```javascript
+{
+    id: 'alert-box',
+    name: 'Alert Box',
+    type: 'snippet',
+    preview: 'text',  // No previewImage needed
+    html: '<div class="alert">Alert message content</div>'
+}
+```
 
 #### Built-in Custom Snippets
 
