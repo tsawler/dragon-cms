@@ -41,8 +41,10 @@ window.DragonSnippets = {
                     padding: 16px;
                     margin: 16px 0;
                     display: flex;
-                    align-items: center;
+                    align-items: flex-start;
                     gap: 12px;
+                    max-width: 100%;
+                    box-sizing: border-box;
                 ">
                     <div style="
                         background: #3b82f6;
@@ -50,13 +52,22 @@ window.DragonSnippets = {
                         border-radius: 50%;
                         width: 24px;
                         height: 24px;
+                        min-width: 24px;
                         display: flex;
                         align-items: center;
                         justify-content: center;
                         font-size: 14px;
                         font-weight: bold;
+                        flex-shrink: 0;
                     ">i</div>
-                    <p style="margin: 0; color: #1e40af; font-weight: 500;">
+                    <p style="
+                        margin: 0; 
+                        color: #1e40af; 
+                        font-weight: 500;
+                        flex: 1;
+                        word-wrap: break-word;
+                        line-height: 1.5;
+                    ">
                         This is an important message or alert for your visitors.
                     </p>
                 </div>
