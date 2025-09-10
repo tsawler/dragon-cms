@@ -17,6 +17,8 @@ export class Editor {
         this.initialContent = options.initialContent || null;
         this.showCodeIcon = options.showCodeIcon !== false; // Default to true
         this.assetsPath = options.assetsPath || 'assets/'; // Default assets path
+        this.onChange = options.onChange || null; // Callback when content changes
+        this.onRender = options.onRender || null; // Callback when element is rendered
         this.editableArea = document.getElementById('editable-area');
         this.currentMode = 'edit';
         this.snippetPanel = null;
@@ -728,6 +730,8 @@ export class Editor {
                         area.insertBefore(draggingElement, afterElement);
                     }
                     this.originalPosition = null; // Clear since drop was successful
+                    // Trigger onChange callback for moved block
+                    this.triggerOnChange('block-moved', draggingElement);
                 } else {
                     // Create a new block from panel
                     const block = this.createBlock(template);
@@ -737,6 +741,8 @@ export class Editor {
                     } else {
                         area.insertBefore(block, afterElement);
                     }
+                    // Trigger onChange callback for added block
+                    this.triggerOnChange('block-added', block);
                 }
             } else if (elementType === 'snippet') {
                 // Find the closest column first, then block
@@ -766,6 +772,8 @@ export class Editor {
                         }
                         
                         this.originalPosition = null; // Clear since drop was successful
+                        // Trigger onChange callback for moved snippet
+                        this.triggerOnChange('snippet-moved', draggingElement);
                     } else {
                         // Creating a new snippet from the panel
                         const snippet = this.createSnippet(snippetType, template);
@@ -781,6 +789,8 @@ export class Editor {
                         if (snippetType === 'image') {
                             this.imageUploader.setupImageSnippet(snippet);
                         }
+                        // Trigger onChange callback for added snippet
+                        this.triggerOnChange('snippet-added', snippet);
                     }
                 } else {
                     // Invalid drop - restore to original position for existing elements
@@ -1089,15 +1099,21 @@ export class Editor {
                 'Delete Element',
                 'Are you sure you want to delete this element?',
                 () => {
+                    const elementType = element.classList.contains('editor-block') ? 'block' : 'snippet';
                     element.remove();
                     this.stateHistory.saveState();
+                    // Trigger onChange callback
+                    this.triggerOnChange(`${elementType}-deleted`, null);
                 }
             );
         } else {
             // Fallback if no confirmation modal
             if (confirm('Are you sure you want to delete this element?')) {
+                const elementType = element.classList.contains('editor-block') ? 'block' : 'snippet';
                 element.remove();
                 this.stateHistory.saveState();
+                // Trigger onChange callback
+                this.triggerOnChange(`${elementType}-deleted`, null);
             }
         }
     }
@@ -1382,6 +1398,9 @@ export class Editor {
         // Add drag handle functionality
         this.attachDragHandleListeners(snippet);
         
+        // Trigger onRender callback
+        this.triggerOnRender('snippet', snippet);
+        
         return snippet;
     }
 
@@ -1447,6 +1466,9 @@ export class Editor {
                 this.formattingToolbar.fixFirefoxEditableElements();
             }, 0);
         }
+        
+        // Trigger onRender callback
+        this.triggerOnRender('block', block);
         
         return block;
     }
@@ -1606,5 +1628,36 @@ export class Editor {
     // Public method to get the current mode
     getMode() {
         return this.currentMode;
+    }
+    
+    // Trigger onChange callback
+    triggerOnChange(eventType, element) {
+        if (typeof this.onChange === 'function') {
+            try {
+                this.onChange({
+                    type: eventType,
+                    element: element,
+                    html: this.editableArea.innerHTML,
+                    timestamp: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error('Error in onChange callback:', error);
+            }
+        }
+    }
+    
+    // Trigger onRender callback
+    triggerOnRender(elementType, element) {
+        if (typeof this.onRender === 'function') {
+            try {
+                this.onRender({
+                    type: elementType,
+                    element: element,
+                    timestamp: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error('Error in onRender callback:', error);
+            }
+        }
     }
 }
