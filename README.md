@@ -1,11 +1,11 @@
-# DragonCMS - Drag & Drop Website Builder
-
-A simple, pure JavaScript drag-and-drop website builder with zero dependencies. Create responsive websites visually by dragging blocks and snippets onto a canvas, with real-time editing, custom styling, and HTML code access.
-
 ![DragonCMS](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![Pure JavaScript](https://img.shields.io/badge/pure-javascript-yellow.svg)
 ![No Dependencies](https://img.shields.io/badge/dependencies-none-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-purple.svg)
+
+# DragonCMS - Drag & Drop Website Builder
+
+A simple, pure JavaScript drag-and-drop website builder with zero dependencies. Create responsive websites visually by dragging blocks and snippets onto a canvas, with real-time editing, custom styling, and HTML code access.
 
 This project is **still in development**, and has not yet reached a stable release. Most features seem to work, and all tests pass, but there are undoubtedly still some rough edges.
 
