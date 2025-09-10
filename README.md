@@ -50,6 +50,7 @@ A powerful, pure JavaScript drag-and-drop website builder with zero dependencies
 - **Custom Snippets** - Create your own components
 - **Event System** - Listen to editor mode changes and content modifications
 - **Callback System** - onChange and onRender callbacks for content tracking
+- **Font Customization** - Easy Google Fonts integration with copy-paste embed links
 - **Flexible Configuration** - Customize paths, assets, and behavior
 - **Save/Load Integration** - Connect to your backend API
 
@@ -133,6 +134,7 @@ dragoncms/
 ├── index.html              # Example implementation
 ├── editor.css              # Editor styles
 ├── snippets.js             # Block and snippet definitions
+├── fonts.js                # Google Fonts configuration
 ├── assets/                 # Images and resources
 │   └── images/
 └── js/                     # Core JavaScript modules
@@ -167,6 +169,15 @@ npm run serve
 
 # Serve development files on localhost:8000  
 npm run serve:dev
+
+# Run tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Generate test coverage report
+npm run test:coverage
 ```
 
 #### Development Workflows
@@ -184,6 +195,21 @@ npm run serve  # Serve built files
 # Test the production build
 ```
 
+**Testing:**
+```bash
+npm test                # Run all tests once
+npm run test:watch      # Run tests in watch mode (auto-rerun on file changes)
+npm run test:coverage   # Generate test coverage report
+```
+
+DragonCMS includes a comprehensive test suite covering:
+- Core editor functionality
+- Font system and Google Fonts integration
+- State management and history
+- Modal components and UI interactions
+- Callback system
+- Error handling and edge cases
+
 #### Build Output
 
 The build process creates:
@@ -194,6 +220,7 @@ The build process creates:
 - `dist/editor.min.css` - Editor styles (minified)
 - `dist/snippets.js` - Components (unminified)
 - `dist/snippets.min.js` - Components (minified)
+- `dist/fonts.js` - Google Fonts configuration (copied from source)
 - `dist/index.html` - Example page (copied from source)
 - `dist/assets/` - Static assets (copied from source)
 
@@ -638,6 +665,107 @@ const editor = dragon.New({
 
 ## Customization
 
+### Font Customization
+
+DragonCMS supports easy Google Fonts integration through the `fonts.js` configuration file. Users can simply copy and paste Google Fonts embed links to add custom typography to the formatting toolbar.
+
+#### Adding Google Fonts
+
+1. Visit [fonts.google.com](https://fonts.google.com) and select your desired fonts
+2. Copy the `<link>` embed code provided by Google Fonts
+3. Add it to the `googleFontLinks` array in `fonts.js`
+
+```javascript
+// In fonts.js
+window.DragonFonts = {
+    // Default system fonts (always available)
+    systemFonts: [
+        { name: "Arial", family: "Arial, sans-serif" },
+        { name: "Georgia", family: "Georgia, serif" },
+        // ... other system fonts
+    ],
+
+    // Google Fonts - just paste embed links here
+    googleFontLinks: [
+        '<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">',
+        '<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">',
+        '<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400&display=swap" rel="stylesheet">',
+        // Add your fonts here
+    ]
+};
+```
+
+#### Supported Font Formats
+
+The font parser automatically handles various Google Fonts URL formats:
+
+```javascript
+// Simple single font
+'<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400&display=swap" rel="stylesheet">'
+
+// Multiple weights
+'<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">'
+
+// Multiple fonts in one URL
+'<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&family=Open+Sans:wght@300;400&display=swap" rel="stylesheet">'
+
+// Complex variations with italics
+'<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;1,400&display=swap" rel="stylesheet">'
+```
+
+#### Font Fallback Assignment
+
+The system automatically assigns appropriate fallbacks:
+
+- **Serif fonts** (Playfair Display, Merriweather, etc.) → `serif`
+- **Monospace fonts** (Fira Code, Source Code Pro, etc.) → `monospace` 
+- **All other fonts** → `sans-serif`
+
+#### Custom Font Integration
+
+For production builds, ensure `fonts.js` is loaded before the Dragon library:
+
+```html
+<!-- Development -->
+<script src="fonts.js"></script>
+<script src="snippets.js"></script>
+<script type="module" src="js/dragon.js"></script>
+
+<!-- Production -->
+<script src="fonts.js"></script>
+<script src="snippets.min.js"></script>
+<script src="dragon.min.js"></script>
+```
+
+#### Font Loading
+
+Google Fonts are automatically loaded when the editor initializes. The system:
+
+1. Parses font names from embed links
+2. Injects `<link>` tags into the document head
+3. Adds fonts to the formatting toolbar dropdown
+4. Prevents duplicate font loading
+
+#### Example: Adding Popular Fonts
+
+```javascript
+// Popular Google Fonts examples
+googleFontLinks: [
+    // Sans-serif fonts
+    '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">',
+    '<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">',
+    '<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">',
+    
+    // Serif fonts
+    '<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">',
+    '<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">',
+    
+    // Monospace fonts
+    '<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400&display=swap" rel="stylesheet">',
+    '<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400&display=swap" rel="stylesheet">'
+]
+```
+
 ### Custom Styles
 
 Override default styles by adding CSS after the editor.css:
@@ -862,19 +990,58 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 ### Development Setup
 
 1. Clone the repository
-2. Open `index.html` in a browser
-3. Make changes to the JavaScript modules
-4. Test across different browsers
-5. Submit a pull request
+2. Install dependencies: `npm install`
+3. Run tests: `npm test`
+4. Open `index.html` in a browser or use `npm run serve:dev`
+5. Make changes to the JavaScript modules
+6. Run tests again to ensure no regressions
+7. Test across different browsers
+8. Submit a pull request
+
+### Testing
+
+DragonCMS uses Jest for unit and integration testing. Tests are located in the `tests/` directory.
+
+**Running Tests:**
+```bash
+# Run all tests
+npm test
+
+# Run specific test file
+npm test -- tests/fonts.test.js
+
+# Run tests in watch mode (recommended for development)
+npm run test:watch
+
+# Generate coverage report
+npm run test:coverage
+```
+
+**Test Structure:**
+- `tests/fonts.test.js` - Google Fonts system tests
+- `tests/callbacks.test.js` - onChange/onRender callback tests  
+- `tests/editor-core.test.js` - Core editor functionality tests
+- `tests/modals.test.js` - Modal component tests
+- `tests/[component].test.js` - Individual component tests
+
+**Writing Tests:**
+Follow the existing test patterns. All tests should:
+- Use descriptive test names
+- Test both success and error scenarios
+- Mock external dependencies appropriately
+- Maintain good coverage of critical functionality
 
 ### Testing Checklist
 
+- [ ] Run `npm test` and ensure all tests pass
 - [ ] Test drag and drop in Chrome, Firefox, Safari
 - [ ] Verify responsive preview modes
 - [ ] Test HTML editor functionality
 - [ ] Check undo/redo behavior
+- [ ] Test font customization with Google Fonts
 - [ ] Verify save/load if configured
 - [ ] Test custom snippets
+- [ ] Test callback functionality (onChange/onRender)
 - [ ] Validate mobile touch events
 
 ## License
