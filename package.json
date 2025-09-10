@@ -5,10 +5,8 @@
   "main": "snippets.js",
   "scripts": {
     "build": "rollup -c && echo '\neditor.css → dist/editor.min.css...' && cp editor.css dist/ && postcss editor.css -o dist/editor.min.css --no-map && echo 'created dist/editor.min.css' && cp index-production.html dist/index.html && cp -r assets dist/",
-    "build:watch": "rollup -c --watch",
     "serve": "python3 -m http.server 8000 --directory dist",
     "serve:dev": "python3 -m http.server 8000",
-    "dev": "npm run build && npm run serve",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"

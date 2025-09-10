@@ -162,17 +162,26 @@ npm install
 # Build for production (creates dist/ folder)
 npm run build
 
-# Build and watch for changes
-npm run build:watch
-
 # Serve built files on localhost:8000
 npm run serve
 
 # Serve development files on localhost:8000  
 npm run serve:dev
+```
 
-# Build and serve (complete development workflow)
-npm run dev
+#### Development Workflows
+
+**Fast Development (Recommended):**
+```bash
+npm run serve:dev  # Serves source files directly with ES modules
+# Edit source files, refresh browser to see changes immediately
+```
+
+**Production Testing:**
+```bash
+npm run build  # Build once
+npm run serve  # Serve built files
+# Test the production build
 ```
 
 #### Build Output
