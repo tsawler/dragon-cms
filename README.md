@@ -71,6 +71,11 @@ This project is **still in development**, and has not yet reached a stable relea
 <body>
     <div id="editor"></div>
 
+    <!-- Note that fonts.js, custom-blocks.js, and custom-snippets.js are all OPTIONAL. See the 
+         customization section, below. -->
+    <script src="fonts.js"></script>
+    <script src="custom-blocks.js"></script>
+    <script src="custom-snippets.js"></script>
     <script src="snippets.js"></script>
     <script type="module">
         import dragon from './js/dragon.js';
@@ -104,12 +109,19 @@ npm run build
 3. Use the built files from the `dist/` folder in your project:
 ```html
 <!-- For production (minified) -->
+<!-- Note that fonts.js, custom-blocks.js, and custom-snippets.js are all OPTIONAL. See the customization section, below. -->
 <link rel="stylesheet" href="path/to/dist/editor.min.css">
+<script src="path/to/dist/fonts.js"></script>
+<script src="path/to/dist/custom-blocks.js"></script>
+<script src="path/to/dist/custom-snippets.js"></script>
 <script src="path/to/dist/snippets.min.js"></script>
 <script src="path/to/dist/dragon.min.js"></script>
 
 <!-- For development (unminified) -->
 <link rel="stylesheet" href="path/to/dist/editor.css">
+<script src="path/to/dist/fonts.js"></script>
+<script src="path/to/dist/custom-blocks.js"></script>
+<script src="path/to/dist/custom-snippets.js"></script>
 <script src="path/to/dist/snippets.js"></script>
 <script src="path/to/dist/dragon.js"></script>
 ```
@@ -125,6 +137,10 @@ cd dragon-cms
 2. Use the source files directly:
 ```html
 <link rel="stylesheet" href="path/to/editor.css">
+<!-- Note that fonts.js, custom-blocks.js, and custom-snippets.js are all OPTIONAL. See the customization section, below. -->
+<script src="path/to/fonts.js"></script>
+<script src="path/to/custom-blocks.js"></script>
+<script src="path/to/custom-snippets.js"></script>
 <script src="path/to/snippets.js"></script>
 <script type="module" src="path/to/js/dragon.js"></script>
 ```
@@ -293,6 +309,9 @@ Target browsers: `> 1%`, `last 2 versions`, `not dead`, `IE 11`
 <body>
     <div id="my-editor"></div>
     
+    <script src="fonts.js"></script>
+    <script src="custom-blocks.js"></script>
+    <script src="custom-snippets.js"></script>
     <script src="snippets.js"></script>
     <script type="module" src="js/dragon.js"></script>
     
@@ -357,6 +376,9 @@ const editor = dragon.New({
     <div id="content"></div>
     <button id="edit-btn" title="Edit Page">✏️</button>
     
+    <script src="fonts.js"></script>
+    <script src="custom-blocks.js"></script>
+    <script src="custom-snippets.js"></script>
     <script src="snippets.js"></script>
     <script type="module" src="js/dragon.js"></script>
     
