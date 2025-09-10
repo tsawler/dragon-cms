@@ -13,14 +13,31 @@ export class SnippetPanel {
     loadSnippets() {
         this.snippetList.innerHTML = '';
         
-        // Load blocks
+        // Load default blocks
         const blocks = getBlocks();
         blocks.forEach(block => {
             const item = this.createSnippetItem(block);
             this.snippetList.appendChild(item);
         });
+
+        // Load custom blocks if available
+        if (typeof window.DragonBlocks !== 'undefined' && window.DragonBlocks.getAllCustomBlocks) {
+            const customBlocks = window.DragonBlocks.getAllCustomBlocks();
+            if (customBlocks.length > 0) {
+                // Add custom blocks separator if we have custom blocks
+                const customSeparator = document.createElement('div');
+                customSeparator.className = 'blocks-separator';
+                customSeparator.innerHTML = '<h3 style="margin: 15px 0 10px 0; font-size: 12px; font-weight: bold; color: #666; text-transform: uppercase;">Custom Blocks</h3>';
+                this.snippetList.appendChild(customSeparator);
+
+                customBlocks.forEach(block => {
+                    const item = this.createSnippetItem(block);
+                    this.snippetList.appendChild(item);
+                });
+            }
+        }
         
-        // Add separator
+        // Add separator before snippets
         const separator = document.createElement('hr');
         separator.style.margin = '1rem 0';
         this.snippetList.appendChild(separator);
@@ -68,6 +85,16 @@ export class SnippetPanel {
         } else {
             // Use text label
             item.textContent = definition.name;
+        }
+
+        // Add description as tooltip if available
+        if (definition.description) {
+            item.title = definition.description;
+        }
+
+        // Add category data attribute if available
+        if (definition.category) {
+            item.dataset.category = definition.category;
         }
         
         return item;
