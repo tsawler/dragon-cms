@@ -55,6 +55,9 @@ class Dragon {
     }
 
     createEditorHTML(container, options = {}) {
+        // Load Google Fonts if available
+        this.loadGoogleFonts();
+        
         // Create the main editor structure
         container.innerHTML = `
             <div class="dragon-editor">
@@ -117,12 +120,7 @@ class Dragon {
                 
                 <div class="toolbar-section">
                     <select id="font-family" title="Font Family">
-                        <option value="Arial, sans-serif">Arial</option>
-                        <option value="Georgia, serif">Georgia</option>
-                        <option value="'Times New Roman', serif">Times New Roman</option>
-                        <option value="'Courier New', monospace">Courier New</option>
-                        <option value="Helvetica, sans-serif">Helvetica</option>
-                        <option value="Verdana, sans-serif">Verdana</option>
+                        ${this.generateFontOptions()}
                     </select>
                     
                     <select id="font-size" title="Font Size">
@@ -340,6 +338,48 @@ class Dragon {
         if (modalContent && this.modalDragger) {
             this.modalDragger.resetModalPosition(modalContent);
         }
+    }
+
+    /**
+     * Load Google Fonts from fonts.js if available
+     */
+    loadGoogleFonts() {
+        // Check if fonts.js is loaded and DragonFonts is available
+        if (typeof window.DragonFonts !== 'undefined' && window.DragonFonts.loadGoogleFonts) {
+            // Use the new simplified loading system
+            window.DragonFonts.loadGoogleFonts();
+        }
+    }
+
+    /**
+     * Generate font options HTML for the font family dropdown
+     */
+    generateFontOptions() {
+        let options = '';
+        
+        // Use DragonFonts if available, otherwise fallback to default fonts
+        if (typeof window.DragonFonts !== 'undefined' && window.DragonFonts.getAllFonts) {
+            const fonts = window.DragonFonts.getAllFonts();
+            fonts.forEach(font => {
+                options += `<option value="${font.family}">${font.name}</option>`;
+            });
+        } else {
+            // Fallback to default system fonts if fonts.js is not loaded
+            const defaultFonts = [
+                { name: "Arial", family: "Arial, sans-serif" },
+                { name: "Georgia", family: "Georgia, serif" },
+                { name: "Times New Roman", family: "'Times New Roman', serif" },
+                { name: "Courier New", family: "'Courier New', monospace" },
+                { name: "Helvetica", family: "Helvetica, sans-serif" },
+                { name: "Verdana", family: "Verdana, sans-serif" }
+            ];
+            
+            defaultFonts.forEach(font => {
+                options += `<option value="${font.family}">${font.name}</option>`;
+            });
+        }
+        
+        return options;
     }
 
     /**
