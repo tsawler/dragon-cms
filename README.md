@@ -775,12 +775,13 @@ DragonCMS supports user-defined custom blocks through the `blocks.js` configurat
 
 #### Adding Custom Blocks
 
-Custom blocks are defined in the `blocks.js` file using a simple configuration format:
+Custom blocks are defined in the `blocks.js` file. **Simply add your blocks to the `customBlocks` array - that's all you need to do!**
 
 ```javascript
-// In blocks.js
+// In blocks.js - This is ALL you need to edit:
 window.DragonBlocks = {
     customBlocks: [
+        // Just add your blocks here:
         {
             id: 'custom-card-block',
             name: 'Card Block',
@@ -803,16 +804,21 @@ window.DragonBlocks = {
                     </div>
                 </div>
             `
-        }
-    ],
+        },
+        // Add more blocks here...
+    ]
     
-    // Methods for managing blocks
-    getAllCustomBlocks() { return this.customBlocks; },
-    getBlocksByCategory(category) { /* ... */ },
-    getBlockById(id) { /* ... */ },
-    getCategories() { /* ... */ },
-    addCustomBlock(block) { /* ... */ }
+    // Note: Management methods are automatically provided by DragonCMS
+    // You don't need to implement these - they're built-in!
 };
+```
+
+**That's it!** Include the script tag and your blocks automatically appear:
+
+```html
+<script src="blocks.js"></script>
+<script src="snippets.js"></script>
+<script type="module" src="js/dragon.js"></script>
 ```
 
 #### Block Configuration Properties
@@ -940,11 +946,13 @@ For production builds, ensure `blocks.js` is loaded before the Dragon library:
 <script src="dragon.min.js"></script>
 ```
 
-#### Dynamic Block Management
+#### Dynamic Block Management (Advanced)
 
-The block system includes methods for runtime management:
+**Note: These methods are automatically provided by DragonCMS - you don't need to implement them!** They're available for advanced runtime management:
 
 ```javascript
+// Built-in methods available on window.DragonBlocks:
+
 // Get all custom blocks
 const blocks = window.DragonBlocks.getAllCustomBlocks();
 
@@ -957,7 +965,7 @@ const cardBlock = window.DragonBlocks.getBlockById('custom-card-block');
 // Get all available categories
 const categories = window.DragonBlocks.getCategories();
 
-// Add new block dynamically
+// Add new block dynamically (advanced usage)
 const success = window.DragonBlocks.addCustomBlock({
     id: 'new-block',
     name: 'New Block',
@@ -965,6 +973,8 @@ const success = window.DragonBlocks.addCustomBlock({
     html: '<div class="editor-block">New content</div>'
 });
 ```
+
+**For most users: Just edit the `customBlocks` array in blocks.js - these methods are only needed for advanced programmatic manipulation.**
 
 #### Best Practices
 
