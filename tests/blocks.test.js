@@ -18,8 +18,8 @@ describe('Custom Blocks System', () => {
         // Create fresh window object
         global.window = {};
 
-        // Load and execute blocks.js
-        const blocksPath = path.join(__dirname, '..', 'blocks.js');
+        // Load and execute custom-blocks.js
+        const blocksPath = path.join(__dirname, '..', 'custom-blocks.js');
         const blocksContent = fs.readFileSync(blocksPath, 'utf8');
         eval(blocksContent);
 
@@ -31,7 +31,7 @@ describe('Custom Blocks System', () => {
     });
 
     describe('Block Configuration Loading', () => {
-        test('should load DragonBlocks from blocks.js', () => {
+        test('should load DragonBlocks from custom-blocks.js', () => {
             expect(DragonBlocks).toBeDefined();
             expect(typeof DragonBlocks).toBe('object');
         });
