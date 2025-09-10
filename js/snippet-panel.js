@@ -49,6 +49,23 @@ export class SnippetPanel {
             this.snippetList.appendChild(item);
         });
 
+        // Load custom snippets if available
+        if (typeof window.DragonSnippets !== 'undefined' && window.DragonSnippets.getAllCustomSnippets) {
+            const customSnippets = window.DragonSnippets.getAllCustomSnippets();
+            if (customSnippets.length > 0) {
+                // Add custom snippets separator if we have custom snippets
+                const customSeparator = document.createElement('div');
+                customSeparator.className = 'snippets-separator';
+                customSeparator.innerHTML = '<h3 style="margin: 15px 0 10px 0; font-size: 12px; font-weight: bold; color: #666; text-transform: uppercase;">Custom Snippets</h3>';
+                this.snippetList.appendChild(customSeparator);
+
+                customSnippets.forEach(snippet => {
+                    const item = this.createSnippetItem(snippet);
+                    this.snippetList.appendChild(item);
+                });
+            }
+        }
+
         this.attachDragListeners();
     }
 

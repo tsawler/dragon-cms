@@ -135,7 +135,8 @@ dragoncms/
 ├── editor.css              # Editor styles
 ├── snippets.js             # Block and snippet definitions
 ├── fonts.js                # Google Fonts configuration
-├── blocks.js               # Custom blocks configuration
+├── custom-blocks.js        # Custom blocks configuration
+├── custom-snippets.js      # Custom snippets configuration
 ├── assets/                 # Images and resources
 │   └── images/
 └── js/                     # Core JavaScript modules
@@ -207,6 +208,7 @@ DragonCMS includes a comprehensive test suite covering:
 - Core editor functionality
 - Font system and Google Fonts integration
 - Custom blocks system and configuration
+- Custom snippets system and configuration
 - State management and history
 - Modal components and UI interactions
 - Callback system
@@ -223,7 +225,8 @@ The build process creates:
 - `dist/snippets.js` - Components (unminified)
 - `dist/snippets.min.js` - Components (minified)
 - `dist/fonts.js` - Google Fonts configuration (copied from source)
-- `dist/blocks.js` - Custom blocks configuration (copied from source)
+- `dist/custom-blocks.js` - Custom blocks configuration (copied from source)
+- `dist/custom-snippets.js` - Custom snippets configuration (copied from source)
 - `dist/index.html` - Example page (copied from source)
 - `dist/assets/` - Static assets (copied from source)
 
@@ -771,16 +774,17 @@ googleFontLinks: [
 
 ### Custom Blocks
 
-DragonCMS supports user-defined custom blocks through the `blocks.js` configuration file. Custom blocks are container elements that can hold other content and appear in the editor's block panel alongside default blocks.
+DragonCMS supports user-defined custom blocks through the `custom-blocks.js` configuration file. Custom blocks are container elements that can hold other content and appear in the editor's block panel alongside default blocks.
 
 #### Adding Custom Blocks
 
-Custom blocks are defined in the `blocks.js` file using a simple configuration format:
+Custom blocks are defined in the `custom-blocks.js` file. **Simply add your blocks to the `customBlocks` array - that's all you need to do!**
 
 ```javascript
-// In blocks.js
+// In custom-blocks.js - This is ALL you need to edit:
 window.DragonBlocks = {
     customBlocks: [
+        // Just add your blocks here:
         {
             id: 'custom-card-block',
             name: 'Card Block',
@@ -803,16 +807,22 @@ window.DragonBlocks = {
                     </div>
                 </div>
             `
-        }
-    ],
+        },
+        // Add more blocks here...
+    ]
     
-    // Methods for managing blocks
-    getAllCustomBlocks() { return this.customBlocks; },
-    getBlocksByCategory(category) { /* ... */ },
-    getBlockById(id) { /* ... */ },
-    getCategories() { /* ... */ },
-    addCustomBlock(block) { /* ... */ }
+    // Note: Management methods are automatically provided by DragonCMS
+    // You don't need to implement these - they're built-in!
 };
+```
+
+**That's it!** Include the script tag and your blocks automatically appear:
+
+```html
+<script src="custom-blocks.js"></script>
+<script src="custom-snippets.js"></script>
+<script src="snippets.js"></script>
+<script type="module" src="js/dragon.js"></script>
 ```
 
 #### Block Configuration Properties
@@ -924,27 +934,31 @@ Custom blocks automatically integrate with the editor:
 
 #### Block Loading
 
-For production builds, ensure `blocks.js` is loaded before the Dragon library:
+For production builds, ensure both custom files are loaded before the Dragon library:
 
 ```html
 <!-- Development -->
 <script src="fonts.js"></script>
-<script src="blocks.js"></script>
+<script src="custom-blocks.js"></script>
+<script src="custom-snippets.js"></script>
 <script src="snippets.js"></script>
 <script type="module" src="js/dragon.js"></script>
 
 <!-- Production -->
 <script src="fonts.js"></script>
-<script src="blocks.js"></script>
+<script src="custom-blocks.js"></script>
+<script src="custom-snippets.js"></script>
 <script src="snippets.min.js"></script>
 <script src="dragon.min.js"></script>
 ```
 
-#### Dynamic Block Management
+#### Dynamic Block Management (Advanced)
 
-The block system includes methods for runtime management:
+**Note: These methods are automatically provided by DragonCMS - you don't need to implement them!** They're available for advanced runtime management:
 
 ```javascript
+// Built-in methods available on window.DragonBlocks:
+
 // Get all custom blocks
 const blocks = window.DragonBlocks.getAllCustomBlocks();
 
@@ -957,7 +971,7 @@ const cardBlock = window.DragonBlocks.getBlockById('custom-card-block');
 // Get all available categories
 const categories = window.DragonBlocks.getCategories();
 
-// Add new block dynamically
+// Add new block dynamically (advanced usage)
 const success = window.DragonBlocks.addCustomBlock({
     id: 'new-block',
     name: 'New Block',
@@ -965,6 +979,8 @@ const success = window.DragonBlocks.addCustomBlock({
     html: '<div class="editor-block">New content</div>'
 });
 ```
+
+**For most users: Just edit the `customBlocks` array in custom-blocks.js - these methods are only needed for advanced programmatic manipulation.**
 
 #### Best Practices
 
@@ -975,6 +991,210 @@ const success = window.DragonBlocks.addCustomBlock({
 5. **Test blocks across devices** using preview modes
 6. **Avoid inline scripts** for security (use external initialization if needed)
 7. **Use appropriate categories** for better organization
+
+### Custom Snippets
+
+DragonCMS supports user-defined custom snippets through the `custom-snippets.js` configuration file. Custom snippets are content elements like text, images, buttons, or custom HTML components that can be dragged into blocks.
+
+#### Adding Custom Snippets
+
+Custom snippets are defined in the `custom-snippets.js` file. **Simply add your snippets to the `customSnippets` array - that's all you need to do!**
+
+```javascript
+// In custom-snippets.js - This is ALL you need to edit:
+window.DragonSnippets = {
+    customSnippets: [
+        // Just add your snippets here:
+        {
+            id: 'custom-alert-box',
+            name: 'Alert Box',
+            type: 'snippet',
+            snippetType: 'content',
+            preview: 'text',
+            description: 'A styled alert box with icon and message',
+            category: 'content',
+            html: `
+                <div class="alert-box" style="
+                    background: #dbeafe;
+                    border: 1px solid #3b82f6;
+                    border-radius: 8px;
+                    padding: 16px;
+                    margin: 16px 0;
+                ">
+                    <p>This is an important message for your visitors.</p>
+                </div>
+            `
+        },
+        // Add more snippets here...
+    ]
+    
+    // Note: Management methods are automatically provided by DragonCMS
+    // You don't need to implement these - they're built-in!
+};
+```
+
+**That's it!** Include the script tag and your snippets automatically appear in the "Custom Snippets" section:
+
+```html
+<script src="custom-blocks.js"></script>
+<script src="custom-snippets.js"></script>
+<script src="snippets.js"></script>
+<script type="module" src="js/dragon.js"></script>
+```
+
+#### Snippet Configuration Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `id` | string | ✓ | Unique identifier for the snippet |
+| `name` | string | ✓ | Display name in the editor panel |
+| `type` | string | ✓ | Must be 'snippet' for content elements |
+| `html` | string | ✓ | The HTML structure of the snippet |
+| `preview` | string | ✓ | 'text' or 'image' - how to display in panel |
+| `description` | string | ✗ | Tooltip description |
+| `category` | string | ✗ | Category for organization (e.g., 'content', 'marketing') |
+| `snippetType` | string | ✗ | Sub-type (e.g., 'text', 'media', 'button') |
+| `previewImage` | string | ✗ | SVG data URL for image preview |
+
+#### Built-in Custom Snippets
+
+DragonCMS includes several pre-configured custom snippets:
+
+**Content Snippets:**
+- **Alert Box** - Styled notification box with icon and message
+- **Feature Highlight** - Feature showcase with icon and description
+- **Code Block** - Syntax-highlighted code display with terminal styling
+
+**Marketing Snippets:**
+- **Testimonial Card** - Customer testimonial with avatar and star rating
+- **Stat Counter** - Statistics display with large number and description
+
+#### Creating Custom Snippets
+
+1. **Basic Snippet Structure:**
+   ```javascript
+   {
+       id: 'my-custom-snippet',
+       name: 'My Custom Snippet',
+       type: 'snippet',
+       preview: 'text',
+       category: 'content',
+       html: `
+           <div class="my-custom-snippet">
+               <h3>Custom Content</h3>
+               <p>Add your content here</p>
+           </div>
+       `
+   }
+   ```
+
+2. **Advanced Snippet with Rich Styling:**
+   ```javascript
+   {
+       id: 'pricing-card',
+       name: 'Pricing Card',
+       type: 'snippet',
+       snippetType: 'marketing',
+       preview: 'text',
+       description: 'A pricing card with features and call-to-action',
+       category: 'marketing',
+       html: `
+           <div class="pricing-card" style="
+               background: white;
+               border: 2px solid #e5e7eb;
+               border-radius: 12px;
+               padding: 32px;
+               text-align: center;
+               max-width: 300px;
+               margin: 20px auto;
+               box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+           ">
+               <h3 style="color: #1f2937; margin: 0 0 16px 0;">Pro Plan</h3>
+               <div style="font-size: 48px; font-weight: 700; color: #3b82f6; margin-bottom: 16px;">
+                   $29<span style="font-size: 18px; color: #6b7280;">/month</span>
+               </div>
+               <ul style="list-style: none; padding: 0; margin: 0 0 24px 0; text-align: left;">
+                   <li style="padding: 8px 0; color: #374151;">✓ All features included</li>
+                   <li style="padding: 8px 0; color: #374151;">✓ Priority support</li>
+                   <li style="padding: 8px 0; color: #374151;">✓ Advanced analytics</li>
+               </ul>
+               <button style="
+                   background: #3b82f6;
+                   color: white;
+                   border: none;
+                   border-radius: 8px;
+                   padding: 12px 32px;
+                   font-size: 16px;
+                   font-weight: 600;
+                   cursor: pointer;
+                   width: 100%;
+               ">
+                   Get Started
+               </button>
+           </div>
+       `
+   }
+   ```
+
+#### Snippet Categories
+
+Organize snippets using categories:
+
+- **content** - Text elements, alerts, highlights
+- **marketing** - Testimonials, pricing cards, CTAs
+- **media** - Image galleries, video players
+- **navigation** - Breadcrumbs, pagination, menus
+- **social** - Social media widgets, share buttons
+
+#### Integration with Editor
+
+Custom snippets automatically integrate with the editor:
+
+- **Snippet Panel** - Appear in left sidebar with "Custom Snippets" separator
+- **Drag & Drop** - Full drag and drop functionality into blocks
+- **Text Editing** - All text elements become editable when dropped
+- **Formatting Toolbar** - Rich text formatting available for text content
+- **Content Flexibility** - Can be placed in any block or column
+
+#### Dynamic Snippet Management (Advanced)
+
+**Note: These methods are automatically provided by DragonCMS - you don't need to implement them!** They're available for advanced runtime management:
+
+```javascript
+// Built-in methods available on window.DragonSnippets:
+
+// Get all custom snippets
+const snippets = window.DragonSnippets.getAllCustomSnippets();
+
+// Get snippets by category
+const contentSnippets = window.DragonSnippets.getSnippetsByCategory('content');
+
+// Get specific snippet
+const alertBox = window.DragonSnippets.getSnippetById('custom-alert-box');
+
+// Get all available categories
+const categories = window.DragonSnippets.getCategories();
+
+// Add new snippet dynamically (advanced usage)
+const success = window.DragonSnippets.addCustomSnippet({
+    id: 'new-snippet',
+    name: 'New Snippet',
+    type: 'snippet',
+    html: '<div class="new-snippet">New content</div>'
+});
+```
+
+**For most users: Just edit the `customSnippets` array in custom-snippets.js - these methods are only needed for advanced programmatic manipulation.**
+
+#### Best Practices
+
+1. **Keep snippets focused** on single components or content types
+2. **Use inline styles** for better portability and self-containment
+3. **Provide clear descriptions** to help users understand the purpose
+4. **Test across devices** to ensure responsive behavior
+5. **Use semantic HTML** with proper accessibility attributes
+6. **Avoid complex JavaScript** - keep snippets simple and reliable
+7. **Category organization** helps users find snippets quickly
 
 ### Custom Styles
 
@@ -1230,6 +1450,7 @@ npm run test:coverage
 **Test Structure:**
 - `tests/fonts.test.js` - Google Fonts system tests
 - `tests/blocks.test.js` - Custom blocks system tests
+- `tests/custom-snippets.test.js` - Custom snippets system tests
 - `tests/callbacks.test.js` - onChange/onRender callback tests  
 - `tests/editor-core.test.js` - Core editor functionality tests
 - `tests/modals.test.js` - Modal component tests
@@ -1251,6 +1472,7 @@ Follow the existing test patterns. All tests should:
 - [ ] Check undo/redo behavior
 - [ ] Test font customization with Google Fonts
 - [ ] Test custom blocks functionality and integration
+- [ ] Test custom snippets functionality and integration
 - [ ] Verify save/load if configured
 - [ ] Test custom snippets
 - [ ] Test callback functionality (onChange/onRender)

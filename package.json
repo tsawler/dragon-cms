@@ -4,7 +4,7 @@
   "type": "module",
   "main": "snippets.js",
   "scripts": {
-    "build": "rollup -c && echo '\neditor.css → dist/editor.min.css...' && cp editor.css dist/ && postcss editor.css -o dist/editor.min.css --no-map && echo 'created dist/editor.min.css' && cp index-production.html dist/index.html && cp fonts.js dist/ && cp blocks.js dist/ && cp -r assets dist/",
+    "build": "rollup -c && echo '\neditor.css → dist/editor.min.css...' && cp editor.css dist/ && postcss editor.css -o dist/editor.min.css --no-map && echo 'created dist/editor.min.css' && cp index-production.html dist/index.html && cp fonts.js dist/ && cp custom-blocks.js dist/ && cp custom-snippets.js dist/ && cp -r assets dist/",
     "serve": "python3 -m http.server 8000 --directory dist",
     "serve:dev": "python3 -m http.server 8000",
     "test": "jest",
