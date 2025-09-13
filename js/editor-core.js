@@ -69,6 +69,9 @@ export class Editor {
         this.setupResizing();
         this.setupViewportControls();
         this.makeExistingBlocksEditable();
+        if (typeof this.makeExistingSectionsDraggable === 'function') {
+            this.makeExistingSectionsDraggable();
+        }
         
         // Load initial content if provided
         this.loadInitialContent();
@@ -217,6 +220,11 @@ export class Editor {
         
         // Make text elements in blocks editable
         this.makeExistingBlocksEditable();
+        
+        // Make existing sections draggable
+        if (typeof this.makeExistingSectionsDraggable === 'function') {
+            this.makeExistingSectionsDraggable();
+        }
         
         // Initialize column resizers for any multi-column blocks
         if (this.columnResizer) {
@@ -531,18 +539,16 @@ export class Editor {
     
     setupDropZone() {
         const area = this.editableArea;
-        let currentInsertionLine = null;
-        let currentDropOverlay = null;
 
         // Track if we're currently in an existing element drag
         this.activeExistingDrag = null;
         
         // Add dragstart event listener to the area to catch all elements
         area.addEventListener('dragstart', (e) => {
-            // Check both e.target and find the closest block/snippet
-            const draggedElement = e.target.classList.contains('editor-block') || e.target.classList.contains('editor-snippet') 
+            // Check both e.target and find the closest block/snippet/section
+            const draggedElement = e.target.classList.contains('editor-block') || e.target.classList.contains('editor-snippet') || e.target.classList.contains('editor-section')
                 ? e.target 
-                : e.target.closest('.editor-block, .editor-snippet');
+                : e.target.closest('.editor-block, .editor-snippet, .editor-section');
             
             
             // Dragstart for existing elements
@@ -567,7 +573,11 @@ export class Editor {
                 e.dataTransfer.effectAllowed = 'move';
                 
                 // Set the data for existing element reordering
-                if (draggedElement.classList.contains('editor-block')) {
+                if (draggedElement.classList.contains('editor-section')) {
+                    e.dataTransfer.setData('elementType', 'section');
+                    e.dataTransfer.setData('isExisting', 'true');
+                    this.currentDragOperation = { type: 'section', isExisting: true, element: draggedElement };
+                } else if (draggedElement.classList.contains('editor-block')) {
                     e.dataTransfer.setData('elementType', 'block');
                     this.currentDragOperation = { type: 'block', isExisting: true, element: draggedElement };
                 } else {
@@ -589,7 +599,7 @@ export class Editor {
         // Remove the problematic mouseup handler - let HTML5 drag and drop handle it
         
         area.addEventListener('dragend', (e) => {
-            if (e.target.classList.contains('editor-block') || e.target.classList.contains('editor-snippet')) {
+            if (e.target.classList.contains('editor-block') || e.target.classList.contains('editor-snippet') || e.target.classList.contains('editor-section')) {
                 e.target.classList.remove('dragging-element');
                 delete e.target.dataset.dragFromHandle;
                 this.clearVisualIndicators();
@@ -604,6 +614,10 @@ export class Editor {
 
         area.addEventListener('dragover', (e) => {
             e.preventDefault();
+            
+            // Declare fresh variables for each dragover event
+            let currentInsertionLine = null;
+            let currentDropOverlay = null;
             
             const elementType = e.dataTransfer.getData('elementType') || this.currentDragOperation?.type || this.getCurrentDragType(e);
             
@@ -625,6 +639,7 @@ export class Editor {
             
             // Clear previous indicators
             this.clearVisualIndicators();
+            
             
             if (elementType === 'snippet') {
                 // For snippets, highlight valid blocks and show insertion points
@@ -710,9 +725,9 @@ export class Editor {
                     }
                 }
             } else if (elementType === 'section' || elementType === 'block' || elementType === 'custom') {
-                const existingBlocks = area.querySelectorAll('.editor-block').length;
+                const existingElements = area.querySelectorAll('.editor-block, .editor-section').length;
                 
-                if (existingBlocks === 0) {
+                if (existingElements === 0) {
                     // Empty area - show drop overlay instead of insertion line
                     area.style.background = 'rgba(59, 130, 246, 0.05)';
                     area.style.borderColor = '#3b82f6';
@@ -729,7 +744,7 @@ export class Editor {
                     area.style.position = 'relative';
                     area.appendChild(currentDropOverlay);
                 } else {
-                    // Has blocks - show insertion line
+                    // Has elements - show insertion line
                     const insertionPoint = this.getInsertionPoint(area, e.clientY);
                     if (insertionPoint) {
                         currentInsertionLine = this.createInsertionLine(insertionPoint);
@@ -807,7 +822,7 @@ export class Editor {
                         area.insertBefore(section, afterElement);
                     }
                     // Make text elements editable in the new section
-                    this.makeElementsEditable(section);
+                    this.makeSectionElementsEditable(section);
                     // Trigger onChange callback for added section
                     this.triggerOnChange('section-added', section);
                 }
@@ -980,18 +995,18 @@ export class Editor {
     }
     
     getInsertionPoint(container, y) {
-        const blocks = [...container.querySelectorAll(':scope > .editor-block:not(.dragging-element)')];
+        const elements = [...container.querySelectorAll(':scope > .editor-block:not(.dragging-element), :scope > .editor-section:not(.dragging-element)')];
         const containerRect = container.getBoundingClientRect();
         
-        if (blocks.length === 0) {
+        if (elements.length === 0) {
             return null; // No insertion point needed for empty area
         }
         
         // Account for container scroll position
         const scrollTop = container.scrollTop;
         
-        for (let i = 0; i < blocks.length; i++) {
-            const rect = blocks[i].getBoundingClientRect();
+        for (let i = 0; i < elements.length; i++) {
+            const rect = elements[i].getBoundingClientRect();
             const midPoint = rect.top + rect.height / 2;
             
             if (y < midPoint) {
@@ -1003,8 +1018,8 @@ export class Editor {
         }
         
         // Insert at the end
-        const lastBlock = blocks[blocks.length - 1];
-        const lastRect = lastBlock.getBoundingClientRect();
+        const lastElement = elements[elements.length - 1];
+        const lastRect = lastElement.getBoundingClientRect();
         return { 
             y: lastRect.bottom - containerRect.top + scrollTop + 5, 
             container 
@@ -1023,8 +1038,8 @@ export class Editor {
     }
     
     getDragAfterElement(container, y) {
-        // Only get direct children blocks of the container (not nested snippets)
-        const draggableElements = [...container.querySelectorAll(':scope > .editor-block:not(.dragging-element)')];
+        // Get direct children blocks and sections of the container (not nested elements)
+        const draggableElements = [...container.querySelectorAll(':scope > .editor-block:not(.dragging-element), :scope > .editor-section:not(.dragging-element)')];
         
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
@@ -1282,6 +1297,9 @@ export class Editor {
         
         // Restore functionality to loaded content
         this.makeExistingBlocksEditable();
+        if (typeof this.makeExistingSectionsDraggable === 'function') {
+            this.makeExistingSectionsDraggable();
+        }
         
         // Initialize column resizers for any multi-column blocks
         if (this.columnResizer) {
@@ -1525,10 +1543,7 @@ export class Editor {
     }
 
     createSection(template = null) {
-        const section = document.createElement('section');
-        section.className = 'editor-section';
-        section.style.position = 'relative';
-        section.draggable = true;  // Always draggable, but controlled by handle
+        let section;
         
         const gearIconHtml = '<button class="gear-icon" title="Section Settings">⚙️</button>';
         const codeIconHtml = this.showCodeIcon ? '<button class="code-icon" title="Edit HTML">&lt;/&gt;</button>' : '';
@@ -1543,15 +1558,42 @@ export class Editor {
         `;
         
         if (template) {
-            section.innerHTML = controls + template;
+            // Template might already include a section element
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = template;
+            const templateSection = tempDiv.querySelector('section.editor-section');
+            
+            if (templateSection) {
+                // Use the existing section from template
+                section = templateSection;
+                // Ensure it has the editor-section class
+                section.classList.add('editor-section');
+                // Add controls as first child
+                const controlsDiv = document.createElement('div');
+                controlsDiv.innerHTML = controls;
+                section.insertBefore(controlsDiv.querySelector('.section-controls'), section.firstChild);
+            } else {
+                // Template doesn't have a section, create one
+                section = document.createElement('section');
+                section.className = 'editor-section';
+                section.innerHTML = controls + template;
+            }
         } else {
             // Default section with content area
+            section = document.createElement('section');
+            section.className = 'editor-section';
             section.innerHTML = controls + '<div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;"></div>';
         }
+        
+        section.style.position = 'relative';
+        section.draggable = true;  // Always draggable, but controlled by handle
         
         // Set up control handlers
         this.attachSectionControlListeners(section);
         this.attachDragHandleListeners(section);
+        
+        // Trigger onRender callback
+        this.triggerOnRender('section', section);
         
         return section;
     }
@@ -1698,6 +1740,78 @@ export class Editor {
         });
         
         // Apply Firefox contenteditable fixes after making blocks editable
+        if (this.formattingToolbar) {
+            this.formattingToolbar.fixFirefoxEditableElements();
+        }
+    }
+
+    makeExistingSectionsDraggable() {
+        // Make all existing sections draggable
+        // This handles sections that were created before the fix
+        const sections = this.editableArea.querySelectorAll('.editor-section');
+        sections.forEach(section => {
+            // Add section controls if they don't exist
+            if (!section.querySelector('.section-controls')) {
+                const gearIconHtml = '<button class="gear-icon" title="Section Settings">⚙️</button>';
+                const codeIconHtml = this.showCodeIcon ? '<button class="code-icon" title="Edit HTML">&lt;/&gt;</button>' : '';
+                
+                const controls = `
+                    <div class="section-controls">
+                        <div class="drag-handle">☰</div>
+                        ${gearIconHtml}
+                        ${codeIconHtml}
+                        <button class="delete-icon" title="Delete Section">🗑️</button>
+                    </div>
+                `;
+                
+                const controlsDiv = document.createElement('div');
+                controlsDiv.innerHTML = controls;
+                section.insertBefore(controlsDiv.querySelector('.section-controls'), section.firstChild);
+            }
+            
+            // Ensure section is draggable and has proper positioning
+            section.draggable = true;
+            section.style.position = 'relative';
+            
+            // Attach drag handle listeners
+            this.attachDragHandleListeners(section);
+            
+            // Make text elements in sections editable
+            this.makeSectionElementsEditable(section);
+        });
+    }
+    
+    makeSectionElementsEditable(section) {
+        // Make text elements in the section editable
+        const editableElements = section.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, li, td, th');
+        
+        editableElements.forEach(el => {
+            // Skip if already editable or is a control element
+            if (el.contentEditable === 'true' || 
+                el.classList.contains('drag-handle') || 
+                el.classList.contains('edit-icon') || 
+                el.classList.contains('code-icon') || 
+                el.classList.contains('delete-icon') || 
+                el.classList.contains('settings-icon') || 
+                el.classList.contains('gear-icon') ||
+                el.closest('button') ||
+                el.closest('.section-controls')) {
+                return;
+            }
+            
+            el.contentEditable = true;
+            el.style.outline = 'none';
+            
+            // Add focus/blur handlers
+            el.addEventListener('focus', () => {
+                el.style.opacity = '0.9';
+            });
+            el.addEventListener('blur', () => {
+                el.style.opacity = '';
+            });
+        });
+        
+        // Apply Firefox contenteditable fixes
         if (this.formattingToolbar) {
             this.formattingToolbar.fixFirefoxEditableElements();
         }

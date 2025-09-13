@@ -892,8 +892,10 @@ export class CodeEditorModal {
             flex-direction: column;
         `;
         
-        // Get current HTML content from the element
-        const currentHTML = element.innerHTML;
+        // Get current HTML content from the element, excluding section controls
+        const clone = element.cloneNode(true);
+        clone.querySelectorAll('.section-controls').forEach(control => control.remove());
+        const currentHTML = clone.innerHTML;
         
         // Create the modal content with proper responsive design
         modalContent.innerHTML = `
@@ -1066,14 +1068,14 @@ export class CodeEditorModal {
         });
         
         // Get the inner HTML without the control buttons first
-        const clone = element.cloneNode(true);
-        clone.querySelectorAll('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon, .resizer-handle').forEach(el => el.remove());
+        const elementClone = element.cloneNode(true);
+        elementClone.querySelectorAll('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon, .resizer-handle').forEach(el => el.remove());
         
         // Remove image resize handles and containers
-        clone.querySelectorAll('.image-resize-handle').forEach(el => el.remove());
+        elementClone.querySelectorAll('.image-resize-handle').forEach(el => el.remove());
         
         // Clean up image resize containers - extract just the image
-        clone.querySelectorAll('.image-resize-container').forEach(container => {
+        elementClone.querySelectorAll('.image-resize-container').forEach(container => {
             const img = container.querySelector('img');
             if (img) {
                 // Preserve the image's style
@@ -1083,16 +1085,16 @@ export class CodeEditorModal {
         });
         
         // Remove internal editor attributes for cleaner HTML display
-        clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
-        clone.querySelectorAll('[draggable]').forEach(el => el.removeAttribute('draggable'));
-        clone.querySelectorAll('[data-block-id]').forEach(el => el.removeAttribute('data-block-id'));
-        clone.querySelectorAll('[data-snippet-id]').forEach(el => el.removeAttribute('data-snippet-id'));
-        clone.querySelectorAll('[data-left-index]').forEach(el => el.removeAttribute('data-left-index'));
-        clone.querySelectorAll('[data-right-index]').forEach(el => el.removeAttribute('data-right-index'));
-        clone.querySelectorAll('[data-drag-listeners-attached]').forEach(el => el.removeAttribute('data-drag-listeners-attached'));
+        elementClone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+        elementClone.querySelectorAll('[draggable]').forEach(el => el.removeAttribute('draggable'));
+        elementClone.querySelectorAll('[data-block-id]').forEach(el => el.removeAttribute('data-block-id'));
+        elementClone.querySelectorAll('[data-snippet-id]').forEach(el => el.removeAttribute('data-snippet-id'));
+        elementClone.querySelectorAll('[data-left-index]').forEach(el => el.removeAttribute('data-left-index'));
+        elementClone.querySelectorAll('[data-right-index]').forEach(el => el.removeAttribute('data-right-index'));
+        elementClone.querySelectorAll('[data-drag-listeners-attached]').forEach(el => el.removeAttribute('data-drag-listeners-attached'));
         
         // Get the cleaned and formatted HTML
-        const cleanHTML = clone.innerHTML.trim();
+        const cleanHTML = elementClone.innerHTML.trim();
         const formattedHTML = formatHTML(cleanHTML);
         
         // Set the formatted HTML in the textarea and add syntax highlighting
@@ -2741,11 +2743,6 @@ export class SectionSettingsModal {
         this.targetSection = section;
         this.loadSectionSettings();
         this.modal.style.display = 'flex';
-        
-        // Make modal draggable
-        if (this.editor.modalDragger) {
-            this.editor.modalDragger.makeDraggable(this.modal.querySelector('.modal-content'));
-        }
     }
 
     loadSectionSettings() {

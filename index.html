@@ -68,9 +68,9 @@
     <script src="snippets.js"></script>
     
     <!-- Load the dragon library -->
-    <script type="module" src="js/dragon.js"></script>
-    
-    <script>
+    <script type="module">
+        import dragon from './js/dragon.js';
+        
         // Initialize the Dragon editor when the page loads
         window.addEventListener('load', function() {
             // Simple, flexible usage - all options in one object
