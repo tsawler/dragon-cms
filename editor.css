@@ -81,23 +81,24 @@
     display: flex;
     position: relative;
     overflow: hidden;
+    margin-left: 0;
     transition: margin-left 0.3s ease-in-out;
 }
 
-.dragon-editor .editor-main{
-    margin-left: 60px; /* Account for icon strip in edit mode */
+/* Edit mode - add margin for icon strip */
+.dragon-editor .editor-main[data-mode="edit"] {
+    margin-left: 60px;
 }
 
-.dragon-editor .editor-main.panel-open{
+/* Panel open in edit mode - add margin for icon strip + panel */
+.dragon-editor .editor-main[data-mode="edit"].panel-open {
     margin-left: 400px; /* Icon strip (60px) + panel (340px) */
 }
 
-/* Remove left margin in display mode when icon strip is hidden */
-.dragon-editor .editor-main:has(.editable-area[data-mode="display"]) {
+/* Display mode - no margin */
+.dragon-editor .editor-main[data-mode="display"] {
     margin-left: 0 !important;
 }
-
-/* Fallback for browsers without :has() support - use JavaScript override */
 
 /* Icon strip - hidden by default, only visible in edit mode */
 .dragon-editor .icon-strip {
@@ -146,7 +147,7 @@
 /* Updated snippet panel */
 .dragon-editor .snippet-panel{
     position: fixed;
-    left: -340px;
+    left: 60px;
     top: 65px;
     bottom: 0;
     width: 340px;
@@ -156,11 +157,12 @@
     padding: 1rem;
     overflow-y: auto;
     z-index: 1000;
-    transition: left 0.3s ease-in-out;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
 }
 
 .dragon-editor .snippet-panel.open{
-    left: 60px;
+    transform: translateX(0);
 }
 
 /* Panel filter and header */
@@ -271,6 +273,7 @@
     overflow-y: auto;
     min-height: calc(100vh - 65px);
     position: relative;
+    width: 100%;
 }
 
 .dragon-editor .editable-area[data-mode="display"] .snippet-panel{
@@ -789,9 +792,7 @@ button.edit-icon, button.settings-icon, button.code-icon, button.delete-icon {
     font-family: inherit;
 }
 
-.editable-area[data-mode="edit"] .editor-section:hover .gear-icon,
-.editable-area[data-mode="edit"] .editor-section:hover .code-icon,
-.editable-area[data-mode="edit"] .editor-section:hover .delete-icon,
+/* Block and snippet hover controls (sections handled separately below) */
 .editable-area[data-mode="edit"] .editor-block:hover .edit-icon,
 .editable-area[data-mode="edit"] .editor-block:hover .settings-icon,
 .editable-area[data-mode="edit"] .editor-block:hover .code-icon,
@@ -903,7 +904,7 @@ button.edit-icon, button.settings-icon, button.code-icon, button.delete-icon {
     z-index: 50;
 }
 
-.editable-area[data-mode="edit"] .editor-section:hover .drag-handle,
+/* Drag handles for blocks and snippets (sections handled in .section-controls above) */
 .editable-area[data-mode="edit"] .editor-block:hover .drag-handle,
 .editable-area[data-mode="edit"] .editor-snippet:hover .drag-handle {
     display: flex;
@@ -1407,7 +1408,9 @@ body.image-resizing * {
     margin-top: 1.5rem;
 }
 
-/* Modal button styles */
+/* Modal button styles - scoped to dragon-editor and global */
+.dragon-editor .modal .btn,
+.dragon-editor .modal button.btn,
 .modal .btn,
 .modal button.btn {
     padding: 0.5rem 1rem;
@@ -1418,22 +1421,30 @@ body.image-resizing * {
     font-size: 0.875rem;
     transition: all 0.2s;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #333;
+    opacity: 1;
+    visibility: visible;
 }
 
+.dragon-editor .modal .btn:hover,
 .modal .btn:hover {
     background: #f8f8f8;
     border-color: #999;
 }
 
+.dragon-editor .modal .btn-primary,
 .modal .btn-primary {
-    background: #3b82f6;
-    color: white;
-    border-color: #3b82f6;
+    background: #3b82f6 !important;
+    color: white !important;
+    border-color: #3b82f6 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
+.dragon-editor .modal .btn-primary:hover,
 .modal .btn-primary:hover {
-    background: #2563eb;
-    border-color: #2563eb;
+    background: #2563eb !important;
+    border-color: #2563eb !important;
 }
 
 .modal .btn-secondary {
@@ -1458,35 +1469,191 @@ body.image-resizing * {
     border-color: #059669;
 }
 
-/* Ensure apply buttons are always visible */
+/* Ensure apply buttons are always visible - with dragon-editor scope and global */
+.dragon-editor .modal .modal-apply,
+.dragon-editor .modal .btn.modal-apply,
+.dragon-editor .modal .modal-save,
+.dragon-editor .modal .btn.modal-save,
 .modal .modal-apply,
 .modal .btn.modal-apply,
 .modal .modal-save,
 .modal .btn.modal-save {
-    background: #10b981 !important;
+    background: #3b82f6 !important;
     color: white !important;
-    border-color: #10b981 !important;
+    border-color: #3b82f6 !important;
     opacity: 1 !important;
     visibility: visible !important;
+    display: inline-block !important;
 }
 
+.dragon-editor .modal .modal-apply:hover,
+.dragon-editor .modal .btn.modal-apply:hover,
+.dragon-editor .modal .modal-save:hover,
+.dragon-editor .modal .btn.modal-save:hover,
 .modal .modal-apply:hover,
 .modal .btn.modal-apply:hover,
 .modal .modal-save:hover,
 .modal .btn.modal-save:hover {
-    background: #059669 !important;
-    border-color: #059669 !important;
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 /* For primary buttons that serve as apply buttons */
+.dragon-editor .modal .btn-primary.modal-save,
 .modal .btn-primary.modal-save {
     background: #3b82f6 !important;
+    color: white !important;
     border-color: #3b82f6 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
+.dragon-editor .modal .btn-primary.modal-save:hover,
 .modal .btn-primary.modal-save:hover {
     background: #2563eb !important;
     border-color: #2563eb !important;
+}
+
+/* Specific fix for section settings modal buttons */
+.modal-footer button,
+.modal-footer .btn {
+    opacity: 1 !important;
+    visibility: visible !important;
+    color: #333;
+}
+
+.modal-footer .btn-primary,
+.modal-footer button.btn-primary {
+    background: #3b82f6 !important;
+    color: white !important;
+    border-color: #3b82f6 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Force image control icons to be visible */
+.image-resize-container {
+    position: relative !important;
+}
+
+.image-browse-icon,
+.image-settings-icon {
+    position: absolute !important;
+    width: 30px !important;
+    height: 30px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid #ddd !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    font-size: 16px !important;
+    z-index: 1000 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+
+.image-browse-icon {
+    top: 10px !important;
+    right: 10px !important;
+}
+
+.image-settings-icon {
+    top: 10px !important;
+    left: 10px !important;
+}
+
+/* Resize handles - professional styling */
+.image-resize-container .image-resize-handle {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    background: #fff !important;
+    width: 8px !important;
+    height: 8px !important;
+    border: 1px solid #007bff !important;
+    border-radius: 2px !important;
+    z-index: 1000 !important;
+    position: absolute !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.image-resize-container .image-resize-handle:hover {
+    background: #007bff !important;
+    transform: scale(1.2);
+}
+
+/* Specific positioning for each handle */
+.image-resize-container .image-resize-handle.nw {
+    top: -4px !important;
+    left: -4px !important;
+    cursor: nw-resize;
+}
+
+.image-resize-container .image-resize-handle.ne {
+    top: -4px !important;
+    right: -4px !important;
+    cursor: ne-resize;
+}
+
+.image-resize-container .image-resize-handle.sw {
+    bottom: -4px !important;
+    left: -4px !important;
+    cursor: sw-resize;
+}
+
+.image-resize-container .image-resize-handle.se {
+    bottom: -4px !important;
+    right: -4px !important;
+    cursor: se-resize;
+}
+
+.image-resize-container .image-resize-handle.n {
+    top: -4px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    cursor: n-resize;
+}
+
+.image-resize-container .image-resize-handle.s {
+    bottom: -4px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    cursor: s-resize;
+}
+
+.image-resize-container .image-resize-handle.w {
+    top: 50% !important;
+    left: -4px !important;
+    transform: translateY(-50%) !important;
+    cursor: w-resize;
+}
+
+.image-resize-container .image-resize-handle.e {
+    top: 50% !important;
+    right: -4px !important;
+    transform: translateY(-50%) !important;
+    cursor: e-resize;
+}
+
+/* Professional alignment toolbar styling */
+.image-alignment-toolbar.visible {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    background: white !important;
+    border: 1px solid #ddd !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    z-index: 1001 !important;
+    position: absolute !important;
+    padding: 0.5rem !important;
+    gap: 0.25rem !important;
 }
 
 .image-snippet {

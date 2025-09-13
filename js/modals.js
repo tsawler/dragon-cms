@@ -1094,7 +1094,15 @@ export class CodeEditorModal {
         elementClone.querySelectorAll('[data-drag-listeners-attached]').forEach(el => el.removeAttribute('data-drag-listeners-attached'));
         
         // Get the cleaned and formatted HTML
-        const cleanHTML = elementClone.innerHTML.trim();
+        // For sections, show the complete outer HTML to include the section wrapper
+        let cleanHTML;
+        if (element.classList.contains('editor-section')) {
+            // Remove section controls before getting outerHTML
+            elementClone.querySelectorAll('.section-controls').forEach(el => el.remove());
+            cleanHTML = elementClone.outerHTML.trim();
+        } else {
+            cleanHTML = elementClone.innerHTML.trim();
+        }
         const formattedHTML = formatHTML(cleanHTML);
         
         // Set the formatted HTML in the textarea and add syntax highlighting
@@ -1201,15 +1209,36 @@ export class CodeEditorModal {
             // Get the value from our unified modal
             const textArea = this.jsModal ? this.jsModal.querySelector('.js-code-editor') : null;
             const newHTML = textArea ? textArea.value : '';
-            
-            // Preserve the control buttons by collecting them first
-            const controls = [];
-            this.targetElement.querySelectorAll('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon, .resizer-handle').forEach(el => {
-                controls.push(el.outerHTML);
-            });
-            
-            // Update the element with new HTML but keep controls
-            this.targetElement.innerHTML = controls.join('') + newHTML;
+
+            // Check if we're editing a section (which includes outer HTML)
+            if (this.targetElement.classList.contains('editor-section')) {
+                // For sections, we need to replace the entire element
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = newHTML;
+                const newSection = tempDiv.firstElementChild;
+
+                if (newSection && newSection.classList.contains('editor-section')) {
+                    // Preserve section controls
+                    const sectionControls = this.targetElement.querySelector('.section-controls');
+                    if (sectionControls && !newSection.querySelector('.section-controls')) {
+                        newSection.insertBefore(sectionControls.cloneNode(true), newSection.firstChild);
+                    }
+
+                    // Replace the old section with the new one
+                    this.targetElement.parentNode.replaceChild(newSection, this.targetElement);
+                    this.targetElement = newSection;
+                }
+            } else {
+                // For blocks and snippets, update innerHTML as before
+                // Preserve the control buttons by collecting them first
+                const controls = [];
+                this.targetElement.querySelectorAll('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon, .resizer-handle').forEach(el => {
+                    controls.push(el.outerHTML);
+                });
+
+                // Update the element with new HTML but keep controls
+                this.targetElement.innerHTML = controls.join('') + newHTML;
+            }
             
             // Make text elements editable and fix Firefox cursor positioning
             const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;

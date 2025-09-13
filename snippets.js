@@ -103,7 +103,7 @@ const SNIPPET_LIBRARY = {
                                 </ul>
                             </div>
                             <div class="column" style="flex: 1;">
-                                <img src="https://via.placeholder.com/500x350/4299e1/ffffff?text=Your+Image+Here" alt="Content Image" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+                                <img src="assets/images/vase.jpg" alt="Content Image" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
                             </div>
                         </div>
                     </div>

@@ -171,28 +171,35 @@ export class ImageUploader {
         let browseIcon = container.querySelector('.image-browse-icon');
         if (!browseIcon) {
             // Create browse icon if it doesn't exist
+            console.log('Creating browse icon');
             browseIcon = document.createElement('div');
             browseIcon.className = 'image-browse-icon';
             browseIcon.innerHTML = '📁';
             browseIcon.title = 'Browse for image';
             browseIcon.style.cssText = `
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                width: 30px;
-                height: 30px;
-                background: rgba(255, 255, 255, 0.9);
-                border: 1px solid #ddd;
-                border-radius: 50%;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                font-size: 16px;
-                z-index: 1000;
-                transition: all 0.2s ease;
+                position: absolute !important;
+                top: 10px !important;
+                right: 10px !important;
+                width: 30px !important;
+                height: 30px !important;
+                background: rgba(255, 255, 255, 0.9) !important;
+                border: 1px solid #ddd !important;
+                border-radius: 50% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                cursor: pointer !important;
+                font-size: 16px !important;
+                z-index: 1000 !important;
+                transition: all 0.2s ease !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
             `;
             container.appendChild(browseIcon);
+            console.log('Browse icon added to container:', browseIcon);
+        } else {
+            console.log('Browse icon already exists:', browseIcon);
         }
 
         // Add hover effects to browse icon
@@ -216,28 +223,35 @@ export class ImageUploader {
         let settingsIcon = container.querySelector('.image-settings-icon');
         if (!settingsIcon) {
             // Create settings icon if it doesn't exist
+            console.log('Creating settings icon');
             settingsIcon = document.createElement('div');
             settingsIcon.className = 'image-settings-icon';
             settingsIcon.innerHTML = '⚙️';
             settingsIcon.title = 'Image settings';
             settingsIcon.style.cssText = `
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                width: 30px;
-                height: 30px;
-                background: rgba(255, 255, 255, 0.9);
-                border: 1px solid #ddd;
-                border-radius: 50%;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                font-size: 16px;
-                z-index: 1000;
-                transition: all 0.2s ease;
+                position: absolute !important;
+                top: 10px !important;
+                left: 10px !important;
+                width: 30px !important;
+                height: 30px !important;
+                background: rgba(255, 255, 255, 0.9) !important;
+                border: 1px solid #ddd !important;
+                border-radius: 50% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                cursor: pointer !important;
+                font-size: 16px !important;
+                z-index: 1000 !important;
+                transition: all 0.2s ease !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
             `;
             container.appendChild(settingsIcon);
+            console.log('Settings icon added to container:', settingsIcon);
+        } else {
+            console.log('Settings icon already exists:', settingsIcon);
         }
 
         // Add hover effects to settings icon
@@ -265,6 +279,7 @@ export class ImageUploader {
         
         // Add resize handlers
         this.addResizeHandlers(container);
+        console.log('reattachImageHandlers completed for container with', container.querySelectorAll('.image-resize-handle').length, 'resize handles');
     }
 
     convertToResizableContainer(snippet, image) {
@@ -297,10 +312,11 @@ export class ImageUploader {
         // Create container
         const container = document.createElement('div');
         container.className = 'image-resize-container align-center'; // Default to center alignment
-        
+
         // Set container to fit content to prevent gray areas
         container.style.width = 'fit-content';
         container.style.height = 'fit-content';
+        container.style.position = 'relative'; // Required for absolute positioned icons
         
         // Handle null img gracefully
         if (img) {
@@ -319,12 +335,14 @@ export class ImageUploader {
         
         // Create resize handles
         const handlePositions = ['nw', 'ne', 'sw', 'se', 'n', 's', 'w', 'e'];
+        console.log('Creating', handlePositions.length, 'resize handles');
         handlePositions.forEach(position => {
             const handle = document.createElement('div');
             handle.className = `image-resize-handle ${position}`;
             handle.dataset.position = position;
             container.appendChild(handle);
         });
+        console.log('Resize handles created, container now has', container.querySelectorAll('.image-resize-handle').length, 'handles');
 
         // Create browse icon (only visible when selected)
         const browseIcon = document.createElement('div');
@@ -409,16 +427,10 @@ export class ImageUploader {
         });
 
         container.appendChild(settingsIcon);
-        
-        // Add click handler to select/deselect image
-        container.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.selectImage(container);
-        });
-        
-        // Add resize handlers
-        this.addResizeHandlers(container);
-        
+
+        // Note: Click handler and resize handlers are added by reattachImageHandlers()
+        // when this container is processed by setupImageSnippet()
+
         return container;
     }
     
@@ -442,23 +454,6 @@ export class ImageUploader {
         // Toggle selection of this image
         const wasSelected = container.classList.contains('selected');
         container.classList.toggle('selected');
-        
-        // Show/hide browse and settings icons based on selection and edit mode
-        const browseIcon = container.querySelector('.image-browse-icon');
-        const settingsIcon = container.querySelector('.image-settings-icon');
-        
-        if (browseIcon || settingsIcon) {
-            const isInEditMode = this.editor.currentMode === 'edit';
-            const isSelected = container.classList.contains('selected');
-            
-            if (browseIcon) {
-                browseIcon.style.display = (isSelected && isInEditMode) ? 'flex' : 'none';
-            }
-            
-            if (settingsIcon) {
-                settingsIcon.style.display = (isSelected && isInEditMode) ? 'flex' : 'none';
-            }
-        }
         
         // Notify formatting toolbar if available
         const formattingToolbar = this.editor.formattingToolbar;

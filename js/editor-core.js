@@ -44,7 +44,13 @@ export class Editor {
     init() {
         // Set the global assets path before initializing snippets
         this.setGlobalAssetsPath();
-        
+
+        // Set initial mode on editor-main
+        const editorMain = document.querySelector('.editor-main');
+        if (editorMain) {
+            editorMain.dataset.mode = this.currentMode;
+        }
+
         this.snippetPanel = new SnippetPanel(this);
         // this.dragDropManager = new DragDropManager(this);
         this.stateHistory = new StateHistory(this);
@@ -388,7 +394,13 @@ export class Editor {
     toggleMode() {
         this.currentMode = this.currentMode === 'edit' ? 'display' : 'edit';
         this.editableArea.dataset.mode = this.currentMode;
-        
+
+        // Also set mode on editor-main for CSS fallback
+        const editorMain = document.querySelector('.editor-main');
+        if (editorMain) {
+            editorMain.dataset.mode = this.currentMode;
+        }
+
         const modeBtn = document.getElementById('toggle-mode-btn');
         if (modeBtn) {
             modeBtn.textContent = this.currentMode === 'edit' ? 'Switch to Display Mode' : 'Switch to Edit Mode';
@@ -428,10 +440,10 @@ export class Editor {
             if (viewportControls) {
                 viewportControls.style.display = 'none';
             }
-            // Reset editor-main margin for full-width display
+            // Remove panel-open class for display mode
             const editorMain = document.querySelector('.editor-main');
             if (editorMain) {
-                editorMain.style.marginLeft = '0';
+                editorMain.classList.remove('panel-open');
             }
         } else {
             // Show icon strip in edit mode
@@ -451,11 +463,8 @@ export class Editor {
                 viewportControls.style.display = 'flex';
             }
             
-            // Restore editor-main margin for icon strip
-            const editorMain = document.querySelector('.editor-main');
-            if (editorMain) {
-                editorMain.style.marginLeft = '60px';
-            }
+            // Panel-open class is managed by panel toggle
+            // CSS handles margin based on classes
         }
         
         // Handle contenteditable elements based on mode
@@ -1575,7 +1584,7 @@ export class Editor {
             this.attachDragHandleListeners(block);
         });
         
-        // Process any snippets within the section to add their controls  
+        // Process any snippets within the section to add their controls
         const snippetsInSection = section.querySelectorAll('.editor-snippet');
         snippetsInSection.forEach(snippet => {
             if (!snippet.querySelector('.drag-handle')) {
@@ -1583,7 +1592,13 @@ export class Editor {
             }
             this.attachDragHandleListeners(snippet);
         });
-        
+
+        // Make section elements editable (including processing images)
+        this.makeSectionElementsEditable(section);
+
+        // Process any images in the new section specifically
+        this.processImagesInSection(section);
+
         // Trigger onRender callback
         this.triggerOnRender('section', section);
         
@@ -1692,23 +1707,23 @@ export class Editor {
         const blocks = this.editableArea.querySelectorAll('.editor-block');
         blocks.forEach(block => {
             const editableElements = block.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, li, td, th');
-            
+
             editableElements.forEach(el => {
                 // Skip if already editable or is a control element
-                if (el.contentEditable === 'true' || 
-                    el.classList.contains('drag-handle') || 
-                    el.classList.contains('edit-icon') || 
-                    el.classList.contains('code-icon') || 
-                    el.classList.contains('delete-icon') || 
-                    el.classList.contains('settings-icon') || 
+                if (el.contentEditable === 'true' ||
+                    el.classList.contains('drag-handle') ||
+                    el.classList.contains('edit-icon') ||
+                    el.classList.contains('code-icon') ||
+                    el.classList.contains('delete-icon') ||
+                    el.classList.contains('settings-icon') ||
                     el.classList.contains('gear-icon') ||
                     el.closest('button')) {
                     return;
                 }
-                
+
                 el.contentEditable = true;
                 el.style.outline = 'none';
-                
+
                 // Add focus/blur handlers
                 el.addEventListener('focus', () => {
                     el.style.opacity = '0.9';
@@ -1721,12 +1736,28 @@ export class Editor {
             // Handle existing image snippets in blocks
             const imageSnippets = block.querySelectorAll('.editor-snippet');
             imageSnippets.forEach(snippet => {
-                if (snippet.classList.contains('image-snippet') || 
+                if (snippet.classList.contains('image-snippet') ||
                     snippet.querySelector('.image-resize-container') ||
                     snippet.querySelector('.image-container')) {
                     if (this.imageUploader) {
                         this.imageUploader.setupImageSnippet(snippet);
                     }
+                }
+            });
+
+            // Handle standalone images in blocks (not in snippets)
+            const standaloneImages = block.querySelectorAll('img:not(.image-resize-container img)');
+            standaloneImages.forEach(img => {
+                // Skip if already wrapped
+                if (img.parentElement.classList.contains('image-resize-container')) {
+                    return;
+                }
+
+                // Create resize container for the image
+                if (this.imageUploader) {
+                    const container = this.imageUploader.createImageResizeContainer(img.cloneNode(true));
+                    img.parentNode.replaceChild(container, img);
+                    this.imageUploader.reattachImageHandlers(container);
                 }
             });
         });
@@ -1794,29 +1825,34 @@ export class Editor {
                 this.toggleContentEditableElements();
             }
         });
+
+        // Process any images that might need wrapping
+        if (this.formattingToolbar && this.formattingToolbar.wrapExistingImages) {
+            this.formattingToolbar.wrapExistingImages();
+        }
     }
     
     makeSectionElementsEditable(section) {
         // Make text elements in the section editable
         const editableElements = section.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, li, td, th');
-        
+
         editableElements.forEach(el => {
             // Skip if already editable or is a control element
-            if (el.contentEditable === 'true' || 
-                el.classList.contains('drag-handle') || 
-                el.classList.contains('edit-icon') || 
-                el.classList.contains('code-icon') || 
-                el.classList.contains('delete-icon') || 
-                el.classList.contains('settings-icon') || 
+            if (el.contentEditable === 'true' ||
+                el.classList.contains('drag-handle') ||
+                el.classList.contains('edit-icon') ||
+                el.classList.contains('code-icon') ||
+                el.classList.contains('delete-icon') ||
+                el.classList.contains('settings-icon') ||
                 el.classList.contains('gear-icon') ||
                 el.closest('button') ||
                 el.closest('.section-controls')) {
                 return;
             }
-            
+
             el.contentEditable = true;
             el.style.outline = 'none';
-            
+
             // Add focus/blur handlers
             el.addEventListener('focus', () => {
                 el.style.opacity = '0.9';
@@ -1825,14 +1861,46 @@ export class Editor {
                 el.style.opacity = '';
             });
         });
-        
+
+        // Note: Image processing is now handled by FormattingToolbar.wrapExistingImages()
+        // which is called after section creation
+
         // Apply Firefox contenteditable fixes
         if (this.formattingToolbar) {
             this.formattingToolbar.fixFirefoxEditableElements();
         }
     }
-    
-    
+
+    processImagesInSection(section) {
+        // Find all standalone images in the section that need wrapping
+        const images = section.querySelectorAll('img:not(.image-resize-container img)');
+        console.log('ProcessImagesInSection: Found', images.length, 'images to process');
+
+        images.forEach(img => {
+            // Skip if already wrapped
+            if (img.closest('.image-resize-container')) {
+                console.log('Image already wrapped, skipping');
+                return;
+            }
+
+            console.log('Processing image:', img.src);
+
+            // Create resize container using ImageUploader
+            if (this.imageUploader) {
+                const container = this.imageUploader.createImageResizeContainer(img.cloneNode(true));
+                console.log('Created container:', container);
+
+                // Replace the image with the container
+                img.parentNode.replaceChild(container, img);
+
+                // Attach image handlers
+                this.imageUploader.reattachImageHandlers(container);
+                console.log('Image processing completed');
+            }
+        });
+    }
+
+
     setViewportSize(width) {
         this.editableArea.style.maxWidth = width;
         this.editableArea.style.margin = width === '100%' ? '0' : '0 auto';
@@ -1930,14 +1998,14 @@ export class Editor {
             if (iconStrip) iconStrip.style.display = 'flex';
             if (editorHeader) editorHeader.style.display = 'flex';
             if (viewportControls) viewportControls.style.display = 'flex';
-            if (editorMain) editorMain.style.marginLeft = '60px';
+            // Don't set inline styles - CSS handles padding based on mode
         } else {
             // Hide edit mode elements
             if (iconStrip) iconStrip.style.display = 'none';
             if (panel) panel.classList.remove('open');
             if (editorMain) {
                 editorMain.classList.remove('panel-open');
-                editorMain.style.marginLeft = '0';
+                // Don't set inline styles - CSS handles padding based on mode
             }
             if (editorHeader) editorHeader.style.display = 'none';
             if (viewportControls) viewportControls.style.display = 'none';
