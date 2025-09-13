@@ -5,7 +5,7 @@
 
 # DragonCMS - Drag & Drop Website Builder
 
-A simple, pure JavaScript drag-and-drop website builder with zero dependencies. Create responsive websites visually by dragging sections, blocks, and snippets onto a canvas, with real-time editing, custom styling, and HTML code access.
+A simple, pure JavaScript drag-and-drop website builder with zero dependencies. Create responsive websites visually by dragging sections, blocks, and snippets onto a canvas, with real-time editing, custom styling, and HTML code access. Features an organized tabbed sidebar for easy component access.
 
 This project is **still in development**, and has not yet reached a stable release. Most features seem to work, and all tests pass, but there are undoubtedly still some rough edges.
 
@@ -29,7 +29,7 @@ This project is **still in development**, and has not yet reached a stable relea
 
 ### Core Capabilities
 - **Pure JavaScript** - No frameworks, no dependencies, just vanilla JavaScript
-- **Drag & Drop Interface** - Intuitive visual building with sections, blocks, and snippets
+- **Drag & Drop Interface** - Intuitive visual building with organized tabbed sidebar for sections, blocks, and snippets
 - **Responsive Design** - Built-in viewport preview modes (Desktop, Tablet, Mobile)
 - **Real-time Editing** - In-place text editing with rich formatting toolbar
 - **Custom Styling** - Visual style editor for every element
@@ -47,6 +47,7 @@ This project is **still in development**, and has not yet reached a stable relea
 - **Page Settings** - Custom CSS and JavaScript injection
 - **Background Images** - Upload and position background images for sections and blocks
 - **Column Resizing** - Visual column width adjustment
+- **Organized Interface** - Tabbed left sidebar with search/filtering for components
 
 ### Developer Features
 - **Programmatic API** - Full control via JavaScript
@@ -994,7 +995,7 @@ Organize blocks using categories:
 
 Custom blocks automatically integrate with the editor:
 
-- **Block Panel** - Appear in left sidebar with "Custom Blocks" separator
+- **Block Panel** - Appear in blocks tab (🧱) with filtering support
 - **Drag & Drop** - Full drag and drop functionality
 - **Block Settings** - Access to gear icon settings (layout, columns, background)
 - **Content Editing** - All text elements are editable
@@ -1259,7 +1260,7 @@ Organize snippets using categories:
 
 Custom snippets automatically integrate with the editor:
 
-- **Snippet Panel** - Appear in left sidebar with "Custom Snippets" separator
+- **Snippet Panel** - Appear in snippets tab (⚡) with filtering support
 - **Drag & Drop** - Full drag and drop functionality into blocks
 - **Text Editing** - All text elements become editable when dropped
 - **Formatting Toolbar** - Rich text formatting available for text content
@@ -1458,14 +1459,16 @@ Blocks live inside sections and provide structured content areas:
 ### Working with Sections
 
 **Creating Sections:**
-1. Drag a section from the sidebar to the main editor area
-2. Sections appear at the top of the component panel
-3. Choose from: Hero, Content, Features, CTA, or Footer sections
+1. Click the sections icon (📋) in the left sidebar to open the sections panel
+2. Drag a section from the panel to the main editor area
+3. Choose from: Hero, Content, Features, CTA, Footer, or Empty sections
 
 **Adding Content to Sections:**
-1. Drag blocks into the section's content area
-2. Drag snippets into blocks within sections
-3. Use the hierarchical structure to organize content logically
+1. Click the blocks icon (🧱) in the left sidebar to access blocks
+2. Drag blocks into the section's content area
+3. Click the snippets icon (⚡) for content elements
+4. Drag snippets into blocks within sections
+5. Use the hierarchical structure to organize content logically
 
 **Section vs Block Backgrounds:**
 - **Section backgrounds** span the full viewport width
@@ -1587,6 +1590,14 @@ DragonCMS supports all modern browsers:
 ## Troubleshooting
 
 ### Common Issues
+
+#### Accessing Components
+**Problem:** Cannot find sections, blocks, or snippets to drag
+**Solution:** Use the tabbed left sidebar:
+- Click the sections icon (📋) to access page sections
+- Click the blocks icon (🧱) to access layout containers  
+- Click the snippets icon (⚡) to access content elements
+- Click the same icon again to close the panel
 
 #### Blocks not dragging
 **Problem:** Blocks can only be dragged by the handle (⋮⋮)

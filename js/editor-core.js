@@ -83,114 +83,22 @@ export class Editor {
     }
 
     setupPanelToggle() {
-        const handle = document.getElementById('panel-handle');
-        const panel = document.getElementById('snippet-panel');
-        const editorMain = document.querySelector('.editor-main');
-        const editableArea = document.getElementById('editable-area');
+        // Panel toggle is now handled by the SnippetPanel class
+        // Keep this method for compatibility but make it a no-op
         
-        const togglePanel = () => {
-            const isOpen = panel.classList.contains('open');
-            const currentHandle = document.getElementById('new-panel-handle');
+        // Close panel when clicking outside (if needed)
+        document.addEventListener('click', (e) => {
+            const panel = document.getElementById('snippet-panel');
+            const iconStrip = document.querySelector('.icon-strip');
             
-            if (isOpen) {
-                // Close panel
-                panel.classList.remove('open');
-                panel.style.transform = 'translateX(-100%)';
-                if (editableArea) {
-                    editableArea.style.marginLeft = '0';
-                }
-                // Keep handle visible at left edge
-                if (currentHandle) {
-                    currentHandle.style.left = '0px';
-                }
-            } else {
-                // Open panel  
-                panel.classList.add('open');
-                panel.style.transform = 'translateX(0)';
-                if (editableArea) {
-                    editableArea.style.marginLeft = '250px';
-                }
-                // Move handle to right edge of panel
-                if (currentHandle) {
-                    currentHandle.style.left = '250px';
-                }
+            if (panel && panel.classList.contains('open') && 
+                !panel.contains(e.target) && 
+                !iconStrip.contains(e.target)) {
+                // Optionally close panel when clicking outside
+                // panel.classList.remove('open');
+                // document.querySelector('.editor-main').classList.remove('panel-open');
             }
-        };
-
-        // Create a completely new handle element to bypass CSS conflicts
-        const newHandle = document.createElement('div');
-        newHandle.id = 'new-panel-handle';
-        newHandle.innerHTML = `
-            <div style="width: 3px; height: 3px; background: white; border-radius: 50%; margin: 1px;"></div>
-            <div style="width: 3px; height: 3px; background: white; border-radius: 50%; margin: 1px;"></div>
-            <div style="width: 3px; height: 3px; background: white; border-radius: 50%; margin: 1px;"></div>
-        `;
-        
-        // Apply styles directly to the new element
-        Object.assign(newHandle.style, {
-            position: 'fixed',
-            left: '0px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            zIndex: '9999',
-            display: 'flex',
-            flexDirection: 'column',
-            width: '30px',
-            height: '60px',
-            backgroundColor: '#3b82f6',
-            borderRadius: '0 8px 8px 0',
-            cursor: 'pointer',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            border: 'none',
-            outline: 'none',
-            boxShadow: '2px 0 5px rgba(0,0,0,0.2)',
-            margin: '0',
-            padding: '0',
-            transition: 'left 0.3s ease'
         });
-        
-        // Add click handler to new handle
-        newHandle.addEventListener('click', togglePanel);
-        
-        // Remove old handle if it exists and add new one
-        if (handle) {
-            handle.remove();
-        }
-        document.body.appendChild(newHandle);
-        
-        
-        // Set up panel
-        if (panel) {
-            panel.style.cssText = `
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                height: 100vh !important;
-                width: 250px !important;
-                z-index: 1000 !important;
-                transform: translateX(-100%) !important;
-                transition: transform 0.3s ease !important;
-            `;
-        }
-        
-        if (editableArea) {
-            editableArea.style.transition = 'margin-left 0.3s ease';
-        }
-        
-        // Check final position
-        setTimeout(() => {
-            const rect = newHandle.getBoundingClientRect();
-            // Handle visibility check
-        }, 100);
-        
-        // Refresh column resize dividers when mode changes
-        // Temporarily disabled
-        // if (this.columnResizer) {
-        //     this.columnResizer.refresh();
-        // }
     }
 
     loadInitialContent() {
@@ -502,9 +410,17 @@ export class Editor {
         if (this.currentMode === 'display') {
             // Hide panel and handle in display mode
             if (panel) {
-                panel.style.transform = 'translateX(-100%)';
                 panel.classList.remove('open');
             }
+            // Close panel and reset margins
+            document.querySelector('.editor-main').classList.remove('panel-open');
+            
+            // Hide icon strip in display mode
+            const iconStrip = document.querySelector('.icon-strip');
+            if (iconStrip) {
+                iconStrip.style.display = 'none';
+            }
+            
             if (handle) {
                 handle.style.display = 'none';
             }
@@ -512,11 +428,18 @@ export class Editor {
             if (viewportControls) {
                 viewportControls.style.display = 'none';
             }
-            // Reset margin
-            if (this.editableArea) {
-                this.editableArea.style.marginLeft = '0';
+            // Reset editor-main margin for full-width display
+            const editorMain = document.querySelector('.editor-main');
+            if (editorMain) {
+                editorMain.style.marginLeft = '0';
             }
         } else {
+            // Show icon strip in edit mode
+            const iconStrip = document.querySelector('.icon-strip');
+            if (iconStrip) {
+                iconStrip.style.display = 'flex';
+            }
+            
             // Show handle in edit mode (panel starts closed)
             if (handle) {
                 handle.style.display = 'flex';
@@ -526,6 +449,12 @@ export class Editor {
             // Show viewport controls in edit mode
             if (viewportControls) {
                 viewportControls.style.display = 'flex';
+            }
+            
+            // Restore editor-main margin for icon strip
+            const editorMain = document.querySelector('.editor-main');
+            if (editorMain) {
+                editorMain.style.marginLeft = '60px';
             }
         }
         

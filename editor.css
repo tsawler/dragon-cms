@@ -84,103 +84,133 @@
     transition: margin-left 0.3s ease-in-out;
 }
 
-.dragon-editor .editor-main.panel-open{
-    margin-left: 280px;
+.dragon-editor .editor-main{
+    margin-left: 60px; /* Account for icon strip in edit mode */
 }
 
-.dragon-editor .snippet-panel{
+.dragon-editor .editor-main.panel-open{
+    margin-left: 400px; /* Icon strip (60px) + panel (340px) */
+}
+
+/* Remove left margin in display mode when icon strip is hidden */
+.dragon-editor .editor-main:has(.editable-area[data-mode="display"]) {
+    margin-left: 0 !important;
+}
+
+/* Fallback for browsers without :has() support - use JavaScript override */
+
+/* Icon strip - hidden by default, only visible in edit mode */
+.dragon-editor .icon-strip {
     position: fixed;
-    left: -280px;
+    left: 0;
     top: 65px;
     bottom: 0;
-    width: 280px;
+    width: 60px;
+    background: #f8f9fa;
+    border-right: 1px solid #e9ecef;
+    z-index: 1001;
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    padding: 1rem 0;
+    gap: 0.5rem;
+}
+
+/* Icon strip visibility is controlled by JavaScript in toggleMode() */
+
+.dragon-editor .icon-strip-button {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 18px;
+}
+
+.dragon-editor .icon-strip-button:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.dragon-editor .icon-strip-button.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+/* Updated snippet panel */
+.dragon-editor .snippet-panel{
+    position: fixed;
+    left: -340px;
+    top: 65px;
+    bottom: 0;
+    width: 340px;
     background: white;
     border-right: 1px solid #ddd;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem 1rem 1rem 1rem;
+    padding: 1rem;
     overflow-y: auto;
     z-index: 1000;
     transition: left 0.3s ease-in-out;
 }
 
 .dragon-editor .snippet-panel.open{
-    left: 0;
+    left: 60px;
 }
 
-.dragon-editor .panel-handle{
-    position: fixed;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 24px;
-    height: 80px;
-    background: #e2e8f0;
-    border-radius: 0 6px 6px 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 1001;
-    transition: all 0.3s ease-in-out;
-    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
-}
-
-.dragon-editor .panel-handle:hover{
-    width: 28px;
-    background: #cbd5e1;
-}
-
-.dragon-editor .handle-grip{
+/* Panel filter and header */
+.dragon-editor .panel-header {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e9ecef;
 }
 
-.dragon-editor .handle-grip::before,
-.dragon-editor .handle-grip::after,
-.dragon-editor .handle-grip{
-    content: '';
-    width: 4px;
-    height: 4px;
-    background: #64748b;
-    border-radius: 50%;
+.dragon-editor .panel-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
 }
 
-.dragon-editor .handle-grip::before,
-.dragon-editor .handle-grip::after{
-    content: '';
-    display: block;
-}
-
-.dragon-editor .snippet-panel.open .panel-handle{
-    left: 280px;
-    background: #3b82f6;
-}
-
-.dragon-editor .snippet-panel.open .panel-handle:hover{
-    background: #2563eb;
-}
-
-.dragon-editor .snippet-panel.open .handle-grip{
+.dragon-editor .panel-filter {
     position: relative;
-    background: transparent;
 }
 
-.dragon-editor .snippet-panel.open .handle-grip::before{
+.dragon-editor .filter-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem 0.5rem 2rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    background: #f9fafb;
+}
+
+.dragon-editor .filter-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.dragon-editor .filter-icon {
     position: absolute;
-    content: '✕';
-    font-size: 16px;
-    color: white;
-    width: auto;
-    height: auto;
-    background: transparent;
-    top: -8px;
-    left: -6px;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-size: 0.875rem;
+    pointer-events: none;
 }
 
-.dragon-editor .snippet-panel.open .handle-grip::after{
-    display: none;
-}
+/* Panel handle styles removed - using icon strip instead */
 
 
 .dragon-editor .snippet-panel h2{
@@ -801,11 +831,18 @@ button.edit-icon, button.settings-icon, button.code-icon, button.delete-icon {
 .section-controls {
     position: absolute;
     top: 5px;
-    right: 5px;
+    right: 2rem; /* Position relative to content area, not viewport edge */
     z-index: 1000;
     display: flex;
     gap: 5px;
     pointer-events: auto;
+}
+
+/* Better positioning for section controls to avoid viewport edge issues */
+@media (min-width: 1240px) {
+    .section-controls {
+        right: max(2rem, calc((100vw - 1200px) / 2 + 2rem)); /* Keep controls within reasonable bounds */
+    }
 }
 
 .section-controls .gear-icon,
