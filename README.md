@@ -5,7 +5,7 @@
 
 # DragonCMS - Drag & Drop Website Builder
 
-A simple, pure JavaScript drag-and-drop website builder with zero dependencies. Create responsive websites visually by dragging blocks and snippets onto a canvas, with real-time editing, custom styling, and HTML code access.
+A simple, pure JavaScript drag-and-drop website builder with zero dependencies. Create responsive websites visually by dragging sections, blocks, and snippets onto a canvas, with real-time editing, custom styling, and HTML code access. Features an organized tabbed sidebar for easy component access.
 
 This project is **still in development**, and has not yet reached a stable release. Most features seem to work, and all tests pass, but there are undoubtedly still some rough edges.
 
@@ -18,6 +18,7 @@ This project is **still in development**, and has not yet reached a stable relea
 - [Advanced Examples](#advanced-examples)
 - [API Reference](#api-reference)
 - [Customization](#customization)
+- [Section System](#section-system)
 - [Components](#components)
 - [Browser Support](#browser-support)
 - [Troubleshooting](#troubleshooting)
@@ -28,7 +29,7 @@ This project is **still in development**, and has not yet reached a stable relea
 
 ### Core Capabilities
 - **Pure JavaScript** - No frameworks, no dependencies, just vanilla JavaScript
-- **Drag & Drop Interface** - Intuitive visual building with blocks and snippets
+- **Drag & Drop Interface** - Intuitive visual building with organized tabbed sidebar for sections, blocks, and snippets
 - **Responsive Design** - Built-in viewport preview modes (Desktop, Tablet, Mobile)
 - **Real-time Editing** - In-place text editing with rich formatting toolbar
 - **Custom Styling** - Visual style editor for every element
@@ -37,15 +38,16 @@ This project is **still in development**, and has not yet reached a stable relea
 - **Import/Export** - Save and load designs as JSON or HTML
 
 ### Advanced Features
+- **Section System** - Full-width page sections with background control and content centering
 - **Block System** - Container-based layout with column management
 - **Rich Text Editing** - Full formatting toolbar with fonts, colors, alignment
 - **Image Management** - Upload, resize, and position images with visual handles
 - **Video Embedding** - YouTube and video file support
 - **Button Customization** - Style, URL, and target configuration
 - **Page Settings** - Custom CSS and JavaScript injection
-- **Full-width Blocks** - Edge-to-edge viewport spanning containers
-- **Background Images** - Upload and position background images for blocks
+- **Background Images** - Upload and position background images for sections and blocks
 - **Column Resizing** - Visual column width adjustment
+- **Organized Interface** - Tabbed left sidebar with search/filtering for components
 
 ### Developer Features
 - **Programmatic API** - Full control via JavaScript
@@ -336,10 +338,14 @@ const editor = dragon.New({
     containerId: 'my-editor',
     cssPath: 'editor.css',
     initialContent: `
-        <div class="editor-block">
-            <h1>Welcome to My Site</h1>
-            <p>This content was loaded from HTML</p>
-        </div>
+        <section class="editor-section hero-section">
+            <div class="section-content">
+                <div class="editor-block">
+                    <h1>Welcome to My Site</h1>
+                    <p>This content was loaded from HTML</p>
+                </div>
+            </div>
+        </section>
     `
 });
 ```
@@ -655,14 +661,15 @@ window.addEventListener('dragonModeChanged', (e) => {
 ### Callbacks
 
 #### onChange Callback
-Triggered when content changes (blocks/snippets added, deleted, or moved).
+Triggered when content changes (sections/blocks/snippets added, deleted, or moved).
 
 ```javascript
 const editor = dragon.New({
     containerId: 'editor',
     onChange: (event) => {
         console.log('Content changed:', event);
-        // event.type: 'block-added', 'block-deleted', 'block-moved',
+        // event.type: 'section-added', 'section-deleted', 'section-moved',
+        //             'block-added', 'block-deleted', 'block-moved',
         //             'snippet-added', 'snippet-deleted', 'snippet-moved'
         // event.element: The affected element (null for deletions)
         // event.html: Current HTML content of the editor
@@ -672,21 +679,21 @@ const editor = dragon.New({
 ```
 
 #### onRender Callback
-Triggered when a new block or snippet is rendered.
+Triggered when a new section, block, or snippet is rendered.
 
 ```javascript
 const editor = dragon.New({
     containerId: 'editor',
     onRender: (event) => {
         console.log('Element rendered:', event);
-        // event.type: 'block' or 'snippet'
+        // event.type: 'section', 'block', or 'snippet'
         // event.element: The rendered DOM element
         // event.timestamp: ISO timestamp of the render
         
         // Example: Add custom initialization
-        if (event.type === 'snippet') {
-            // Initialize any custom JavaScript for the snippet
-            initializeCustomSnippet(event.element);
+        if (event.type === 'section') {
+            // Initialize any custom JavaScript for the section
+            initializeCustomSection(event.element);
         }
     }
 });
@@ -988,7 +995,7 @@ Organize blocks using categories:
 
 Custom blocks automatically integrate with the editor:
 
-- **Block Panel** - Appear in left sidebar with "Custom Blocks" separator
+- **Block Panel** - Appear in blocks tab (🧱) with filtering support
 - **Drag & Drop** - Full drag and drop functionality
 - **Block Settings** - Access to gear icon settings (layout, columns, background)
 - **Content Editing** - All text elements are editable
@@ -1253,7 +1260,7 @@ Organize snippets using categories:
 
 Custom snippets automatically integrate with the editor:
 
-- **Snippet Panel** - Appear in left sidebar with "Custom Snippets" separator
+- **Snippet Panel** - Appear in snippets tab (⚡) with filtering support
 - **Drag & Drop** - Full drag and drop functionality into blocks
 - **Text Editing** - All text elements become editable when dropped
 - **Formatting Toolbar** - Rich text formatting available for text content
@@ -1401,15 +1408,142 @@ Create rich, interactive snippets:
 }
 ```
 
+## Section System
+
+DragonCMS uses a hierarchical 3-level content structure: **Sections > Blocks > Snippets**. This provides better organization and enables modern full-width designs.
+
+### Content Hierarchy
+
+```
+Section (Full-width page regions)
+├── Block (Content containers with columns)
+│   ├── Snippet (Text, images, buttons)
+│   ├── Snippet
+│   └── ...
+├── Block
+└── ...
+```
+
+### Sections
+
+Sections are full-width page regions that span the entire viewport. They're perfect for creating modern website layouts with distinct page areas.
+
+**Key Features:**
+- **Full viewport width** - True edge-to-edge spanning
+- **Background control** - Colors, gradients, and images
+- **Content centering** - Inner content stays centered with configurable max-width
+- **Semantic structure** - Proper HTML5 `<section>` elements
+
+**Section Settings (⚙️ icon):**
+- **Layout Tab:**
+  - Section width (usually 100% for full-width)
+  - Content max-width (centers content within section)
+  - Padding (vertical and horizontal spacing)
+  - Minimum height (for consistent sizing)
+
+- **Background Tab:**
+  - Background color with color picker
+  - Background image upload with browse button
+  - Background size (cover, contain, auto, stretch)
+  - Background position (center, top, bottom, etc.)
+
+### Blocks within Sections
+
+Blocks live inside sections and provide structured content areas:
+
+- **Drag blocks into section content areas** to organize content
+- **Column management** - Add/remove columns within blocks
+- **Responsive behavior** - Columns stack on tablet/mobile
+- **Block settings** available via gear icon
+
+### Working with Sections
+
+**Creating Sections:**
+1. Click the sections icon (📋) in the left sidebar to open the sections panel
+2. Drag a section from the panel to the main editor area
+3. Choose from: Hero, Content, Features, CTA, Footer, or Empty sections
+
+**Adding Content to Sections:**
+1. Click the blocks icon (🧱) in the left sidebar to access blocks
+2. Drag blocks into the section's content area
+3. Click the snippets icon (⚡) for content elements
+4. Drag snippets into blocks within sections
+5. Use the hierarchical structure to organize content logically
+
+**Section vs Block Backgrounds:**
+- **Section backgrounds** span the full viewport width
+- **Block backgrounds** only cover the block content area
+- Use sections for page-wide visual themes
+
+### Example Section Structure
+
+```html
+<!-- Hero Section (full-width) -->
+<section class="editor-section hero-section">
+  <div class="section-content"> <!-- Centered container -->
+    <div class="editor-block">   <!-- Content block -->
+      <h1>Hero Title</h1>        <!-- Snippet -->
+      <p>Hero description</p>    <!-- Snippet -->
+      <button>CTA Button</button> <!-- Snippet -->
+    </div>
+  </div>
+</section>
+
+<!-- Content Section -->
+<section class="editor-section content-section">
+  <div class="section-content">
+    <div class="editor-block two-column">
+      <div class="column">
+        <h2>Column 1 Title</h2>
+        <p>Column 1 content</p>
+      </div>
+      <div class="column">
+        <h2>Column 2 Title</h2>
+        <p>Column 2 content</p>
+      </div>
+    </div>
+  </div>
+</section>
+```
+
+### Benefits of the Section System
+
+**Better Organization:**
+- Clear visual separation between page regions
+- Semantic HTML structure improves SEO and accessibility
+- Logical content hierarchy
+
+**Design Flexibility:**
+- True full-width backgrounds without CSS hacks
+- Independent styling for each page section
+- Consistent content centering
+
+**Responsive Design:**
+- Sections adapt to all viewport sizes
+- Content remains centered and readable
+- Background images scale appropriately
+
+**Modern Web Standards:**
+- Follows industry-standard page building patterns
+- Compatible with CSS Grid and Flexbox
+- Future-ready architecture
+
 ## Components
+
+### Available Sections
+
+1. **Hero Section** - Full-width hero with gradient background
+2. **Content Section** - Standard content area with centered container
+3. **Features Section** - Feature showcase section with light background
+4. **Call to Action Section** - CTA section with dark background
+5. **Footer Section** - Page footer with dark styling
 
 ### Available Blocks
 
 1. **Container Block** - Basic container with columns
-2. **Hero Container** - Full-width hero sections
-3. **Two Column Block** - Side-by-side layout
-4. **Three Column Block** - Three equal columns
-5. **Card Container** - Content card with shadow
+2. **Two Column Block** - Side-by-side layout
+3. **Three Column Block** - Three equal columns
+4. **Hero Block** - Hero content container
 
 ### Available Snippets
 
@@ -1456,6 +1590,14 @@ DragonCMS supports all modern browsers:
 ## Troubleshooting
 
 ### Common Issues
+
+#### Accessing Components
+**Problem:** Cannot find sections, blocks, or snippets to drag
+**Solution:** Use the tabbed left sidebar:
+- Click the sections icon (📋) to access page sections
+- Click the blocks icon (🧱) to access layout containers  
+- Click the snippets icon (⚡) to access content elements
+- Click the same icon again to close the panel
 
 #### Blocks not dragging
 **Problem:** Blocks can only be dragged by the handle (⋮⋮)

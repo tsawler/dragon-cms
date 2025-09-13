@@ -77,13 +77,30 @@ class Dragon {
                 </div>
                 
                 <div class="editor-main">
+                    <!-- Icon Strip - Always visible -->
+                    <div class="icon-strip">
+                        <button class="icon-strip-button" data-tab="sections" title="Sections">
+                            📋
+                        </button>
+                        <button class="icon-strip-button" data-tab="blocks" title="Blocks">
+                            🧱
+                        </button>
+                        <button class="icon-strip-button" data-tab="snippets" title="Snippets">
+                            ⚡
+                        </button>
+                    </div>
+
+                    <!-- Updated Snippet Panel -->
                     <aside id="snippet-panel" class="snippet-panel">
-                        <div id="panel-handle" class="panel-handle">
-                            <div class="handle-grip"></div>
+                        <div class="panel-header">
+                            <h2 id="panel-title" class="panel-title">Sections</h2>
+                            <div class="panel-filter">
+                                <span class="filter-icon">🔍</span>
+                                <input type="text" id="filter-input" class="filter-input" placeholder="Search...">
+                            </div>
                         </div>
-                        <h2>Components</h2>
                         <div id="snippet-list" class="snippet-list">
-                            <!-- Snippets will be loaded here -->
+                            <!-- Filtered content will be loaded here -->
                         </div>
                     </aside>
                     

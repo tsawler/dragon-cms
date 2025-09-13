@@ -2,199 +2,270 @@ export class SnippetPanel {
     constructor(editor) {
         this.editor = editor;
         this.snippetList = document.getElementById('snippet-list');
+        this.panelTitle = document.getElementById('panel-title');
+        this.filterInput = document.getElementById('filter-input');
+        this.currentTab = 'sections';
+        this.allContent = {
+            sections: [],
+            blocks: [],
+            snippets: []
+        };
         this.init();
     }
 
     init() {
-        this.loadSnippets();
-        this.loadCustomSnippets();
+        this.loadAllContent();
+        this.setupTabNavigation();
+        this.setupFiltering();
+        // Panel starts closed - user clicks icon to open
     }
 
-    loadSnippets() {
+    loadAllContent() {
+        // Load sections
+        const sections = (typeof getSections === 'function') ? getSections() : [];
+        this.allContent.sections = sections || [];
+        
+        // Load blocks (both default and custom)
+        const blocks = (typeof getBlocks === 'function') ? getBlocks() : [];
+        const customBlocks = (typeof window.DragonBlocks !== 'undefined' && window.DragonBlocks.getAllCustomBlocks) 
+            ? window.DragonBlocks.getAllCustomBlocks() 
+            : [];
+        this.allContent.blocks = [...blocks, ...customBlocks];
+        
+        // Load snippets (both default and custom)
+        const snippets = (typeof getSnippets === 'function') ? getSnippets() : [];
+        const customSnippets = (typeof window.DragonSnippets !== 'undefined' && window.DragonSnippets.getAllCustomSnippets) 
+            ? window.DragonSnippets.getAllCustomSnippets() 
+            : [];
+        this.allContent.snippets = [...snippets, ...customSnippets];
+    }
+
+    setupTabNavigation() {
+        const tabButtons = document.querySelectorAll('.icon-strip-button');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const tab = e.target.dataset.tab;
+                if (tab) {
+                    this.showTab(tab);
+                }
+            });
+        });
+    }
+
+    setupFiltering() {
+        this.filterInput.addEventListener('input', (e) => {
+            this.filterContent(e.target.value);
+        });
+    }
+
+    showTab(tabName) {
+        const panel = document.getElementById('snippet-panel');
+        const editorMain = document.querySelector('.editor-main');
+        const clickedButton = document.querySelector(`[data-tab="${tabName}"]`);
+        
+        // Check if this tab is already active and panel is open
+        const isCurrentTabActive = clickedButton.classList.contains('active');
+        const isPanelOpen = panel.classList.contains('open');
+        
+        if (isCurrentTabActive && isPanelOpen) {
+            // Close the panel (toggle off)
+            panel.classList.remove('open');
+            editorMain.classList.remove('panel-open');
+            clickedButton.classList.remove('active');
+            return;
+        }
+        
+        // Update current tab
+        this.currentTab = tabName;
+        
+        // Update active tab button
+        document.querySelectorAll('.icon-strip-button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        clickedButton.classList.add('active');
+        
+        // Update panel title
+        const titles = {
+            sections: 'Sections',
+            blocks: 'Blocks', 
+            snippets: 'Snippets'
+        };
+        this.panelTitle.textContent = titles[tabName];
+        
+        // Clear filter
+        this.filterInput.value = '';
+        
+        // Show panel and render content
+        panel.classList.add('open');
+        editorMain.classList.add('panel-open');
+        
+        this.renderCurrentTab();
+    }
+
+    renderCurrentTab(filter = '') {
         this.snippetList.innerHTML = '';
         
-        // Load default blocks
-        const blocks = getBlocks();
-        blocks.forEach(block => {
-            const item = this.createSnippetItem(block);
-            this.snippetList.appendChild(item);
-        });
-
-        // Load custom blocks if available
-        if (typeof window.DragonBlocks !== 'undefined' && window.DragonBlocks.getAllCustomBlocks) {
-            const customBlocks = window.DragonBlocks.getAllCustomBlocks();
-            if (customBlocks.length > 0) {
-                // Add custom blocks separator if we have custom blocks
-                const customSeparator = document.createElement('div');
-                customSeparator.className = 'blocks-separator';
-                customSeparator.innerHTML = '<h3 style="margin: 15px 0 10px 0; font-size: 12px; font-weight: bold; color: #666; text-transform: uppercase;">Custom Blocks</h3>';
-                this.snippetList.appendChild(customSeparator);
-
-                customBlocks.forEach(block => {
-                    const item = this.createSnippetItem(block);
-                    this.snippetList.appendChild(item);
-                });
-            }
+        const items = this.allContent[this.currentTab] || [];
+        const filteredItems = filter 
+            ? items.filter(item => item.name.toLowerCase().includes(filter.toLowerCase()))
+            : items;
+            
+        if (filteredItems.length === 0) {
+            const emptyMessage = document.createElement('div');
+            emptyMessage.className = 'empty-message';
+            emptyMessage.style.cssText = 'text-align: center; color: #6b7280; padding: 2rem 1rem;';
+            emptyMessage.textContent = filter ? 'No items match your search' : `No ${this.currentTab} available`;
+            this.snippetList.appendChild(emptyMessage);
+            return;
         }
         
-        // Add separator before snippets
-        const separator = document.createElement('hr');
-        separator.style.margin = '1rem 0';
-        this.snippetList.appendChild(separator);
-        
-        // Load snippets
-        const snippets = getSnippets();
-        snippets.forEach(snippet => {
-            const item = this.createSnippetItem(snippet);
-            this.snippetList.appendChild(item);
+        filteredItems.forEach(item => {
+            const itemElement = this.createSnippetItem(item);
+            this.snippetList.appendChild(itemElement);
         });
-
-        // Load custom snippets if available
-        if (typeof window.DragonSnippets !== 'undefined' && window.DragonSnippets.getAllCustomSnippets) {
-            const customSnippets = window.DragonSnippets.getAllCustomSnippets();
-            if (customSnippets.length > 0) {
-                // Add custom snippets separator if we have custom snippets
-                const customSeparator = document.createElement('div');
-                customSeparator.className = 'snippets-separator';
-                customSeparator.innerHTML = '<h3 style="margin: 15px 0 10px 0; font-size: 12px; font-weight: bold; color: #666; text-transform: uppercase;">Custom Snippets</h3>';
-                this.snippetList.appendChild(customSeparator);
-
-                customSnippets.forEach(snippet => {
-                    const item = this.createSnippetItem(snippet);
-                    this.snippetList.appendChild(item);
-                });
-            }
-        }
-
-        this.attachDragListeners();
     }
 
-    createSnippetItem(definition) {
-        const item = document.createElement('div');
-        item.className = definition.type === 'block' ? 'block-item' : 'snippet-item';
-        item.draggable = true;
-        item.dataset.type = definition.type;
-        item.dataset.snippetType = definition.snippetType || '';
-        item.dataset.template = definition.html;
-        item.dataset.snippetId = definition.id;
-        
-        if (definition.preview === 'image' && definition.previewImage) {
-            // Create image preview
-            const img = document.createElement('img');
-            img.src = definition.previewImage;
-            img.alt = definition.name;
-            img.title = definition.name;
-            img.style.width = '100%';
-            img.style.height = 'auto';
-            img.style.maxHeight = '60px';
-            img.style.objectFit = 'contain';
-            img.style.borderRadius = '4px';
-            item.appendChild(img);
-            
-            // Add text label below image
-            const label = document.createElement('div');
-            label.textContent = definition.name;
-            label.style.fontSize = '0.75rem';
-            label.style.textAlign = 'center';
-            label.style.marginTop = '0.25rem';
-            label.style.color = '#6b7280';
-            item.appendChild(label);
-        } else {
-            // Use text label
-            item.textContent = definition.name;
-        }
+    filterContent(searchTerm) {
+        this.renderCurrentTab(searchTerm);
+    }
 
-        // Add description as tooltip if available
-        if (definition.description) {
-            item.title = definition.description;
-        }
-
-        // Add category data attribute if available
-        if (definition.category) {
-            item.dataset.category = definition.category;
-        }
-        
-        return item;
+    // Legacy method for compatibility
+    loadSnippets() {
+        this.loadAllContent();
+        this.renderCurrentTab();
     }
 
     loadCustomSnippets() {
-        const customSnippets = JSON.parse(localStorage.getItem('customSnippets') || '[]');
-        
-        if (customSnippets.length > 0) {
-            const separator = document.createElement('hr');
-            separator.style.margin = '1rem 0';
-            this.snippetList.appendChild(separator);
-            
-            const title = document.createElement('h3');
-            title.textContent = 'Custom Snippets';
-            title.style.fontSize = '0.875rem';
-            title.style.marginBottom = '0.5rem';
-            this.snippetList.appendChild(title);
-            
-            customSnippets.forEach(snippet => {
-                const item = document.createElement('div');
-                item.className = 'snippet-item';
-                item.draggable = true;
-                item.textContent = snippet.name;
-                item.dataset.type = 'custom';
-                item.dataset.template = snippet.html;
-                this.snippetList.appendChild(item);
-            });
-        }
-        
-        this.attachDragListeners();
+        // This is now handled in loadAllContent()
+        // Keep for compatibility but make it a no-op
     }
 
-    attachDragListeners() {
-        this.snippetList.querySelectorAll('[draggable="true"]').forEach(item => {
-            item.addEventListener('dragstart', (e) => {
-                // Save state before drag operation begins
-                this.editor.stateHistory.saveState();
-                
-                e.dataTransfer.effectAllowed = 'copy';
-                e.dataTransfer.setData('elementType', item.dataset.type);
-                e.dataTransfer.setData('snippetType', item.dataset.snippetType || '');
-                e.dataTransfer.setData('template', item.dataset.template || '');
-                
-                // Set drag operation tracking in editor
-                this.editor.currentDragOperation = { 
-                    type: item.dataset.type, 
-                    isExisting: false 
-                };
-                
-                // Add visual feedback
-                item.classList.add('dragging');
-                
-                // Create a custom drag image with better styling
-                const dragImage = item.cloneNode(true);
-                dragImage.style.transform = 'rotate(2deg)';
-                dragImage.style.opacity = '0.8';
-                dragImage.style.background = 'white';
-                dragImage.style.border = '2px solid #3b82f6';
-                dragImage.style.borderRadius = '8px';
-                dragImage.style.padding = '0.5rem';
-                dragImage.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-                dragImage.style.position = 'absolute';
-                dragImage.style.top = '-1000px';
-                dragImage.style.zIndex = '9999';
-                
-                document.body.appendChild(dragImage);
-                e.dataTransfer.setDragImage(dragImage, 75, 30);
-                
-                // Remove the drag image after a short delay
-                setTimeout(() => {
-                    if (document.body.contains(dragImage)) {
-                        document.body.removeChild(dragImage);
-                    }
-                }, 100);
-                
-            });
+    createSnippetItem(item) {
+        const listItem = document.createElement('div');
+        listItem.className = 'snippet-item';
+        listItem.draggable = true;
+        listItem.dataset.type = item.type;
+        listItem.dataset.id = item.id;
 
-            item.addEventListener('dragend', () => {
-                item.classList.remove('dragging');
-                // Clear drag operation tracking
-                this.editor.currentDragOperation = null;
-            });
+        // Style the snippet item
+        listItem.style.cssText = `
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: white;
+            cursor: grab;
+            transition: all 0.2s;
+            user-select: none;
+        `;
+
+        // Preview section
+        const preview = document.createElement('div');
+        preview.className = 'snippet-preview';
+        preview.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        `;
+
+        // Preview image or icon
+        const previewVisual = document.createElement('div');
+        previewVisual.style.cssText = `
+            width: 60px;
+            height: 40px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            flex-shrink: 0;
+        `;
+
+        if (item.preview === 'image' && item.previewImage) {
+            const img = document.createElement('img');
+            img.src = item.previewImage;
+            img.style.cssText = `
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 4px;
+            `;
+            img.onerror = () => {
+                previewVisual.textContent = '🧱';
+                previewVisual.style.fontSize = '20px';
+            };
+            previewVisual.appendChild(img);
+        } else {
+            // Default icons based on type
+            const icons = {
+                section: '📋',
+                block: '🧱',
+                snippet: '⚡'
+            };
+            previewVisual.textContent = icons[item.type] || '📄';
+            previewVisual.style.fontSize = '20px';
+        }
+
+        // Name and description
+        const textContent = document.createElement('div');
+        textContent.style.cssText = 'flex: 1; min-width: 0;';
+        
+        const name = document.createElement('div');
+        name.textContent = item.name;
+        name.style.cssText = `
+            font-weight: 500;
+            font-size: 14px;
+            color: #1f2937;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        `;
+        
+        const description = document.createElement('div');
+        description.textContent = item.description || `${item.type.charAt(0).toUpperCase() + item.type.slice(1)} component`;
+        description.style.cssText = `
+            font-size: 12px;
+            color: #6b7280;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        `;
+
+        textContent.appendChild(name);
+        textContent.appendChild(description);
+        preview.appendChild(previewVisual);
+        preview.appendChild(textContent);
+        listItem.appendChild(preview);
+
+        // Hover effects
+        listItem.addEventListener('mouseenter', () => {
+            listItem.style.transform = 'translateY(-2px)';
+            listItem.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+            listItem.style.borderColor = '#cbd5e1';
         });
+
+        listItem.addEventListener('mouseleave', () => {
+            listItem.style.transform = 'translateY(0)';
+            listItem.style.boxShadow = 'none';
+            listItem.style.borderColor = '#e2e8f0';
+        });
+
+        // Drag events
+        listItem.addEventListener('dragstart', (e) => {
+            listItem.style.opacity = '0.5';
+            e.dataTransfer.setData('text/html', item.html);
+            e.dataTransfer.setData('template', item.html); // Add template for sections
+            e.dataTransfer.setData('elementType', item.type);
+            e.dataTransfer.setData('itemId', item.id);
+        });
+
+        listItem.addEventListener('dragend', () => {
+            listItem.style.opacity = '1';
+        });
+
+        return listItem;
     }
 }

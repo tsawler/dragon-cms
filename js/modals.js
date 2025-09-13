@@ -892,8 +892,10 @@ export class CodeEditorModal {
             flex-direction: column;
         `;
         
-        // Get current HTML content from the element
-        const currentHTML = element.innerHTML;
+        // Get current HTML content from the element, excluding section controls
+        const clone = element.cloneNode(true);
+        clone.querySelectorAll('.section-controls').forEach(control => control.remove());
+        const currentHTML = clone.innerHTML;
         
         // Create the modal content with proper responsive design
         modalContent.innerHTML = `
@@ -1066,14 +1068,14 @@ export class CodeEditorModal {
         });
         
         // Get the inner HTML without the control buttons first
-        const clone = element.cloneNode(true);
-        clone.querySelectorAll('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon, .resizer-handle').forEach(el => el.remove());
+        const elementClone = element.cloneNode(true);
+        elementClone.querySelectorAll('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon, .resizer-handle').forEach(el => el.remove());
         
         // Remove image resize handles and containers
-        clone.querySelectorAll('.image-resize-handle').forEach(el => el.remove());
+        elementClone.querySelectorAll('.image-resize-handle').forEach(el => el.remove());
         
         // Clean up image resize containers - extract just the image
-        clone.querySelectorAll('.image-resize-container').forEach(container => {
+        elementClone.querySelectorAll('.image-resize-container').forEach(container => {
             const img = container.querySelector('img');
             if (img) {
                 // Preserve the image's style
@@ -1083,16 +1085,16 @@ export class CodeEditorModal {
         });
         
         // Remove internal editor attributes for cleaner HTML display
-        clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
-        clone.querySelectorAll('[draggable]').forEach(el => el.removeAttribute('draggable'));
-        clone.querySelectorAll('[data-block-id]').forEach(el => el.removeAttribute('data-block-id'));
-        clone.querySelectorAll('[data-snippet-id]').forEach(el => el.removeAttribute('data-snippet-id'));
-        clone.querySelectorAll('[data-left-index]').forEach(el => el.removeAttribute('data-left-index'));
-        clone.querySelectorAll('[data-right-index]').forEach(el => el.removeAttribute('data-right-index'));
-        clone.querySelectorAll('[data-drag-listeners-attached]').forEach(el => el.removeAttribute('data-drag-listeners-attached'));
+        elementClone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+        elementClone.querySelectorAll('[draggable]').forEach(el => el.removeAttribute('draggable'));
+        elementClone.querySelectorAll('[data-block-id]').forEach(el => el.removeAttribute('data-block-id'));
+        elementClone.querySelectorAll('[data-snippet-id]').forEach(el => el.removeAttribute('data-snippet-id'));
+        elementClone.querySelectorAll('[data-left-index]').forEach(el => el.removeAttribute('data-left-index'));
+        elementClone.querySelectorAll('[data-right-index]').forEach(el => el.removeAttribute('data-right-index'));
+        elementClone.querySelectorAll('[data-drag-listeners-attached]').forEach(el => el.removeAttribute('data-drag-listeners-attached'));
         
         // Get the cleaned and formatted HTML
-        const cleanHTML = clone.innerHTML.trim();
+        const cleanHTML = elementClone.innerHTML.trim();
         const formattedHTML = formatHTML(cleanHTML);
         
         // Set the formatted HTML in the textarea and add syntax highlighting
@@ -2535,5 +2537,316 @@ export class LinkSettingsModal {
         // If nothing matches, still allow it but warn
         console.warn('URL format not recognized, allowing but recommend using full URLs:', url);
         return url;
+    }
+}
+export class SectionSettingsModal {
+    constructor(editor) {
+        this.editor = editor;
+        this.targetSection = null;
+        this.modal = null;
+        this.sectionSettings = {
+            width: '100%',
+            padding: '',
+            backgroundColor: '',
+            backgroundImage: '',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            contentWidth: '1200px',
+            minHeight: ''
+        };
+        this.createModal();
+    }
+
+    createModal() {
+        this.modal = document.createElement('div');
+        this.modal.className = 'modal';
+        this.modal.innerHTML = `
+            <div class="modal-content" style="width: 550px; max-width: 90%; max-height: 90vh; overflow-y: auto;">
+                <div class="modal-header">
+                    <h2>Section Settings</h2>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Tab Navigation -->
+                    <div class="tabs-nav" style="display: flex; border-bottom: 2px solid #e5e7eb; margin-bottom: 1.5rem;">
+                        <button class="tab-btn active" data-tab="layout" style="padding: 0.75rem 1.5rem; background: none; border: none; border-bottom: 2px solid #3b82f6; color: #3b82f6; font-weight: 500; cursor: pointer; transition: all 0.2s;">Layout</button>
+                        <button class="tab-btn" data-tab="background" style="padding: 0.75rem 1.5rem; background: none; border: none; border-bottom: 2px solid transparent; color: #6b7280; font-weight: 500; cursor: pointer; transition: all 0.2s;">Background</button>
+                    </div>
+                    
+                    <!-- Tab Content -->
+                    <div class="tabs-content">
+                        <!-- Layout Tab -->
+                        <div class="tab-pane active" data-tab="layout">
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Section Width</label>
+                                <input type="text" id="section-width" placeholder="e.g., 100%, 100vw" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem;">
+                                <small style="color: #6b7280; font-size: 0.75rem;">Usually 100% for full width sections</small>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Content Max Width</label>
+                                <input type="text" id="content-width" placeholder="e.g., 1200px, 90%, 80rem" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem;">
+                                <small style="color: #6b7280; font-size: 0.75rem;">Maximum width for content inside the section</small>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Padding</label>
+                                <input type="text" id="section-padding" placeholder="e.g., 80px 0, 4rem 2rem" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem;">
+                                <small style="color: #6b7280; font-size: 0.75rem;">Vertical and horizontal padding</small>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Minimum Height</label>
+                                <input type="text" id="min-height" placeholder="e.g., 400px, 100vh, auto" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem;">
+                                <small style="color: #6b7280; font-size: 0.75rem;">Minimum height for the section</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Background Tab -->
+                        <div class="tab-pane" data-tab="background" style="display: none;">
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Background Color</label>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="color" id="bg-color-picker" style="width: 50px; height: 38px; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer;">
+                                    <input type="text" id="bg-color" placeholder="#ffffff or transparent" style="flex: 1; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem;">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Background Image</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="text" id="bg-image" placeholder="Image URL or gradient" style="flex: 1; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem;">
+                                    <button id="browse-image" style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">Browse</button>
+                                </div>
+                                <input type="file" id="bg-image-file" accept="image/*" style="display: none;">
+                                <small style="color: #6b7280; font-size: 0.75rem;">Enter URL or CSS gradient (e.g., linear-gradient(to right, #667eea, #764ba2))</small>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Background Size</label>
+                                <select id="bg-size" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem;">
+                                    <option value="cover">Cover</option>
+                                    <option value="contain">Contain</option>
+                                    <option value="auto">Auto</option>
+                                    <option value="100% 100%">Stretch</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Background Position</label>
+                                <select id="bg-position" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem;">
+                                    <option value="center">Center</option>
+                                    <option value="top">Top</option>
+                                    <option value="bottom">Bottom</option>
+                                    <option value="left">Left</option>
+                                    <option value="right">Right</option>
+                                    <option value="top left">Top Left</option>
+                                    <option value="top right">Top Right</option>
+                                    <option value="bottom left">Bottom Left</option>
+                                    <option value="bottom right">Bottom Right</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-cancel">Cancel</button>
+                    <button class="btn btn-primary">Apply Changes</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(this.modal);
+        this.attachEventListeners();
+    }
+
+    attachEventListeners() {
+        // Tab switching
+        const tabBtns = this.modal.querySelectorAll('.tab-btn');
+        const tabPanes = this.modal.querySelectorAll('.tab-pane');
+        
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetTab = btn.dataset.tab;
+                
+                // Update button states
+                tabBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.style.borderBottomColor = 'transparent';
+                    b.style.color = '#6b7280';
+                });
+                btn.classList.add('active');
+                btn.style.borderBottomColor = '#3b82f6';
+                btn.style.color = '#3b82f6';
+                
+                // Update pane visibility
+                tabPanes.forEach(pane => {
+                    if (pane.dataset.tab === targetTab) {
+                        pane.style.display = 'block';
+                        pane.classList.add('active');
+                    } else {
+                        pane.style.display = 'none';
+                        pane.classList.remove('active');
+                    }
+                });
+            });
+        });
+
+        // Color picker sync
+        const colorPicker = this.modal.querySelector('#bg-color-picker');
+        const colorInput = this.modal.querySelector('#bg-color');
+        
+        colorPicker.addEventListener('input', () => {
+            colorInput.value = colorPicker.value;
+        });
+        
+        colorInput.addEventListener('input', () => {
+            if (colorInput.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                colorPicker.value = colorInput.value;
+            }
+        });
+
+        // Image file upload
+        const browseBtn = this.modal.querySelector('#browse-image');
+        const fileInput = this.modal.querySelector('#bg-image-file');
+        const imageUrlInput = this.modal.querySelector('#bg-image');
+        
+        browseBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imageUrlInput.value = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Modal controls
+        this.modal.querySelector('.modal-close').addEventListener('click', () => this.close());
+        this.modal.querySelector('.btn-cancel').addEventListener('click', () => this.close());
+        this.modal.querySelector('.btn-primary').addEventListener('click', () => this.applyChanges());
+        
+        // Close on background click
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) {
+                this.close();
+            }
+        });
+    }
+
+    open(section) {
+        this.targetSection = section;
+        this.loadSectionSettings();
+        this.modal.style.display = 'flex';
+    }
+
+    loadSectionSettings() {
+        if (!this.targetSection) return;
+        
+        const contentArea = this.targetSection.querySelector('.section-content');
+        
+        // Load current settings
+        this.sectionSettings.width = this.targetSection.style.width || '100%';
+        this.sectionSettings.padding = this.targetSection.style.padding || '';
+        this.sectionSettings.backgroundColor = this.targetSection.style.backgroundColor || '';
+        this.sectionSettings.minHeight = this.targetSection.style.minHeight || '';
+        
+        if (contentArea) {
+            this.sectionSettings.contentWidth = contentArea.style.maxWidth || '1200px';
+        }
+        
+        // Parse background image
+        const bgImage = this.targetSection.style.backgroundImage;
+        if (bgImage && bgImage !== 'none') {
+            this.sectionSettings.backgroundImage = bgImage.replace(/^url\(['"]?|['"]?\)$/g, '');
+        } else {
+            this.sectionSettings.backgroundImage = '';
+        }
+        
+        this.sectionSettings.backgroundSize = this.targetSection.style.backgroundSize || 'cover';
+        this.sectionSettings.backgroundPosition = this.targetSection.style.backgroundPosition || 'center';
+        
+        // Populate form fields
+        this.modal.querySelector('#section-width').value = this.sectionSettings.width;
+        this.modal.querySelector('#content-width').value = this.sectionSettings.contentWidth;
+        this.modal.querySelector('#section-padding').value = this.sectionSettings.padding;
+        this.modal.querySelector('#min-height').value = this.sectionSettings.minHeight;
+        this.modal.querySelector('#bg-color').value = this.sectionSettings.backgroundColor;
+        this.modal.querySelector('#bg-image').value = this.sectionSettings.backgroundImage;
+        this.modal.querySelector('#bg-size').value = this.sectionSettings.backgroundSize;
+        this.modal.querySelector('#bg-position').value = this.sectionSettings.backgroundPosition;
+        
+        // Update color picker
+        if (this.sectionSettings.backgroundColor && this.sectionSettings.backgroundColor.match(/^#[0-9A-Fa-f]{6}$/)) {
+            this.modal.querySelector('#bg-color-picker').value = this.sectionSettings.backgroundColor;
+        }
+    }
+
+    applyChanges() {
+        if (!this.targetSection) return;
+        
+        // Save state for undo
+        if (this.editor.stateHistory) {
+            this.editor.stateHistory.saveState();
+        }
+        
+        // Apply layout settings
+        const width = this.modal.querySelector('#section-width').value;
+        const padding = this.modal.querySelector('#section-padding').value;
+        const minHeight = this.modal.querySelector('#min-height').value;
+        
+        if (width) this.targetSection.style.width = width;
+        if (padding) this.targetSection.style.padding = padding;
+        if (minHeight) this.targetSection.style.minHeight = minHeight;
+        
+        // Apply content width to section-content
+        const contentWidth = this.modal.querySelector('#content-width').value;
+        const contentArea = this.targetSection.querySelector('.section-content');
+        if (contentArea && contentWidth) {
+            contentArea.style.maxWidth = contentWidth;
+        }
+        
+        // Apply background settings
+        const bgColor = this.modal.querySelector('#bg-color').value;
+        const bgImage = this.modal.querySelector('#bg-image').value;
+        const bgSize = this.modal.querySelector('#bg-size').value;
+        const bgPosition = this.modal.querySelector('#bg-position').value;
+        
+        if (bgColor) {
+            this.targetSection.style.backgroundColor = bgColor;
+        } else {
+            this.targetSection.style.backgroundColor = '';
+        }
+        
+        if (bgImage) {
+            // Check if it's a gradient or an image URL
+            if (bgImage.includes('gradient') || bgImage.startsWith('linear-') || bgImage.startsWith('radial-')) {
+                this.targetSection.style.backgroundImage = bgImage;
+            } else {
+                this.targetSection.style.backgroundImage = `url('${bgImage}')`;
+            }
+            this.targetSection.style.backgroundSize = bgSize;
+            this.targetSection.style.backgroundPosition = bgPosition;
+            this.targetSection.style.backgroundRepeat = 'no-repeat';
+        } else {
+            this.targetSection.style.backgroundImage = '';
+        }
+        
+        // Trigger onChange callback
+        if (this.editor.triggerOnChange) {
+            this.editor.triggerOnChange('section-settings-changed', this.targetSection);
+        }
+        
+        this.close();
+    }
+
+    close() {
+        this.modal.style.display = 'none';
+        this.targetSection = null;
     }
 }
