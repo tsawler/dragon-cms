@@ -94,6 +94,9 @@
             // User-defined edit button functionality
             const editBtn = document.getElementById('edit-mode-btn');
             
+            // Hide edit button since we start in edit mode
+            editBtn.classList.add('editing');
+            
             // Handle edit button clicks
             editBtn.addEventListener('click', function() {
                 editor.setMode('edit');

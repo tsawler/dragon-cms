@@ -1910,7 +1910,48 @@ export class Editor {
         if (mode === 'edit' || mode === 'display') {
             if (this.currentMode !== mode) {
                 this.toggleMode();
+            } else {
+                // Even if mode hasn't changed, ensure UI elements are in correct state
+                this.updateModeUI();
             }
+        }
+    }
+    
+    updateModeUI() {
+        // Ensure UI elements are in the correct state for current mode
+        const iconStrip = document.querySelector('.icon-strip');
+        const panel = document.getElementById('snippet-panel');
+        const editorMain = document.querySelector('.editor-main');
+        const editorHeader = document.querySelector('.dragon-editor .editor-header');
+        const viewportControls = document.querySelector('.viewport-controls');
+        
+        if (this.currentMode === 'edit') {
+            // Show edit mode elements
+            if (iconStrip) iconStrip.style.display = 'flex';
+            if (editorHeader) editorHeader.style.display = 'flex';
+            if (viewportControls) viewportControls.style.display = 'flex';
+            if (editorMain) editorMain.style.marginLeft = '60px';
+        } else {
+            // Hide edit mode elements
+            if (iconStrip) iconStrip.style.display = 'none';
+            if (panel) panel.classList.remove('open');
+            if (editorMain) {
+                editorMain.classList.remove('panel-open');
+                editorMain.style.marginLeft = '0';
+            }
+            if (editorHeader) editorHeader.style.display = 'none';
+            if (viewportControls) viewportControls.style.display = 'none';
+        }
+        
+        // Update data attribute
+        if (this.editableArea) {
+            this.editableArea.dataset.mode = this.currentMode;
+        }
+        
+        // Update mode button text
+        const modeBtn = document.getElementById('toggle-mode-btn');
+        if (modeBtn) {
+            modeBtn.textContent = this.currentMode === 'edit' ? 'Switch to Display Mode' : 'Switch to Edit Mode';
         }
     }
     
