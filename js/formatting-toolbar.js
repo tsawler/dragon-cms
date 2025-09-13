@@ -968,28 +968,38 @@ export class FormattingToolbar {
         if (!this.editor || !this.editor.editableArea) {
             return;
         }
-        
+
         // Find all images that are not already in resize containers
         const existingImages = this.editor.editableArea.querySelectorAll('img:not(.image-resize-container img)');
-        
+        if (existingImages.length > 0) {
+            console.log('Found', existingImages.length, 'images to wrap:', existingImages);
+        }
+
         existingImages.forEach(img => {
             // Skip if image is already in a resize container
-            if (img.closest('.image-resize-container')) return;
-            
+            if (img.closest('.image-resize-container')) {
+                return;
+            }
+
             // Create resize container using ImageUploader if available
-            const container = this.editor.imageUploader ? 
-                this.editor.imageUploader.createImageResizeContainer(img.cloneNode(true)) : 
+            const container = this.editor.imageUploader ?
+                this.editor.imageUploader.createImageResizeContainer(img.cloneNode(true)) :
                 this.createImageResizeContainer(img.cloneNode(true));
-            
+
             // Ensure existing images get default center alignment if they don't have any
-            if (!container.classList.contains('align-left') && 
-                !container.classList.contains('align-right') && 
+            if (!container.classList.contains('align-left') &&
+                !container.classList.contains('align-right') &&
                 !container.classList.contains('align-center')) {
                 container.classList.add('align-center');
             }
-            
+
             // Replace the original image with the container
             img.parentNode.replaceChild(container, img);
+
+            // Attach image handlers for browse/settings icons
+            if (this.editor.imageUploader) {
+                this.editor.imageUploader.reattachImageHandlers(container);
+            }
         });
         
         if (existingImages.length > 0) {
@@ -1010,14 +1020,19 @@ export class FormattingToolbar {
     
     showAlignmentToolbar(container) {
         const rect = container.getBoundingClientRect();
+
+        // First make the toolbar visible so we can get accurate dimensions
         this.alignmentToolbar.classList.add('visible');
-        
+
+        // Force a reflow to ensure the display change takes effect
+        this.alignmentToolbar.offsetHeight;
+
         // Position toolbar above the image, but keep it within viewport
         let top = rect.top - this.alignmentToolbar.offsetHeight - 10;
         if (top < 10) {
             top = rect.bottom + 10;
         }
-        
+
         let left = rect.left + (rect.width / 2) - (this.alignmentToolbar.offsetWidth / 2);
         const toolbarWidth = this.alignmentToolbar.offsetWidth || 100;
         if (left + toolbarWidth > window.innerWidth - 20) {
@@ -1026,10 +1041,10 @@ export class FormattingToolbar {
         if (left < 10) {
             left = 10;
         }
-        
+
         this.alignmentToolbar.style.left = left + 'px';
         this.alignmentToolbar.style.top = top + 'px';
-        
+
         // Update button states
         this.updateAlignmentToolbarState(container);
     }

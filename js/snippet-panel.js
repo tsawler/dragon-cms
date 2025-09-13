@@ -98,7 +98,7 @@ export class SnippetPanel {
         // Show panel and render content
         panel.classList.add('open');
         editorMain.classList.add('panel-open');
-        
+
         this.renderCurrentTab();
     }
 
