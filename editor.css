@@ -792,9 +792,7 @@ button.edit-icon, button.settings-icon, button.code-icon, button.delete-icon {
     font-family: inherit;
 }
 
-.editable-area[data-mode="edit"] .editor-section:hover .gear-icon,
-.editable-area[data-mode="edit"] .editor-section:hover .code-icon,
-.editable-area[data-mode="edit"] .editor-section:hover .delete-icon,
+/* Block and snippet hover controls (sections handled separately below) */
 .editable-area[data-mode="edit"] .editor-block:hover .edit-icon,
 .editable-area[data-mode="edit"] .editor-block:hover .settings-icon,
 .editable-area[data-mode="edit"] .editor-block:hover .code-icon,
@@ -906,7 +904,7 @@ button.edit-icon, button.settings-icon, button.code-icon, button.delete-icon {
     z-index: 50;
 }
 
-.editable-area[data-mode="edit"] .editor-section:hover .drag-handle,
+/* Drag handles for blocks and snippets (sections handled in .section-controls above) */
 .editable-area[data-mode="edit"] .editor-block:hover .drag-handle,
 .editable-area[data-mode="edit"] .editor-snippet:hover .drag-handle {
     display: flex;
