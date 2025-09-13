@@ -33,6 +33,85 @@ function svgToDataUrl(svgString) {
 }
 
 const SNIPPET_LIBRARY = {
+    sections: [
+        {
+            id: 'hero-section',
+            name: 'Hero Section',
+            type: 'section',
+            preview: 'image',
+            previewImage: svgToDataUrl(`
+                <svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="200" height="100" fill="#f0f4f8"/>
+                    <rect width="200" height="40" fill="#4a5568"/>
+                    <text x="100" y="25" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Hero Section</text>
+                    <rect x="20" y="55" width="160" height="30" fill="#e2e8f0" rx="4"/>
+                </svg>
+            `),
+            html: '<section class="editor-section hero-section" style="width: 100%; padding: 80px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"><div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;"></div></section>'
+        },
+        {
+            id: 'content-section',
+            name: 'Content Section',
+            type: 'section',
+            preview: 'image',
+            previewImage: svgToDataUrl(`
+                <svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="200" height="100" fill="#ffffff" stroke="#e2e8f0"/>
+                    <text x="100" y="20" text-anchor="middle" fill="#2d3748" font-size="12">Content Section</text>
+                    <rect x="20" y="30" width="160" height="20" fill="#e2e8f0" rx="2"/>
+                    <rect x="20" y="55" width="160" height="20" fill="#e2e8f0" rx="2"/>
+                </svg>
+            `),
+            html: '<section class="editor-section content-section" style="width: 100%; padding: 60px 0; background: #ffffff;"><div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;"></div></section>'
+        },
+        {
+            id: 'features-section',
+            name: 'Features Section',
+            type: 'section',
+            preview: 'image',
+            previewImage: svgToDataUrl(`
+                <svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="200" height="100" fill="#f7fafc"/>
+                    <text x="100" y="20" text-anchor="middle" fill="#2d3748" font-size="12">Features</text>
+                    <rect x="20" y="30" width="50" height="50" fill="#e2e8f0" rx="4"/>
+                    <rect x="75" y="30" width="50" height="50" fill="#e2e8f0" rx="4"/>
+                    <rect x="130" y="30" width="50" height="50" fill="#e2e8f0" rx="4"/>
+                </svg>
+            `),
+            html: '<section class="editor-section features-section" style="width: 100%; padding: 80px 0; background: #f7fafc;"><div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;"></div></section>'
+        },
+        {
+            id: 'cta-section',
+            name: 'Call to Action Section',
+            type: 'section',
+            preview: 'image',
+            previewImage: svgToDataUrl(`
+                <svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="200" height="100" fill="#2d3748"/>
+                    <text x="100" y="40" text-anchor="middle" fill="white" font-size="14">CTA Section</text>
+                    <rect x="60" y="55" width="80" height="25" fill="#4299e1" rx="4"/>
+                    <text x="100" y="72" text-anchor="middle" fill="white" font-size="10">Get Started</text>
+                </svg>
+            `),
+            html: '<section class="editor-section cta-section" style="width: 100%; padding: 60px 0; background: #2d3748;"><div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px; text-align: center;"></div></section>'
+        },
+        {
+            id: 'footer-section',
+            name: 'Footer Section',
+            type: 'section',
+            preview: 'image',
+            previewImage: svgToDataUrl(`
+                <svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="200" height="100" fill="#1a202c"/>
+                    <text x="100" y="30" text-anchor="middle" fill="#a0aec0" font-size="12">Footer</text>
+                    <line x1="20" y1="45" x2="180" y2="45" stroke="#4a5568" stroke-width="1"/>
+                    <text x="100" y="70" text-anchor="middle" fill="#718096" font-size="10">© 2024 Company</text>
+                </svg>
+            `),
+            html: '<section class="editor-section footer-section" style="width: 100%; padding: 40px 0; background: #1a202c;"><div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;"></div></section>'
+        }
+    ],
+    
     blocks: [
         {
             id: 'container-block',
@@ -275,6 +354,11 @@ const SNIPPET_LIBRARY = {
     ]
 };
 
+// Function to get all sections
+window.getSections = function() {
+    return SNIPPET_LIBRARY.sections;
+};
+
 // Function to get all blocks
 window.getBlocks = function() {
     return SNIPPET_LIBRARY.blocks;
@@ -290,9 +374,9 @@ window.addCustomSnippet = function(snippet) {
     SNIPPET_LIBRARY.snippets.push(snippet);
 };
 
-// Function to get snippet by ID
+// Function to get any item by ID (section, block, or snippet)
 window.getSnippetById = function(id) {
-    const allItems = [...SNIPPET_LIBRARY.blocks, ...SNIPPET_LIBRARY.snippets];
+    const allItems = [...SNIPPET_LIBRARY.sections, ...SNIPPET_LIBRARY.blocks, ...SNIPPET_LIBRARY.snippets];
     return allItems.find(item => item.id === id);
 };
 
@@ -301,5 +385,5 @@ window.SNIPPET_LIBRARY = SNIPPET_LIBRARY;
 
 // Export for use in the main editor
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { SNIPPET_LIBRARY, getBlocks, getSnippets, addCustomSnippet, getSnippetById };
+    module.exports = { SNIPPET_LIBRARY, getSections, getBlocks, getSnippets, addCustomSnippet, getSnippetById };
 }

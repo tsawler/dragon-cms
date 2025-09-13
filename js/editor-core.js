@@ -2,7 +2,7 @@ import { StateHistory } from './state-history.js';
 import { FormattingToolbar } from './formatting-toolbar.js';
 import { ImageUploader } from './image-uploader.js';
 import { VideoSettingsModal } from './video-settings-modal.js';
-import { StyleEditorModal, CodeEditorModal, ColumnSettingsModal, ConfirmationModal, LinkSettingsModal } from './modals.js';
+import { StyleEditorModal, CodeEditorModal, ColumnSettingsModal, ConfirmationModal, LinkSettingsModal, SectionSettingsModal } from './modals.js';
 import { SnippetPanel } from './snippet-panel.js';
 import { ColumnResizer } from './column-resizer.js';
 import { PageSettingsModal } from './page-settings-modal.js';
@@ -55,6 +55,7 @@ export class Editor {
         this.codeEditorModal = new CodeEditorModal(this);
         this.videoSettingsModal = new VideoSettingsModal(this);
         this.columnSettingsModal = new ColumnSettingsModal(this);
+        this.sectionSettingsModal = new SectionSettingsModal(this);
         this.confirmationModal = new ConfirmationModal(this);
         this.columnResizer = new ColumnResizer(this);
         this.pageSettingsModal = new PageSettingsModal(this);
@@ -398,7 +399,8 @@ export class Editor {
                 !e.target.classList.contains('edit-icon') && 
                 !e.target.classList.contains('code-icon') &&
                 !e.target.classList.contains('delete-icon') &&
-                !e.target.classList.contains('settings-icon')) {
+                !e.target.classList.contains('settings-icon') &&
+                !e.target.classList.contains('gear-icon')) {
                 
                 if (this.currentMode === 'edit') {
                     // In edit mode, open the button settings modal
@@ -419,7 +421,7 @@ export class Editor {
             }
             
             // SECOND: Check if the clicked element or its parent is a control icon
-            const controlTarget = e.target.closest('.edit-icon, .code-icon, .delete-icon, .settings-icon, .drag-handle');
+            const controlTarget = e.target.closest('.edit-icon, .code-icon, .delete-icon, .settings-icon, .gear-icon, .drag-handle');
             
             if (!controlTarget) return;
             
@@ -431,13 +433,18 @@ export class Editor {
                 if (element && this.styleEditorModal) {
                     this.styleEditorModal.open(element);
                 }
+            } else if (controlTarget.classList.contains('gear-icon')) {
+                const section = controlTarget.closest('.editor-section');
+                if (section && this.sectionSettingsModal) {
+                    this.sectionSettingsModal.open(section);
+                }
             } else if (controlTarget.classList.contains('delete-icon')) {
-                const element = controlTarget.closest('.editor-block, .editor-snippet');
+                const element = controlTarget.closest('.editor-section, .editor-block, .editor-snippet');
                 if (element) {
                     this.deleteElement(element);
                 }
             } else if (controlTarget.classList.contains('code-icon')) {
-                const element = controlTarget.closest('.editor-block, .editor-snippet');
+                const element = controlTarget.closest('.editor-section, .editor-block, .editor-snippet');
                 if (element) {
                     this.openCodeEditor(element);
                 }
@@ -644,7 +651,65 @@ export class Editor {
                         }
                     }
                 }
-            } else if (elementType === 'block' || elementType === 'custom') {
+            } else if (elementType === 'block') {
+                // Check if we're over a section-content area (for blocks to be dropped into sections)
+                const sectionContent = e.target.closest('.section-content');
+                if (sectionContent) {
+                    // Dropping a block into a section
+                    sectionContent.classList.add('valid-drop-target');
+                    const blocks = [...sectionContent.querySelectorAll(':scope > .editor-block:not(.dragging-element)')];
+                    if (blocks.length > 0) {
+                        const insertionPoint = this.getInsertionPoint(sectionContent, e.clientY);
+                        if (insertionPoint) {
+                            currentInsertionLine = this.createInsertionLine(insertionPoint);
+                            sectionContent.style.position = 'relative';
+                            sectionContent.appendChild(currentInsertionLine);
+                        }
+                    } else {
+                        // No existing blocks in section - show drop overlay
+                        if (!sectionContent.querySelector('.drop-zone-overlay')) {
+                            currentDropOverlay = document.createElement('div');
+                            currentDropOverlay.className = 'drop-zone-overlay';
+                            currentDropOverlay.style.position = 'absolute';
+                            currentDropOverlay.style.top = '20px';
+                            currentDropOverlay.style.left = '20px';
+                            currentDropOverlay.style.right = '20px';
+                            currentDropOverlay.style.bottom = '20px';
+                            currentDropOverlay.style.zIndex = '999';
+                            sectionContent.style.position = 'relative';
+                            sectionContent.appendChild(currentDropOverlay);
+                        }
+                    }
+                } else {
+                    // Dropping block into main area - existing logic
+                    const existingItems = area.querySelectorAll('.editor-section, .editor-block').length;
+                    
+                    if (existingItems === 0) {
+                        // Empty area - show drop overlay
+                        area.style.background = 'rgba(59, 130, 246, 0.05)';
+                        area.style.borderColor = '#3b82f6';
+                        
+                        currentDropOverlay = document.createElement('div');
+                        currentDropOverlay.className = 'drop-zone-overlay';
+                        currentDropOverlay.style.position = 'absolute';
+                        currentDropOverlay.style.top = '20px';
+                        currentDropOverlay.style.left = '20px';
+                        currentDropOverlay.style.right = '20px';
+                        currentDropOverlay.style.bottom = '20px';
+                        currentDropOverlay.style.zIndex = '999';
+                        area.style.position = 'relative';
+                        area.appendChild(currentDropOverlay);
+                    } else {
+                        // Has items - show insertion line
+                        const insertionPoint = this.getInsertionPoint(area, e.clientY);
+                        if (insertionPoint) {
+                            currentInsertionLine = this.createInsertionLine(insertionPoint);
+                            area.style.position = 'relative';
+                            area.appendChild(currentInsertionLine);
+                        }
+                    }
+                }
+            } else if (elementType === 'section' || elementType === 'block' || elementType === 'custom') {
                 const existingBlocks = area.querySelectorAll('.editor-block').length;
                 
                 if (existingBlocks === 0) {
@@ -720,9 +785,9 @@ export class Editor {
                 snippetType = 'existing';
             }
 
-            if (elementType === 'block') {
-                if (isExisting && draggingElement && draggingElement.classList.contains('editor-block')) {
-                    // Moving an existing block - insert into main area
+            if (elementType === 'section') {
+                if (isExisting && draggingElement && draggingElement.classList.contains('editor-section')) {
+                    // Moving an existing section - insert into main area
                     const afterElement = this.getDragAfterElement(area, e.clientY);
                     if (afterElement == null) {
                         area.appendChild(draggingElement);
@@ -730,19 +795,73 @@ export class Editor {
                         area.insertBefore(draggingElement, afterElement);
                     }
                     this.originalPosition = null; // Clear since drop was successful
-                    // Trigger onChange callback for moved block
-                    this.triggerOnChange('block-moved', draggingElement);
+                    // Trigger onChange callback for moved section
+                    this.triggerOnChange('section-moved', draggingElement);
                 } else {
-                    // Create a new block from panel
-                    const block = this.createBlock(template);
+                    // Create a new section from panel
+                    const section = this.createSection(template);
                     const afterElement = this.getDragAfterElement(area, e.clientY);
                     if (afterElement == null) {
-                        area.appendChild(block);
+                        area.appendChild(section);
                     } else {
-                        area.insertBefore(block, afterElement);
+                        area.insertBefore(section, afterElement);
                     }
-                    // Trigger onChange callback for added block
-                    this.triggerOnChange('block-added', block);
+                    // Make text elements editable in the new section
+                    this.makeElementsEditable(section);
+                    // Trigger onChange callback for added section
+                    this.triggerOnChange('section-added', section);
+                }
+            } else if (elementType === 'block') {
+                // Check if we're dropping into a section-content area
+                const sectionContent = e.target.closest('.section-content');
+                if (sectionContent) {
+                    // Dropping block into a section
+                    if (isExisting && draggingElement && draggingElement.classList.contains('editor-block')) {
+                        // Moving an existing block into section
+                        const afterElement = this.getDragAfterElement(sectionContent, e.clientY);
+                        if (afterElement == null) {
+                            sectionContent.appendChild(draggingElement);
+                        } else {
+                            sectionContent.insertBefore(draggingElement, afterElement);
+                        }
+                        this.originalPosition = null;
+                        this.triggerOnChange('block-moved', draggingElement);
+                    } else {
+                        // Create new block in section
+                        const block = this.createBlock(template);
+                        const afterElement = this.getDragAfterElement(sectionContent, e.clientY);
+                        if (afterElement == null) {
+                            sectionContent.appendChild(block);
+                        } else {
+                            sectionContent.insertBefore(block, afterElement);
+                        }
+                        this.triggerOnChange('block-added', block);
+                    }
+                } else {
+                    // Dropping block into main area
+                    if (isExisting && draggingElement && draggingElement.classList.contains('editor-block')) {
+                        // Moving an existing block - insert into main area
+                        const afterElement = this.getDragAfterElement(area, e.clientY);
+                        if (afterElement == null) {
+                            area.appendChild(draggingElement);
+                        } else {
+                            area.insertBefore(draggingElement, afterElement);
+                        }
+                        this.originalPosition = null; // Clear since drop was successful
+                        // Trigger onChange callback for moved block
+                        this.triggerOnChange('block-moved', draggingElement);
+                    } else {
+                        // Create a new block from panel
+                        const block = this.createBlock(template);
+                        const afterElement = this.getDragAfterElement(area, e.clientY);
+                        if (afterElement == null) {
+                            area.appendChild(block);
+                        } else {
+                            area.insertBefore(block, afterElement);
+                        }
+                        // Trigger onChange callback for added block
+                        this.triggerOnChange('block-added', block);
+                    }
                 }
             } else if (elementType === 'snippet') {
                 // Find the closest column first, then block
@@ -1177,7 +1296,7 @@ export class Editor {
     getCleanHTML() {
         const clone = this.editableArea.cloneNode(true);
         // Remove all control elements
-        clone.querySelectorAll('.edit-icon, .code-icon, .delete-icon, .settings-icon, .drag-handle, .resizer-handle').forEach(el => el.remove());
+        clone.querySelectorAll('.edit-icon, .code-icon, .delete-icon, .settings-icon, .gear-icon, .drag-handle, .resizer-handle').forEach(el => el.remove());
         
         // Get page settings
         const pageSettings = this.pageSettingsModal ? this.pageSettingsModal.getPageData() : {};
@@ -1380,12 +1499,13 @@ export class Editor {
             const textElements = snippet.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, div:not([class*="handle"]):not([class*="icon"])');
             textElements.forEach(el => {
                 // Don't make elements with control buttons editable
-                if (!el.querySelector('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon') && 
+                if (!el.querySelector('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon, .gear-icon') && 
                     !el.classList.contains('drag-handle') && 
                     !el.classList.contains('edit-icon') && 
                     !el.classList.contains('code-icon') && 
                     !el.classList.contains('delete-icon') && 
-                    !el.classList.contains('settings-icon')) {
+                    !el.classList.contains('settings-icon') && 
+                    !el.classList.contains('gear-icon')) {
                     el.contentEditable = true;
                 }
             });
@@ -1402,6 +1522,44 @@ export class Editor {
         this.triggerOnRender('snippet', snippet);
         
         return snippet;
+    }
+
+    createSection(template = null) {
+        const section = document.createElement('section');
+        section.className = 'editor-section';
+        section.style.position = 'relative';
+        section.draggable = true;  // Always draggable, but controlled by handle
+        
+        const gearIconHtml = '<button class="gear-icon" title="Section Settings">⚙️</button>';
+        const codeIconHtml = this.showCodeIcon ? '<button class="code-icon" title="Edit HTML">&lt;/&gt;</button>' : '';
+        
+        const controls = `
+            <div class="section-controls">
+                <div class="drag-handle">☰</div>
+                ${gearIconHtml}
+                ${codeIconHtml}
+                <button class="delete-icon" title="Delete Section">🗑️</button>
+            </div>
+        `;
+        
+        if (template) {
+            section.innerHTML = controls + template;
+        } else {
+            // Default section with content area
+            section.innerHTML = controls + '<div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;"></div>';
+        }
+        
+        // Set up control handlers
+        this.attachSectionControlListeners(section);
+        this.attachDragHandleListeners(section);
+        
+        return section;
+    }
+    
+    attachSectionControlListeners(section) {
+        // The main event listener on editableArea already handles clicks on control icons
+        // We just need to ensure sections are included in the selector
+        // The existing event delegation will handle delete-icon, gear-icon, code-icon clicks
     }
 
     createBlock(template = null) {
@@ -1437,7 +1595,8 @@ export class Editor {
                     !el.classList.contains('edit-icon') && 
                     !el.classList.contains('code-icon') && 
                     !el.classList.contains('delete-icon') && 
-                    !el.classList.contains('settings-icon') &&
+                    !el.classList.contains('settings-icon') && 
+                    !el.classList.contains('gear-icon') &&
                     !el.closest('button')) {
                     el.contentEditable = true;
                     el.style.outline = 'none'; // Remove outline when editing
@@ -1507,7 +1666,8 @@ export class Editor {
                     el.classList.contains('edit-icon') || 
                     el.classList.contains('code-icon') || 
                     el.classList.contains('delete-icon') || 
-                    el.classList.contains('settings-icon') ||
+                    el.classList.contains('settings-icon') || 
+                    el.classList.contains('gear-icon') ||
                     el.closest('button')) {
                     return;
                 }

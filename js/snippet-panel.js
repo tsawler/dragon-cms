@@ -13,8 +13,32 @@ export class SnippetPanel {
     loadSnippets() {
         this.snippetList.innerHTML = '';
         
+        // Load sections first
+        const sections = (typeof getSections === 'function') ? getSections() : [];
+        if (sections && sections.length > 0) {
+            // Add sections header
+            const sectionHeader = document.createElement('h3');
+            sectionHeader.style.margin = '0 0 10px 0';
+            sectionHeader.style.fontSize = '12px';
+            sectionHeader.style.fontWeight = 'bold';
+            sectionHeader.style.color = '#666';
+            sectionHeader.style.textTransform = 'uppercase';
+            sectionHeader.textContent = 'Sections';
+            this.snippetList.appendChild(sectionHeader);
+            
+            sections.forEach(section => {
+                const item = this.createSnippetItem(section);
+                this.snippetList.appendChild(item);
+            });
+            
+            // Add separator after sections
+            const separator = document.createElement('hr');
+            separator.style.margin = '1rem 0';
+            this.snippetList.appendChild(separator);
+        }
+        
         // Load default blocks
-        const blocks = getBlocks();
+        const blocks = (typeof getBlocks === 'function') ? getBlocks() : [];
         blocks.forEach(block => {
             const item = this.createSnippetItem(block);
             this.snippetList.appendChild(item);
@@ -43,7 +67,7 @@ export class SnippetPanel {
         this.snippetList.appendChild(separator);
         
         // Load snippets
-        const snippets = getSnippets();
+        const snippets = (typeof getSnippets === 'function') ? getSnippets() : [];
         snippets.forEach(snippet => {
             const item = this.createSnippetItem(snippet);
             this.snippetList.appendChild(item);
@@ -71,7 +95,14 @@ export class SnippetPanel {
 
     createSnippetItem(definition) {
         const item = document.createElement('div');
-        item.className = definition.type === 'block' ? 'block-item' : 'snippet-item';
+        // Set class based on type
+        if (definition.type === 'section') {
+            item.className = 'section-item';
+        } else if (definition.type === 'block') {
+            item.className = 'block-item';
+        } else {
+            item.className = 'snippet-item';
+        }
         item.draggable = true;
         item.dataset.type = definition.type;
         item.dataset.snippetType = definition.snippetType || '';

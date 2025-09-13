@@ -195,7 +195,7 @@
     gap: 0.75rem;
 }
 
-.dragon-editor .snippet-item, .dragon-editor .block-item{
+.dragon-editor .snippet-item, .dragon-editor .block-item, .dragon-editor .section-item{
     padding: 0.75rem;
     background: #f8f9fa;
     border: 2px dashed #cbd5e1;
@@ -209,17 +209,27 @@
     justify-content: center;
 }
 
-.dragon-editor .snippet-item:hover, .dragon-editor .block-item:hover{
+.dragon-editor .section-item {
+    background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+    border-color: #8b5cf6;
+}
+
+.dragon-editor .snippet-item:hover, .dragon-editor .block-item:hover, .dragon-editor .section-item:hover{
     background: #e2e8f0;
     border-color: #94a3b8;
     transform: translateX(2px);
 }
 
-.dragon-editor .snippet-item.dragging, .dragon-editor .block-item.dragging{
+.dragon-editor .section-item:hover {
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    border-color: #7c3aed;
+}
+
+.dragon-editor .snippet-item.dragging, .dragon-editor .block-item.dragging, .dragon-editor .section-item.dragging{
     opacity: 0.5;
 }
 
-.dragon-editor .snippet-item img, .dragon-editor .block-item img{
+.dragon-editor .snippet-item img, .dragon-editor .block-item img, .dragon-editor .section-item img{
     pointer-events: none;
     user-select: none;
 }
@@ -258,6 +268,32 @@
 
 .dragon-editor .editable-area[data-mode="display"] .drop-zone-placeholder{
     display: none;
+}
+
+.dragon-editor .editor-section{
+    margin: 0;
+    padding: 0;
+    position: relative;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.dragon-editor .editor-section .section-content{
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.dragon-editor .editable-area[data-mode="edit"] .editor-section{
+    border: 2px solid transparent;
+    border-radius: 4px;
+}
+
+.dragon-editor .editable-area[data-mode="edit"] .editor-section:hover{
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.1);
 }
 
 .dragon-editor .editor-block{
@@ -665,6 +701,9 @@ button.edit-icon, button.settings-icon, button.code-icon, button.delete-icon {
     font-family: inherit;
 }
 
+.editable-area[data-mode="edit"] .editor-section:hover .gear-icon,
+.editable-area[data-mode="edit"] .editor-section:hover .code-icon,
+.editable-area[data-mode="edit"] .editor-section:hover .delete-icon,
 .editable-area[data-mode="edit"] .editor-block:hover .edit-icon,
 .editable-area[data-mode="edit"] .editor-block:hover .settings-icon,
 .editable-area[data-mode="edit"] .editor-block:hover .code-icon,
@@ -701,6 +740,33 @@ button.edit-icon, button.settings-icon, button.code-icon, button.delete-icon {
     border-color: #999;
 }
 
+.section-controls {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    z-index: 100;
+    display: flex;
+    gap: 5px;
+}
+
+.section-controls .drag-handle,
+.section-controls .gear-icon,
+.section-controls .code-icon,
+.section-controls .delete-icon {
+    display: none;
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+}
+
+.editable-area[data-mode="edit"] .editor-section:hover .section-controls .drag-handle,
+.editable-area[data-mode="edit"] .editor-section:hover .section-controls .gear-icon,
+.editable-area[data-mode="edit"] .editor-section:hover .section-controls .code-icon,
+.editable-area[data-mode="edit"] .editor-section:hover .section-controls .delete-icon {
+    display: flex;
+}
+
 .drag-handle {
     position: absolute;
     left: -15px;
@@ -723,6 +789,7 @@ button.edit-icon, button.settings-icon, button.code-icon, button.delete-icon {
     z-index: 50;
 }
 
+.editable-area[data-mode="edit"] .editor-section:hover .drag-handle,
 .editable-area[data-mode="edit"] .editor-block:hover .drag-handle,
 .editable-area[data-mode="edit"] .editor-snippet:hover .drag-handle {
     display: flex;
