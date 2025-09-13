@@ -270,13 +270,39 @@
     display: none;
 }
 
-.dragon-editor .editor-section{
+/* Base section styles with full-width capability */
+.dragon-editor .editor-section {
     margin: 0;
     padding: 0;
     position: relative;
-    width: 100%;
     transition: all 0.2s;
     z-index: 1;
+    box-sizing: border-box;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Desktop mode - true full viewport width for sections */
+.dragon-editor .editable-area.viewport-desktop .editor-section {
+    width: 100vw !important;
+    left: 50% !important;
+    right: 50% !important;
+    margin-left: -50vw !important;
+    margin-right: -50vw !important;
+}
+
+/* Tablet mode - extend sections to container edges */
+.dragon-editor .editable-area.viewport-tablet .editor-section {
+    width: calc(100% + 4rem);
+    margin-left: -2rem;
+    margin-right: -2rem;
+}
+
+/* Mobile mode - extend sections to container edges */
+.dragon-editor .editable-area.viewport-mobile .editor-section {
+    width: calc(100% + 4rem);
+    margin-left: -2rem;
+    margin-right: -2rem;
 }
 
 .dragon-editor .editor-section .section-content{
@@ -316,9 +342,31 @@
     border-color: #cbd5e1;
 }
 
-/* Only apply hover background when no background image is set */
-.dragon-editor .editable-area[data-mode="edit"] .editor-block:hover:not([style*="background-image"]) {
+/* Apply hover background to standalone blocks (not inside sections) */
+.dragon-editor .editable-area[data-mode="edit"] > .editor-block:hover:not([style*="background-image"]) {
     background: #fafafa;
+}
+
+/* For blocks inside sections, use a subtle transparent overlay that works on any background */
+.dragon-editor .editable-area[data-mode="edit"] .editor-section .editor-block:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(1px);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+/* Special handling for dark sections - use a lighter overlay */
+.dragon-editor .editable-area[data-mode="edit"] .hero-section .editor-block:hover,
+.dragon-editor .editable-area[data-mode="edit"] .cta-section .editor-block:hover,
+.dragon-editor .editable-area[data-mode="edit"] .footer-section .editor-block:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+/* Special handling for light sections - use a darker overlay */
+.dragon-editor .editable-area[data-mode="edit"] .content-section .editor-block:hover,
+.dragon-editor .editable-area[data-mode="edit"] .features-section .editor-block:hover {
+    background: rgba(0, 0, 0, 0.05) !important;
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.1);
 }
 
 .dragon-editor .editable-area[data-mode="display"] .editor-block{
@@ -1371,6 +1419,37 @@ body.image-resizing * {
 .modal .btn-success:hover {
     background: #059669;
     border-color: #059669;
+}
+
+/* Ensure apply buttons are always visible */
+.modal .modal-apply,
+.modal .btn.modal-apply,
+.modal .modal-save,
+.modal .btn.modal-save {
+    background: #10b981 !important;
+    color: white !important;
+    border-color: #10b981 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.modal .modal-apply:hover,
+.modal .btn.modal-apply:hover,
+.modal .modal-save:hover,
+.modal .btn.modal-save:hover {
+    background: #059669 !important;
+    border-color: #059669 !important;
+}
+
+/* For primary buttons that serve as apply buttons */
+.modal .btn-primary.modal-save {
+    background: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+}
+
+.modal .btn-primary.modal-save:hover {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
 }
 
 .image-snippet {

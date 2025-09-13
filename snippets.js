@@ -35,6 +35,20 @@ function svgToDataUrl(svgString) {
 const SNIPPET_LIBRARY = {
     sections: [
         {
+            id: 'empty-section',
+            name: 'Empty Section',
+            type: 'section',
+            preview: 'image',
+            previewImage: svgToDataUrl(`
+                <svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="200" height="100" fill="#ffffff" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="5,5"/>
+                    <text x="100" y="50" text-anchor="middle" fill="#a0aec0" font-size="12">Empty Section</text>
+                    <text x="100" y="70" text-anchor="middle" fill="#cbd5e0" font-size="10">Drag blocks here</text>
+                </svg>
+            `),
+            html: '<section class="editor-section empty-section" style="width: 100%; padding: 60px 0; background: #ffffff; min-height: 200px; border: 2px dashed #e2e8f0;"><div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px; min-height: 100px; display: flex; align-items: center; justify-content: center; color: #a0aec0;"><p style="text-align: center; margin: 0;">Drag blocks and content here to build your section</p></div></section>'
+        },
+        {
             id: 'hero-section',
             name: 'Hero Section',
             type: 'section',
@@ -47,7 +61,20 @@ const SNIPPET_LIBRARY = {
                     <rect x="20" y="55" width="160" height="30" fill="#e2e8f0" rx="4"/>
                 </svg>
             `),
-            html: '<section class="editor-section hero-section" style="width: 100%; padding: 80px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"><div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;"></div></section>'
+            html: `<section class="editor-section hero-section" style="width: 100%; padding: 80px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+                    <div class="editor-block" style="position: relative; text-align: center; color: white;">
+                        <div class="column" style="flex: 1;">
+                            <h1 contenteditable="true" style="outline: none; font-size: 3.5rem; font-weight: bold; margin-bottom: 1rem; line-height: 1.2;">Transform Your Business Today</h1>
+                            <p contenteditable="true" style="outline: none; font-size: 1.25rem; margin-bottom: 2rem; opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto;">Discover powerful solutions that help you grow, scale, and succeed in today's competitive market.</p>
+                            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                                <button contenteditable="true" style="outline: none; background: #ffffff; color: #667eea; padding: 1rem 2rem; border-radius: 0.5rem; font-weight: 600; border: none; cursor: pointer; font-size: 1.1rem;">Get Started Free</button>
+                                <button contenteditable="true" style="outline: none; background: transparent; color: white; padding: 1rem 2rem; border-radius: 0.5rem; font-weight: 600; border: 2px solid rgba(255,255,255,0.3); cursor: pointer; font-size: 1.1rem;">Watch Demo</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>`
         },
         {
             id: 'content-section',
@@ -62,7 +89,26 @@ const SNIPPET_LIBRARY = {
                     <rect x="20" y="55" width="160" height="20" fill="#e2e8f0" rx="2"/>
                 </svg>
             `),
-            html: '<section class="editor-section content-section" style="width: 100%; padding: 60px 0; background: #ffffff;"><div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;"></div></section>'
+            html: `<section class="editor-section content-section" style="width: 100%; padding: 60px 0; background: #ffffff;">
+                <div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+                    <div class="editor-block" style="position: relative;">
+                        <div class="two-column-container" style="display: flex; gap: 40px; align-items: center;">
+                            <div class="column" style="flex: 1;">
+                                <h2 contenteditable="true" style="outline: none; font-size: 2.5rem; font-weight: bold; margin-bottom: 1.5rem; color: #2d3748;">Why Choose Us?</h2>
+                                <p contenteditable="true" style="outline: none; font-size: 1.125rem; line-height: 1.7; color: #4a5568; margin-bottom: 1.5rem;">We provide innovative solutions that help businesses thrive in today's digital landscape. Our team of experts is dedicated to delivering results that exceed expectations.</p>
+                                <ul style="list-style: none; padding: 0;">
+                                    <li contenteditable="true" style="outline: none; display: flex; align-items: center; margin-bottom: 1rem; color: #2d3748;"><span style="background: #48bb78; color: white; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-right: 1rem; font-size: 14px;">✓</span>Expert team with 10+ years experience</li>
+                                    <li contenteditable="true" style="outline: none; display: flex; align-items: center; margin-bottom: 1rem; color: #2d3748;"><span style="background: #48bb78; color: white; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-right: 1rem; font-size: 14px;">✓</span>24/7 customer support</li>
+                                    <li contenteditable="true" style="outline: none; display: flex; align-items: center; margin-bottom: 1rem; color: #2d3748;"><span style="background: #48bb78; color: white; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-right: 1rem; font-size: 14px;">✓</span>Money-back guarantee</li>
+                                </ul>
+                            </div>
+                            <div class="column" style="flex: 1;">
+                                <img src="https://via.placeholder.com/500x350/4299e1/ffffff?text=Your+Image+Here" alt="Content Image" style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>`
         },
         {
             id: 'features-section',
@@ -78,7 +124,35 @@ const SNIPPET_LIBRARY = {
                     <rect x="130" y="30" width="50" height="50" fill="#e2e8f0" rx="4"/>
                 </svg>
             `),
-            html: '<section class="editor-section features-section" style="width: 100%; padding: 80px 0; background: #f7fafc;"><div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;"></div></section>'
+            html: `<section class="editor-section features-section" style="width: 100%; padding: 80px 0; background: #f7fafc;">
+                <div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+                    <div class="editor-block" style="position: relative; text-align: center; margin-bottom: 3rem;">
+                        <div class="column" style="flex: 1;">
+                            <h2 contenteditable="true" style="outline: none; font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem; color: #2d3748;">Our Features</h2>
+                            <p contenteditable="true" style="outline: none; font-size: 1.25rem; color: #4a5568; max-width: 600px; margin: 0 auto;">Everything you need to succeed, all in one powerful platform</p>
+                        </div>
+                    </div>
+                    <div class="editor-block" style="position: relative;">
+                        <div class="three-column-container" style="display: flex; gap: 30px;">
+                            <div class="column" style="flex: 1; text-align: center; padding: 2rem; background: white; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                                <div style="width: 60px; height: 60px; background: #4299e1; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 24px;">🚀</div>
+                                <h3 contenteditable="true" style="outline: none; font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #2d3748;">Fast Performance</h3>
+                                <p contenteditable="true" style="outline: none; color: #4a5568; line-height: 1.6;">Lightning-fast loading times and optimized performance for the best user experience.</p>
+                            </div>
+                            <div class="column" style="flex: 1; text-align: center; padding: 2rem; background: white; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                                <div style="width: 60px; height: 60px; background: #48bb78; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 24px;">🔒</div>
+                                <h3 contenteditable="true" style="outline: none; font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #2d3748;">Secure & Reliable</h3>
+                                <p contenteditable="true" style="outline: none; color: #4a5568; line-height: 1.6;">Enterprise-grade security with 99.9% uptime guarantee to keep your business running smoothly.</p>
+                            </div>
+                            <div class="column" style="flex: 1; text-align: center; padding: 2rem; background: white; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                                <div style="width: 60px; height: 60px; background: #ed8936; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 24px;">⚡</div>
+                                <h3 contenteditable="true" style="outline: none; font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #2d3748;">Easy to Use</h3>
+                                <p contenteditable="true" style="outline: none; color: #4a5568; line-height: 1.6;">Intuitive interface that requires no technical expertise. Get started in minutes, not hours.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>`
         },
         {
             id: 'cta-section',
@@ -93,7 +167,34 @@ const SNIPPET_LIBRARY = {
                     <text x="100" y="72" text-anchor="middle" fill="white" font-size="10">Get Started</text>
                 </svg>
             `),
-            html: '<section class="editor-section cta-section" style="width: 100%; padding: 60px 0; background: #2d3748;"><div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px; text-align: center;"></div></section>'
+            html: `<section class="editor-section cta-section" style="width: 100%; padding: 60px 0; background: #2d3748;">
+                <div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px; text-align: center;">
+                    <div class="editor-block" style="position: relative; color: white;">
+                        <div class="column" style="flex: 1;">
+                            <h2 contenteditable="true" style="outline: none; font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem;">Ready to Get Started?</h2>
+                            <p contenteditable="true" style="outline: none; font-size: 1.25rem; margin-bottom: 2rem; opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto;">Join thousands of satisfied customers who have transformed their business with our platform.</p>
+                            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem;">
+                                <button contenteditable="true" style="outline: none; background: #4299e1; color: white; padding: 1rem 2rem; border-radius: 0.5rem; font-weight: 600; border: none; cursor: pointer; font-size: 1.1rem;">Start Free Trial</button>
+                                <button contenteditable="true" style="outline: none; background: transparent; color: white; padding: 1rem 2rem; border-radius: 0.5rem; font-weight: 600; border: 2px solid rgba(255,255,255,0.3); cursor: pointer; font-size: 1.1rem;">Schedule Demo</button>
+                            </div>
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 2rem; opacity: 0.8; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span style="color: #48bb78;">✓</span>
+                                    <span contenteditable="true" style="outline: none;">No credit card required</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span style="color: #48bb78;">✓</span>
+                                    <span contenteditable="true" style="outline: none;">14-day free trial</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span style="color: #48bb78;">✓</span>
+                                    <span contenteditable="true" style="outline: none;">Cancel anytime</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>`
         },
         {
             id: 'footer-section',
@@ -108,7 +209,52 @@ const SNIPPET_LIBRARY = {
                     <text x="100" y="70" text-anchor="middle" fill="#718096" font-size="10">© 2024 Company</text>
                 </svg>
             `),
-            html: '<section class="editor-section footer-section" style="width: 100%; padding: 40px 0; background: #1a202c;"><div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;"></div></section>'
+            html: `<section class="editor-section footer-section" style="width: 100%; padding: 40px 0; background: #1a202c;">
+                <div class="section-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+                    <div class="editor-block" style="position: relative; margin-bottom: 2rem;">
+                        <div class="three-column-container" style="display: flex; gap: 40px; color: #a0aec0;">
+                            <div class="column" style="flex: 1;">
+                                <h3 contenteditable="true" style="outline: none; color: white; font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Company</h3>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <li style="margin-bottom: 0.5rem;"><a href="#" contenteditable="true" style="outline: none; color: #a0aec0; text-decoration: none;">About Us</a></li>
+                                    <li style="margin-bottom: 0.5rem;"><a href="#" contenteditable="true" style="outline: none; color: #a0aec0; text-decoration: none;">Our Team</a></li>
+                                    <li style="margin-bottom: 0.5rem;"><a href="#" contenteditable="true" style="outline: none; color: #a0aec0; text-decoration: none;">Careers</a></li>
+                                    <li style="margin-bottom: 0.5rem;"><a href="#" contenteditable="true" style="outline: none; color: #a0aec0; text-decoration: none;">Contact</a></li>
+                                </ul>
+                            </div>
+                            <div class="column" style="flex: 1;">
+                                <h3 contenteditable="true" style="outline: none; color: white; font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Products</h3>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <li style="margin-bottom: 0.5rem;"><a href="#" contenteditable="true" style="outline: none; color: #a0aec0; text-decoration: none;">Features</a></li>
+                                    <li style="margin-bottom: 0.5rem;"><a href="#" contenteditable="true" style="outline: none; color: #a0aec0; text-decoration: none;">Pricing</a></li>
+                                    <li style="margin-bottom: 0.5rem;"><a href="#" contenteditable="true" style="outline: none; color: #a0aec0; text-decoration: none;">API</a></li>
+                                    <li style="margin-bottom: 0.5rem;"><a href="#" contenteditable="true" style="outline: none; color: #a0aec0; text-decoration: none;">Integrations</a></li>
+                                </ul>
+                            </div>
+                            <div class="column" style="flex: 1;">
+                                <h3 contenteditable="true" style="outline: none; color: white; font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Support</h3>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <li style="margin-bottom: 0.5rem;"><a href="#" contenteditable="true" style="outline: none; color: #a0aec0; text-decoration: none;">Help Center</a></li>
+                                    <li style="margin-bottom: 0.5rem;"><a href="#" contenteditable="true" style="outline: none; color: #a0aec0; text-decoration: none;">Documentation</a></li>
+                                    <li style="margin-bottom: 0.5rem;"><a href="#" contenteditable="true" style="outline: none; color: #a0aec0; text-decoration: none;">Community</a></li>
+                                    <li style="margin-bottom: 0.5rem;"><a href="#" contenteditable="true" style="outline: none; color: #a0aec0; text-decoration: none;">Status</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="editor-block" style="position: relative; border-top: 1px solid #4a5568; padding-top: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <p contenteditable="true" style="outline: none; color: #718096; margin: 0;">© 2024 Your Company. All rights reserved.</p>
+                            </div>
+                            <div style="display: flex; gap: 1rem;">
+                                <a href="#" contenteditable="true" style="outline: none; color: #a0aec0; text-decoration: none;">Privacy Policy</a>
+                                <a href="#" contenteditable="true" style="outline: none; color: #a0aec0; text-decoration: none;">Terms of Service</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>`
         }
     ],
     

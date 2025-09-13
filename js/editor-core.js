@@ -75,6 +75,11 @@ export class Editor {
         
         // Load initial content if provided
         this.loadInitialContent();
+        
+        // Set initial contenteditable state based on mode
+        if (typeof this.toggleContentEditableElements === 'function') {
+            this.toggleContentEditableElements();
+        }
     }
 
     setupPanelToggle() {
@@ -524,6 +529,11 @@ export class Editor {
             }
         }
         
+        // Handle contenteditable elements based on mode
+        if (typeof this.toggleContentEditableElements === 'function') {
+            this.toggleContentEditableElements();
+        }
+        
         // Dispatch custom event for mode change
         window.dispatchEvent(new CustomEvent('dragonModeChanged', { 
             detail: { mode: this.currentMode } 
@@ -535,6 +545,37 @@ export class Editor {
         //     this.columnResizer.refresh();
         // }
         
+    }
+
+    toggleContentEditableElements() {
+        // Find all contenteditable elements in the editable area
+        const editableElements = this.editableArea.querySelectorAll('[contenteditable]');
+        
+        editableElements.forEach(element => {
+            if (this.currentMode === 'edit') {
+                // Enable contenteditable in edit mode
+                element.contentEditable = 'true';
+                // Set cursor based on element type
+                if (element.tagName.toLowerCase() === 'button') {
+                    element.style.cursor = 'pointer';
+                } else {
+                    element.style.cursor = 'text';
+                }
+            } else {
+                // Disable contenteditable in display mode
+                element.contentEditable = 'false';
+                // Set cursor based on element type
+                if (element.tagName.toLowerCase() === 'button') {
+                    element.style.cursor = 'pointer';
+                } else {
+                    element.style.cursor = 'default';
+                }
+                // Remove any focus that might be on the element
+                if (document.activeElement === element) {
+                    element.blur();
+                }
+            }
+        });
     }
     
     setupDropZone() {
@@ -823,6 +864,10 @@ export class Editor {
                     }
                     // Make text elements editable in the new section
                     this.makeSectionElementsEditable(section);
+                    // Apply current mode to contenteditable elements
+                    if (typeof this.toggleContentEditableElements === 'function') {
+                        this.toggleContentEditableElements();
+                    }
                     // Trigger onChange callback for added section
                     this.triggerOnChange('section-added', section);
                 }
@@ -1592,6 +1637,24 @@ export class Editor {
         this.attachSectionControlListeners(section);
         this.attachDragHandleListeners(section);
         
+        // Process any blocks within the section to add their controls
+        const blocksInSection = section.querySelectorAll('.editor-block');
+        blocksInSection.forEach(block => {
+            if (!block.querySelector('.drag-handle')) {
+                this.addBlockControls(block);
+            }
+            this.attachDragHandleListeners(block);
+        });
+        
+        // Process any snippets within the section to add their controls  
+        const snippetsInSection = section.querySelectorAll('.editor-snippet');
+        snippetsInSection.forEach(snippet => {
+            if (!snippet.querySelector('.drag-handle')) {
+                this.addSnippetControls(snippet);
+            }
+            this.attachDragHandleListeners(snippet);
+        });
+        
         // Trigger onRender callback
         this.triggerOnRender('section', section);
         
@@ -1778,6 +1841,29 @@ export class Editor {
             
             // Make text elements in sections editable
             this.makeSectionElementsEditable(section);
+            
+            // Process any blocks within the section to add their controls
+            const blocksInSection = section.querySelectorAll('.editor-block');
+            blocksInSection.forEach(block => {
+                if (!block.querySelector('.drag-handle')) {
+                    this.addBlockControls(block);
+                }
+                this.attachDragHandleListeners(block);
+            });
+            
+            // Process any snippets within the section to add their controls
+            const snippetsInSection = section.querySelectorAll('.editor-snippet');
+            snippetsInSection.forEach(snippet => {
+                if (!snippet.querySelector('.drag-handle')) {
+                    this.addSnippetControls(snippet);
+                }
+                this.attachDragHandleListeners(snippet);
+            });
+            
+            // Apply current mode to contenteditable elements
+            if (typeof this.toggleContentEditableElements === 'function') {
+                this.toggleContentEditableElements();
+            }
         });
     }
     
