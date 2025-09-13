@@ -7,6 +7,8 @@
 
 A simple, pure JavaScript drag-and-drop website builder with zero dependencies. Create responsive websites visually by dragging sections, blocks, and snippets onto a canvas, with real-time editing, custom styling, and HTML code access. Features an organized tabbed sidebar for easy component access.
 
+**🚀 [Try the Live Demo](https://tsawler.github.io/dragon-cms/)**
+
 This project is **still in development**, and has not yet reached a stable release. Most features seem to work, and all tests pass, but there are undoubtedly still some rough edges.
 
 ## Table of Contents
