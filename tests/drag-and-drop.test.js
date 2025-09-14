@@ -105,11 +105,7 @@ describe('Drag and Drop Functionality', () => {
 
   describe('Block/snippet drag initiation and completion', () => {
     test('should initiate drag from panel item', () => {
-      // First need to initialize snippet panel drag listeners
-      const snippetPanel = editor.snippetPanel;
-      if (snippetPanel) {
-        snippetPanel.attachDragListeners();
-      }
+      // Drag listeners are automatically attached when snippet items are created
       
       const panelItem = document.querySelector('.panel-item[data-type="snippet"]');
       

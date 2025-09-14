@@ -428,8 +428,14 @@ export class ImageUploader {
 
         container.appendChild(settingsIcon);
 
-        // Note: Click handler and resize handlers are added by reattachImageHandlers()
-        // when this container is processed by setupImageSnippet()
+        // Add click handler for container selection
+        container.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.selectImage(container);
+        });
+
+        // Add resize handlers to make the resize handles functional
+        this.addResizeHandlers(container);
 
         return container;
     }
@@ -454,7 +460,21 @@ export class ImageUploader {
         // Toggle selection of this image
         const wasSelected = container.classList.contains('selected');
         container.classList.toggle('selected');
-        
+
+        // Show/hide icons based on selection state and editor mode
+        const browseIcon = container.querySelector('.image-browse-icon');
+        const settingsIcon = container.querySelector('.image-settings-icon');
+
+        if (container.classList.contains('selected') && this.editor.currentMode === 'edit') {
+            // Show icons when selected and in edit mode
+            if (browseIcon) browseIcon.style.display = 'flex';
+            if (settingsIcon) settingsIcon.style.display = 'flex';
+        } else {
+            // Hide icons when deselected or in display mode
+            if (browseIcon) browseIcon.style.display = 'none';
+            if (settingsIcon) settingsIcon.style.display = 'none';
+        }
+
         // Notify formatting toolbar if available
         const formattingToolbar = this.editor.formattingToolbar;
         if (formattingToolbar) {
@@ -518,9 +538,14 @@ export class ImageUploader {
     }
     
     addResizeHandlers(container) {
+        // Check if handlers are already attached
+        if (container.dataset.resizeHandlersAttached === 'true') {
+            return;
+        }
+
         const handles = container.querySelectorAll('.image-resize-handle');
         const img = container.querySelector('img');
-        
+
         handles.forEach(handle => {
             handle.addEventListener('mousedown', (e) => {
                 e.preventDefault();
@@ -590,5 +615,8 @@ export class ImageUploader {
                 document.addEventListener('mouseup', mouseUpHandler);
             });
         });
+
+        // Mark container as having handlers attached
+        container.dataset.resizeHandlersAttached = 'true';
     }
 }

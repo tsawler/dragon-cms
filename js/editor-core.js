@@ -265,14 +265,14 @@ export class Editor {
         // Publish button (only show if publishUrl is provided)
         const publishBtn = document.getElementById('publish-btn');
         if (publishBtn && this.publishUrl) {
-            publishBtn.style.display = 'inline-block';
+            publishBtn.classList.remove('btn-hidden');
             publishBtn.addEventListener('click', () => this.publishToUrl());
         }
 
         // Load from URL button (only show if loadUrl is provided)
         const loadFromUrlBtn = document.getElementById('load-from-url-btn');
         if (loadFromUrlBtn && this.loadUrl) {
-            loadFromUrlBtn.style.display = 'inline-block';
+            loadFromUrlBtn.classList.remove('btn-hidden');
             loadFromUrlBtn.addEventListener('click', () => this.loadFromUrl());
         }
     }

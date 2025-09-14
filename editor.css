@@ -1641,6 +1641,15 @@ body.image-resizing * {
     cursor: e-resize;
 }
 
+/* Button visibility classes */
+.btn-hidden {
+    display: none !important;
+}
+
+.toolbar-hidden {
+    display: none;
+}
+
 /* Hide image control icons in display mode */
 .dragon-editor .editable-area[data-mode="display"] .image-browse-icon,
 .dragon-editor .editable-area[data-mode="display"] .image-settings-icon {
