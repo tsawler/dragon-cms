@@ -9,6 +9,8 @@
 
 # Project instructions
 CLAUDE.md
+AGENTS.md
+improvements.md
 
 # Build/distribution files
 dist/

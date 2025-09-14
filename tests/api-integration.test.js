@@ -376,14 +376,14 @@ describe('API Integration Methods', () => {
   describe('API Button Visibility', () => {
     test('should show publish button when publishUrl is configured', () => {
       const publishBtn = document.getElementById('publish-btn');
-      
-      expect(publishBtn.style.display).toBe('inline-block');
+
+      expect(publishBtn.classList.contains('btn-hidden')).toBe(false);
     });
 
     test('should show load button when loadUrl is configured', () => {
       const loadBtn = document.getElementById('load-from-url-btn');
-      
-      expect(loadBtn.style.display).toBe('inline-block');
+
+      expect(loadBtn.classList.contains('btn-hidden')).toBe(false);
     });
 
     test('should not show buttons when URLs are not configured', () => {

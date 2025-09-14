@@ -53,17 +53,23 @@ export class SnippetPanel {
     }
 
     setupFiltering() {
-        this.filterInput.addEventListener('input', (e) => {
-            this.filterContent(e.target.value);
-        });
+        if (this.filterInput) {
+            this.filterInput.addEventListener('input', (e) => {
+                this.filterContent(e.target.value);
+            });
+        }
     }
 
     showTab(tabName) {
         const panel = document.getElementById('snippet-panel');
         const editorMain = document.querySelector('.editor-main');
         const clickedButton = document.querySelector(`[data-tab="${tabName}"]`);
-        
-        // Check if this tab is already active and panel is open
+
+        // Check if elements exist and this tab is already active and panel is open
+        if (!panel || !editorMain || !clickedButton) {
+            return;
+        }
+
         const isCurrentTabActive = clickedButton.classList.contains('active');
         const isPanelOpen = panel.classList.contains('open');
         
@@ -87,13 +93,17 @@ export class SnippetPanel {
         // Update panel title
         const titles = {
             sections: 'Sections',
-            blocks: 'Blocks', 
+            blocks: 'Blocks',
             snippets: 'Snippets'
         };
-        this.panelTitle.textContent = titles[tabName];
-        
+        if (this.panelTitle) {
+            this.panelTitle.textContent = titles[tabName];
+        }
+
         // Clear filter
-        this.filterInput.value = '';
+        if (this.filterInput) {
+            this.filterInput.value = '';
+        }
         
         // Show panel and render content
         panel.classList.add('open');
@@ -103,13 +113,17 @@ export class SnippetPanel {
     }
 
     renderCurrentTab(filter = '') {
+        if (!this.snippetList) {
+            return;
+        }
+
         this.snippetList.innerHTML = '';
-        
+
         const items = this.allContent[this.currentTab] || [];
-        const filteredItems = filter 
+        const filteredItems = filter
             ? items.filter(item => item.name.toLowerCase().includes(filter.toLowerCase()))
             : items;
-            
+
         if (filteredItems.length === 0) {
             const emptyMessage = document.createElement('div');
             emptyMessage.className = 'empty-message';
