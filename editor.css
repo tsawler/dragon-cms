@@ -1641,6 +1641,17 @@ body.image-resizing * {
     cursor: e-resize;
 }
 
+/* Hide image control icons in display mode */
+.dragon-editor .editable-area[data-mode="display"] .image-browse-icon,
+.dragon-editor .editable-area[data-mode="display"] .image-settings-icon {
+    display: none !important;
+}
+
+/* Hide image resize handles in display mode */
+.dragon-editor .editable-area[data-mode="display"] .image-resize-handle {
+    display: none !important;
+}
+
 /* Professional alignment toolbar styling */
 .image-alignment-toolbar.visible {
     display: flex !important;
