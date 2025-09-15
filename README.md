@@ -1703,4 +1703,4 @@ MIT License - see [LICENSE.md](LICENSE.md) file for details.
 ## Support
 
 For issues, questions, or suggestions:
-- Open an issue on [GitHub](https://github.com/tsawler/dragoncms)
+- Open an issue on [GitHub](https://github.com/tsawler/dragon-cms)
