@@ -264,21 +264,21 @@ const SNIPPET_LIBRARY = {
             name: 'Container Block',
             type: 'block',
             preview: 'text', // 'text' or 'image'
-            html: '<div class="content-container"></div>'
+            html: '<div class="column" style="width: 100%;"></div>'
         },
         {
             id: 'two-column-block',
             name: 'Two Column Block',
             type: 'block',
             preview: 'text',
-            html: '<div class="two-column-container" style="display: flex; gap: 20px;"><div class="column" style="flex: 1;"></div><div class="column" style="flex: 1;"></div></div>'
+            html: '<div class="two-column-container" style="display: flex; gap: 30px; width: 100%;"><div class="column" style="flex: 1; min-width: 60px;"></div><div class="column" style="flex: 1; min-width: 60px;"></div></div>'
         },
         {
             id: 'three-column-block',
             name: 'Three Column Block',
             type: 'block',
             preview: 'text',
-            html: '<div class="three-column-container" style="display: flex; gap: 20px;"><div class="column" style="flex: 1;"></div><div class="column" style="flex: 1;"></div><div class="column" style="flex: 1;"></div></div>'
+            html: '<div class="three-column-container" style="display: flex; gap: 30px; width: 100%;"><div class="column" style="flex: 1; min-width: 60px;"></div><div class="column" style="flex: 1; min-width: 60px;"></div><div class="column" style="flex: 1; min-width: 60px;"></div></div>'
         },
         {
             id: 'hero-block',
