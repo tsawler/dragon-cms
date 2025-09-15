@@ -8,6 +8,7 @@ import { ColumnResizer } from './column-resizer.js';
 import { PageSettingsModal } from './page-settings-modal.js';
 import { ModalDragger } from './modal-dragger.js';
 import { ButtonSettingsModal } from './button-settings-modal.js';
+import { EventHandlerRegistry } from './event-handlers.js';
 
 export class Editor {
     constructor(options = {}) {
@@ -66,6 +67,7 @@ export class Editor {
         this.columnResizer = new ColumnResizer(this);
         this.pageSettingsModal = new PageSettingsModal(this);
         this.modalDragger = new ModalDragger();
+        this.eventHandlerRegistry = new EventHandlerRegistry(this);
         
         this.buttonSettingsModal = new ButtonSettingsModal(this);
         this.linkSettingsModal = new LinkSettingsModal(this);
@@ -132,13 +134,13 @@ export class Editor {
             this.attachDragHandleListeners(snippet);
         });
         
-        // Apply Firefox contenteditable fixes if needed
+        // Make text elements in blocks editable
+        this.makeExistingBlocksEditable();
+
+        // Apply Firefox contenteditable fixes AFTER making elements editable
         if (this.formattingToolbar) {
             this.formattingToolbar.fixFirefoxEditableElements();
         }
-        
-        // Make text elements in blocks editable
-        this.makeExistingBlocksEditable();
         
         // Make existing sections draggable
         if (typeof this.makeExistingSectionsDraggable === 'function') {
@@ -223,7 +225,7 @@ export class Editor {
         this.attachHeaderListeners();
         
         // Handle all clicks (control icons and content buttons)
-        this.attachClickListeners();
+        this.eventHandlerRegistry.setupClickDelegation(this.editableArea);
 
     }
 
@@ -278,116 +280,18 @@ export class Editor {
     }
 
     attachDragHandleListeners(element) {
-        const dragHandle = element.querySelector('.drag-handle');
-        if (!dragHandle) {
-            return;
+        // Initialize event handler registry if not already done
+        if (!this.eventHandlerRegistry) {
+            this.eventHandlerRegistry = new EventHandlerRegistry(this);
         }
-        
-        // Check if listeners are already attached to prevent duplicates
-        if (element.dataset.dragListenersAttached === 'true') {
-            return;
-        }
-        
-        
-        // Make the element draggable all the time
-        element.draggable = true;
-        dragHandle.style.cursor = 'move';
-        
-        // Simple approach: just mark when drag is from handle
-        dragHandle.addEventListener('mousedown', (e) => {
-            element.dataset.dragFromHandle = 'true';
-            e.stopPropagation();
-        });
-        
-        // Clear flag on dragend
-        element.addEventListener('dragend', (e) => {
-            delete element.dataset.dragFromHandle;
-        });
-        
-        // Clear flag on mouseup if drag didn't start
-        document.addEventListener('mouseup', () => {
-            // Use setTimeout to let dragstart fire first
-            setTimeout(() => {
-                if (element.dataset.dragFromHandle && !element.classList.contains('dragging-element')) {
-                    delete element.dataset.dragFromHandle;
-                }
-            }, 10);
-        });
-        
-        // Mark as having listeners attached
-        element.dataset.dragListenersAttached = 'true';
+        // Delegate to the event handler registry
+        this.eventHandlerRegistry.setupDragHandlers(element);
     }
 
+    // Backward compatibility method - now handled by EventHandlerRegistry
     attachClickListeners() {
-        // Use a single event listener for all clicks
-        this.editableArea.addEventListener('click', (e) => {
-            // FIRST: Check if this is a content button click (not a control icon)
-            if (e.target.tagName === 'BUTTON' && 
-                !e.target.classList.contains('edit-icon') && 
-                !e.target.classList.contains('code-icon') &&
-                !e.target.classList.contains('delete-icon') &&
-                !e.target.classList.contains('settings-icon') &&
-                !e.target.classList.contains('gear-icon')) {
-                
-                if (this.currentMode === 'edit') {
-                    // In edit mode, open the button settings modal
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.buttonSettingsModal.open(e.target);
-                    return;
-                } else if (this.currentMode === 'display') {
-                    // In display mode, navigate if URL exists
-                    const url = e.target.getAttribute('data-url');
-                    const target = e.target.getAttribute('data-target') || '_self';
-                    if (url) {
-                        e.preventDefault();
-                        window.open(url, target);
-                    }
-                    return;
-                }
-            }
-            
-            // SECOND: Check if the clicked element or its parent is a control icon
-            const controlTarget = e.target.closest('.edit-icon, .code-icon, .delete-icon, .settings-icon, .gear-icon, .drag-handle');
-            
-            if (!controlTarget) return;
-            
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (controlTarget.classList.contains('edit-icon')) {
-                const element = controlTarget.closest('.editor-block, .editor-snippet');
-                if (element && this.styleEditorModal) {
-                    this.styleEditorModal.open(element);
-                }
-            } else if (controlTarget.classList.contains('gear-icon')) {
-                const section = controlTarget.closest('.editor-section');
-                if (section && this.sectionSettingsModal) {
-                    this.sectionSettingsModal.open(section);
-                }
-            } else if (controlTarget.classList.contains('delete-icon')) {
-                const element = controlTarget.closest('.editor-section, .editor-block, .editor-snippet');
-                if (element) {
-                    this.deleteElement(element);
-                }
-            } else if (controlTarget.classList.contains('code-icon')) {
-                const element = controlTarget.closest('.editor-section, .editor-block, .editor-snippet');
-                if (element) {
-                    this.openCodeEditor(element);
-                }
-            } else if (controlTarget.classList.contains('settings-icon')) {
-                const snippet = controlTarget.closest('.editor-snippet');
-                if (snippet && snippet.classList.contains('video-snippet')) {
-                    this.videoSettingsModal.open(snippet);
-                } else {
-                    // Handle other settings (blocks, non-video snippets)
-                    const element = controlTarget.closest('.editor-block, .editor-snippet');
-                    if (element) {
-                        this.openElementSettings(element);
-                    }
-                }
-            }
-        });
+        // This method is now handled by eventHandlerRegistry.setupClickDelegation
+        // which is called in attachEventListeners()
     }
 
     // Header button methods
@@ -814,6 +718,20 @@ export class Editor {
                 const sectionContent = e.target.closest('.section-content');
                 if (sectionContent) {
                     // Dropping block into a section
+                    const closestSection = sectionContent.closest('.editor-section');
+
+                    // Check if this section is empty and remove placeholder content
+                    const isEmptySection = closestSection && closestSection.classList.contains('empty-section');
+                    if (isEmptySection) {
+                        // Remove placeholder text from empty section
+                        const placeholderText = sectionContent.querySelector('p');
+                        if (placeholderText && placeholderText.textContent.includes('Drag blocks')) {
+                            placeholderText.remove();
+                        }
+                        // Remove empty-section class since it's no longer empty
+                        closestSection.classList.remove('empty-section');
+                    }
+
                     if (isExisting && draggingElement && draggingElement.classList.contains('editor-block')) {
                         // Moving an existing block into section
                         const afterElement = this.getDragAfterElement(sectionContent, e.clientY);
