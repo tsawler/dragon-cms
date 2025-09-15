@@ -728,6 +728,10 @@ export class Editor {
                         if (placeholderText && placeholderText.textContent.includes('Drag blocks')) {
                             placeholderText.remove();
                         }
+                        // Reset section-content styling to allow proper block stacking
+                        sectionContent.style.display = '';
+                        sectionContent.style.alignItems = '';
+                        sectionContent.style.justifyContent = '';
                         // Remove empty-section class since it's no longer empty
                         closestSection.classList.remove('empty-section');
                     }

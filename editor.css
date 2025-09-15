@@ -366,6 +366,8 @@
     position: relative;
     min-height: 80px;
     transition: all 0.2s;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .dragon-editor .editable-area[data-mode="edit"] .editor-block{

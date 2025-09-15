@@ -1,3 +1,5 @@
+import { STYLES, styleToString, createSpacingSection, createModalFooter, highlightSyntax } from './modal-utilities.js';
+
 // Utility function to style Edge modal headers with neutral colors
 function styleEdgeModalHeader(modalContent) {
     const modalHeader = modalContent.querySelector('.modal-header');
@@ -63,17 +65,7 @@ function styleEdgeModalHeader(modalContent) {
     }
 }
 
-// Syntax highlighting utility functions
-function highlightSyntax(code, language = 'html') {
-    if (language === 'html') {
-        return highlightHTML(code);
-    } else if (language === 'css') {
-        return highlightCSS(code);
-    } else if (language === 'javascript') {
-        return highlightJavaScript(code);
-    }
-    return escapeHTML(code);
-}
+// Note: highlightSyntax is imported from modal-utilities.js at the top of this file
 
 function escapeHTML(text) {
     const div = document.createElement('div');
@@ -81,96 +73,26 @@ function escapeHTML(text) {
     return div.innerHTML;
 }
 
+// Legacy syntax highlighting - now using unified version from modal-utilities.js
+// Keeping wrapper functions for backward compatibility
 function highlightHTML(code) {
-    return code
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        // Comments
-        .replace(/(&lt;!--.*?--&gt;)/g, '<span class="syntax-comment">$1</span>')
-        // Tags
-        .replace(/(&lt;\/?)([\w-]+)([^&]*?)(&gt;)/g, (match, open, tagName, attrs, close) => {
-            const highlightedAttrs = attrs.replace(/([\w-]+)(=)([&"'][^&"']*[&"'])/g, 
-                '<span class="syntax-attribute">$1</span>$2<span class="syntax-string">$3</span>');
-            return `${open}<span class="syntax-tag">${tagName}</span>${highlightedAttrs}${close}`;
-        });
+    return highlightSyntax(code, 'html');
 }
 
 function highlightCSS(code) {
-    return code
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        // Comments
-        .replace(/(\/\*.*?\*\/)/g, '<span class="syntax-comment">$1</span>')
-        // Selectors
-        .replace(/^([^{]+)(\{)/gm, '<span class="syntax-css-selector">$1</span>$2')
-        // Properties and values
-        .replace(/([\w-]+)(\s*:\s*)([^;]+)(;)/g, 
-            '<span class="syntax-css-property">$1</span>$2<span class="syntax-css-value">$3</span>$4');
+    return highlightSyntax(code, 'css');
 }
 
 function highlightJavaScript(code) {
-    const keywords = ['var', 'let', 'const', 'function', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'default', 'break', 'continue', 'return', 'try', 'catch', 'finally', 'throw', 'new', 'this', 'class', 'extends', 'super'];
-    
-    // First escape HTML
-    let result = code
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-    
-    // Create a list to store protected ranges (strings and comments)
-    const protectedRanges = [];
-    
-    // Find and protect strings first
-    const stringRegex = /(['"`])((?:\\.|(?!\1)[^\\])*?)\1/g;
-    let match;
-    while ((match = stringRegex.exec(result)) !== null) {
-        const placeholder = `__STRING_${protectedRanges.length}__`;
-        protectedRanges.push(`<span class="syntax-js-string">${match[0]}</span>`);
-        result = result.substring(0, match.index) + placeholder + result.substring(match.index + match[0].length);
-        stringRegex.lastIndex = match.index + placeholder.length;
-    }
-    
-    // Find and protect comments
-    const commentRegex1 = /\/\/.*$/gm;
-    while ((match = commentRegex1.exec(result)) !== null) {
-        const placeholder = `__COMMENT_${protectedRanges.length}__`;
-        protectedRanges.push(`<span class="syntax-js-comment">${match[0]}</span>`);
-        result = result.substring(0, match.index) + placeholder + result.substring(match.index + match[0].length);
-        commentRegex1.lastIndex = match.index + placeholder.length;
-    }
-    
-    const commentRegex2 = /\/\*.*?\*\//g;
-    while ((match = commentRegex2.exec(result)) !== null) {
-        const placeholder = `__COMMENT_${protectedRanges.length}__`;
-        protectedRanges.push(`<span class="syntax-js-comment">${match[0]}</span>`);
-        result = result.substring(0, match.index) + placeholder + result.substring(match.index + match[0].length);
-        commentRegex2.lastIndex = match.index + placeholder.length;
-    }
-    
-    // Apply keywords
-    result = result.replace(new RegExp(`\\b(${keywords.join('|')})\\b`, 'g'), '<span class="syntax-js-keyword">$1</span>');
-    
-    // Apply function names
-    result = result.replace(/\b(\w+)(?=\s*\()/g, '<span class="syntax-js-function">$1</span>');
-    
-    // Restore protected ranges
-    protectedRanges.forEach((replacement, index) => {
-        result = result.replace(`__STRING_${index}__`, replacement);
-        result = result.replace(`__COMMENT_${index}__`, replacement);
-    });
-    
-    return result;
+    return highlightSyntax(code, 'javascript');
 }
 
 function detectLanguage(code) {
-    if (code.includes('<style') || (code.includes('{') && code.includes(':') && code.includes(';'))) {
-        return 'css';
-    }
-    if (code.includes('function') || code.includes('var ') || code.includes('let ') || code.includes('const ')) {
-        return 'javascript';
-    }
+    // Delegate to auto-detection in highlightSyntax
+    const result = highlightSyntax(code, 'auto');
+    // Check which syntax classes were applied
+    if (result.includes('syntax-css-')) return 'css';
+    if (result.includes('syntax-js-')) return 'javascript';
     return 'html';
 }
 
@@ -279,141 +201,8 @@ export class StyleEditorModal {
                     <button class="modal-close">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <!-- Padding Section -->
-                    <div class="form-section" style="margin-bottom: 2rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb;">
-                        <h3 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #374151;">Padding</h3>
-                        <div class="spacing-controls" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                            <div class="form-group" style="margin: 0;">
-                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Top</label>
-                                <div style="display: flex; gap: 0.25rem;">
-                                    <input type="number" class="style-padding-top" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
-                                    <select class="style-padding-top-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
-                                        <option value="px">px</option>
-                                        <option value="em">em</option>
-                                        <option value="rem">rem</option>
-                                        <option value="%">%</option>
-                                        <option value="vh">vh</option>
-                                        <option value="vw">vw</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin: 0;">
-                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Right</label>
-                                <div style="display: flex; gap: 0.25rem;">
-                                    <input type="number" class="style-padding-right" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
-                                    <select class="style-padding-right-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
-                                        <option value="px">px</option>
-                                        <option value="em">em</option>
-                                        <option value="rem">rem</option>
-                                        <option value="%">%</option>
-                                        <option value="vh">vh</option>
-                                        <option value="vw">vw</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin: 0;">
-                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Bottom</label>
-                                <div style="display: flex; gap: 0.25rem;">
-                                    <input type="number" class="style-padding-bottom" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
-                                    <select class="style-padding-bottom-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
-                                        <option value="px">px</option>
-                                        <option value="em">em</option>
-                                        <option value="rem">rem</option>
-                                        <option value="%">%</option>
-                                        <option value="vh">vh</option>
-                                        <option value="vw">vw</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin: 0;">
-                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Left</label>
-                                <div style="display: flex; gap: 0.25rem;">
-                                    <input type="number" class="style-padding-left" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
-                                    <select class="style-padding-left-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
-                                        <option value="px">px</option>
-                                        <option value="em">em</option>
-                                        <option value="rem">rem</option>
-                                        <option value="%">%</option>
-                                        <option value="vh">vh</option>
-                                        <option value="vw">vw</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div style="margin-top: 0.75rem; text-align: center;">
-                            <button type="button" class="link-all-padding" style="background: none; border: none; color: #3b82f6; cursor: pointer; font-size: 0.75rem; text-decoration: underline;">Link all sides</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Margin Section -->
-                    <div class="form-section" style="margin-bottom: 2rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb;">
-                        <h3 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #374151;">Margin</h3>
-                        <div class="spacing-controls" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                            <div class="form-group" style="margin: 0;">
-                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Top</label>
-                                <div style="display: flex; gap: 0.25rem;">
-                                    <input type="number" class="style-margin-top" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
-                                    <select class="style-margin-top-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
-                                        <option value="px">px</option>
-                                        <option value="em">em</option>
-                                        <option value="rem">rem</option>
-                                        <option value="%">%</option>
-                                        <option value="vh">vh</option>
-                                        <option value="vw">vw</option>
-                                        <option value="auto">auto</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin: 0;">
-                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Right</label>
-                                <div style="display: flex; gap: 0.25rem;">
-                                    <input type="number" class="style-margin-right" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
-                                    <select class="style-margin-right-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
-                                        <option value="px">px</option>
-                                        <option value="em">em</option>
-                                        <option value="rem">rem</option>
-                                        <option value="%">%</option>
-                                        <option value="vh">vh</option>
-                                        <option value="vw">vw</option>
-                                        <option value="auto">auto</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin: 0;">
-                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Bottom</label>
-                                <div style="display: flex; gap: 0.25rem;">
-                                    <input type="number" class="style-margin-bottom" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
-                                    <select class="style-margin-bottom-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
-                                        <option value="px">px</option>
-                                        <option value="em">em</option>
-                                        <option value="rem">rem</option>
-                                        <option value="%">%</option>
-                                        <option value="vh">vh</option>
-                                        <option value="vw">vw</option>
-                                        <option value="auto">auto</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin: 0;">
-                                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; color: #6b7280;">Left</label>
-                                <div style="display: flex; gap: 0.25rem;">
-                                    <input type="number" class="style-margin-left" placeholder="0" style="flex: 2; min-width: 60px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
-                                    <select class="style-margin-left-unit" style="flex: 1; max-width: 70px; padding: 0.375rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; background: white;">
-                                        <option value="px">px</option>
-                                        <option value="em">em</option>
-                                        <option value="rem">rem</option>
-                                        <option value="%">%</option>
-                                        <option value="vh">vh</option>
-                                        <option value="vw">vw</option>
-                                        <option value="auto">auto</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div style="margin-top: 0.75rem; text-align: center;">
-                            <button type="button" class="link-all-margin" style="background: none; border: none; color: #3b82f6; cursor: pointer; font-size: 0.75rem; text-decoration: underline;">Link all sides</button>
-                        </div>
-                    </div>
+                    ${createSpacingSection('padding')}
+                    ${createSpacingSection('margin', { includeAuto: true })}
                     <div class="form-group">
                         <label>Border Width (px)</label>
                         <input type="number" class="style-border-width" placeholder="e.g., 1">
@@ -463,10 +252,7 @@ export class StyleEditorModal {
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
-                    <button class="btn modal-cancel" style="padding: 0.5rem 1rem; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Cancel</button>
-                    <button class="btn btn-primary modal-save" style="padding: 0.5rem 1rem; border: 1px solid #3b82f6; background: #3b82f6; color: white; border-radius: 4px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Apply</button>
-                </div>
+                ${createModalFooter('Apply')}
             </div>
         `;
         
