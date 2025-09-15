@@ -276,8 +276,9 @@
     width: 100%;
 }
 
-.dragon-editor .editable-area[data-mode="display"] .snippet-panel{
-    display: none;
+.dragon-editor .editable-area[data-mode="display"] ~ .snippet-panel,
+.dragon-editor .editor-main[data-mode="display"] .snippet-panel{
+    display: none !important;
 }
 
 .dragon-editor .editable-area[data-mode="display"] .editor-controls{
@@ -1658,6 +1659,11 @@ body.image-resizing * {
 
 /* Hide image resize handles in display mode */
 .dragon-editor .editable-area[data-mode="display"] .image-resize-handle {
+    display: none !important;
+}
+
+/* Hide empty sections in display mode */
+.dragon-editor .editable-area[data-mode="display"] .empty-section {
     display: none !important;
 }
 
