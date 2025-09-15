@@ -693,7 +693,7 @@ export class FormattingToolbar {
     
     fixSingleFirefoxElement(editableElement) {
         if (!editableElement || editableElement.dataset.firefoxFixed) return;
-        
+
         // Mark as fixed to avoid duplicate processing
         editableElement.dataset.firefoxFixed = 'true';
         
@@ -1007,18 +1007,34 @@ export class FormattingToolbar {
     }
     
     setupAlignmentToolbar() {
-        // Setup alignment button handlers
-        this.alignmentToolbar.querySelectorAll('button[data-align]').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const alignment = button.dataset.align;
-                this.alignSelectedImage(alignment);
+        // Setup alignment button handlers if the toolbar exists
+        if (!this.alignmentToolbar) {
+            this.alignmentToolbar = document.getElementById('image-alignment-toolbar');
+        }
+
+        if (this.alignmentToolbar) {
+            this.alignmentToolbar.querySelectorAll('button[data-align]').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const alignment = button.dataset.align;
+                    this.alignSelectedImage(alignment);
+                });
             });
-        });
+        }
     }
     
     showAlignmentToolbar(container) {
+        // Lazy initialization - try to find the element if it wasn't found during construction
+        if (!this.alignmentToolbar) {
+            this.alignmentToolbar = document.getElementById('image-alignment-toolbar');
+        }
+
+        if (!this.alignmentToolbar) {
+            console.warn('Image alignment toolbar not found in DOM');
+            return;
+        }
+
         const rect = container.getBoundingClientRect();
 
         // First make the toolbar visible so we can get accurate dimensions
@@ -1050,10 +1066,16 @@ export class FormattingToolbar {
     }
     
     hideAlignmentToolbar() {
-        this.alignmentToolbar.classList.remove('visible');
+        if (this.alignmentToolbar) {
+            this.alignmentToolbar.classList.remove('visible');
+        }
     }
     
     updateAlignmentToolbarState(container) {
+        if (!this.alignmentToolbar) {
+            return;
+        }
+
         // Remove active state from all buttons
         this.alignmentToolbar.querySelectorAll('button').forEach(btn => {
             btn.classList.remove('active');
