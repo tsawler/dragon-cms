@@ -17,6 +17,7 @@ export class SnippetPanel {
         this.loadAllContent();
         this.setupTabNavigation();
         this.setupFiltering();
+        this.setupClickOutside();
         // Panel starts closed - user clicks icon to open
     }
 
@@ -110,6 +111,47 @@ export class SnippetPanel {
         editorMain.classList.add('panel-open');
 
         this.renderCurrentTab();
+    }
+
+    /**
+     * Close the panel
+     */
+    closePanel() {
+        const panel = document.getElementById('snippet-panel');
+        const editorMain = document.querySelector('.editor-main');
+
+        if (panel && editorMain) {
+            panel.classList.remove('open');
+            editorMain.classList.remove('panel-open');
+
+            // Remove active state from all tab buttons
+            document.querySelectorAll('.icon-strip-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+    }
+
+    /**
+     * Setup click outside to close panel
+     */
+    setupClickOutside() {
+        document.addEventListener('click', (e) => {
+            const panel = document.getElementById('snippet-panel');
+            const iconStrip = document.querySelector('.icon-strip');
+
+            // If panel is not open, don't do anything
+            if (!panel || !panel.classList.contains('open')) {
+                return;
+            }
+
+            // Check if click is outside panel and icon strip
+            const clickedInsidePanel = panel.contains(e.target);
+            const clickedInsideIconStrip = iconStrip && iconStrip.contains(e.target);
+
+            if (!clickedInsidePanel && !clickedInsideIconStrip) {
+                this.closePanel();
+            }
+        });
     }
 
     renderCurrentTab(filter = '') {

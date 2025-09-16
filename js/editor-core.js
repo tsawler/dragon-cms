@@ -9,6 +9,7 @@ import { PageSettingsModal } from './page-settings-modal.js';
 import { ModalDragger } from './modal-dragger.js';
 import { ButtonSettingsModal } from './button-settings-modal.js';
 import { EventHandlerRegistry } from './event-handlers.js';
+import { DropZoneManager } from './drop-zone-manager.js';
 
 export class Editor {
     constructor(options = {}) {
@@ -68,7 +69,9 @@ export class Editor {
         this.pageSettingsModal = new PageSettingsModal(this);
         this.modalDragger = new ModalDragger();
         this.eventHandlerRegistry = new EventHandlerRegistry(this);
-        
+        this.dropZoneManager = new DropZoneManager(this);
+        this.dropZoneManager.setup();
+
         this.buttonSettingsModal = new ButtonSettingsModal(this);
         this.linkSettingsModal = new LinkSettingsModal(this);
         
@@ -219,7 +222,7 @@ export class Editor {
     }
 
     attachEventListeners() {
-        this.setupDropZone();
+        this.dropZoneManager.setup();
 
         // Handle header button clicks
         this.attachHeaderListeners();
@@ -349,6 +352,12 @@ export class Editor {
             if (editorMain) {
                 editorMain.classList.remove('panel-open');
             }
+
+            // Remove any drag/drop styling classes in display mode
+            this.editableArea.classList.remove('valid-drop-target');
+            document.querySelectorAll('.valid-drop-target').forEach(el => {
+                el.classList.remove('valid-drop-target');
+            });
         } else {
             // Show icon strip in edit mode
             const iconStrip = document.querySelector('.icon-strip');
@@ -420,7 +429,8 @@ export class Editor {
         });
     }
     
-    setupDropZone() {
+    // setupDropZone method has been refactored into DropZoneManager class
+    setupDropZone_DEPRECATED() {
         const area = this.editableArea;
 
         // Track if we're currently in an existing element drag
@@ -849,7 +859,16 @@ export class Editor {
         return null;
     }
     
+    // Proxy method for backward compatibility - delegates to DropZoneManager
     clearVisualIndicators() {
+        if (this.dropZoneManager) {
+            return this.dropZoneManager.clearVisualIndicators();
+        }
+        // Fallback to original implementation
+        return this.clearVisualIndicators_DEPRECATED();
+    }
+
+    clearVisualIndicators_DEPRECATED() {
         const area = this.editableArea;
         
         // Remove all visual indicators
@@ -867,7 +886,16 @@ export class Editor {
         // Don't clear currentTargetBlock here - it's needed for drop event
     }
     
+    // Proxy method for backward compatibility - delegates to DropZoneManager
     getSnippetInsertionPointWithPosition(block, y) {
+        if (this.dropZoneManager) {
+            return this.dropZoneManager.getSnippetInsertionPointWithPosition(block, y);
+        }
+        // Fallback to original implementation
+        return this.getSnippetInsertionPointWithPosition_DEPRECATED(block, y);
+    }
+
+    getSnippetInsertionPointWithPosition_DEPRECATED(block, y) {
         const snippets = [...block.querySelectorAll(':scope > .editor-snippet:not(.dragging-element)')];
         const blockRect = block.getBoundingClientRect();
         
@@ -899,7 +927,16 @@ export class Editor {
         };
     }
     
+    // Proxy method for backward compatibility - delegates to DropZoneManager
     getInsertionPoint(container, y) {
+        if (this.dropZoneManager) {
+            return this.dropZoneManager.getInsertionPoint(container, y);
+        }
+        // Fallback to original implementation
+        return this.getInsertionPoint_DEPRECATED(container, y);
+    }
+
+    getInsertionPoint_DEPRECATED(container, y) {
         const elements = [...container.querySelectorAll(':scope > .editor-block:not(.dragging-element), :scope > .editor-section:not(.dragging-element)')];
         const containerRect = container.getBoundingClientRect();
         
@@ -931,7 +968,16 @@ export class Editor {
         };
     }
     
+    // Proxy method for backward compatibility - delegates to DropZoneManager
     createInsertionLine(insertionPoint) {
+        if (this.dropZoneManager) {
+            return this.dropZoneManager.createInsertionLine(insertionPoint);
+        }
+        // Fallback to original implementation
+        return this.createInsertionLine_DEPRECATED(insertionPoint);
+    }
+
+    createInsertionLine_DEPRECATED(insertionPoint) {
         const line = document.createElement('div');
         line.className = 'drop-insertion-line';
         line.style.position = 'absolute';
@@ -942,7 +988,16 @@ export class Editor {
         return line;
     }
     
+    // Proxy method for backward compatibility - delegates to DropZoneManager
     getDragAfterElement(container, y) {
+        if (this.dropZoneManager) {
+            return this.dropZoneManager.getDragAfterElement(container, y);
+        }
+        // Fallback to original implementation
+        return this.getDragAfterElement_DEPRECATED(container, y);
+    }
+
+    getDragAfterElement_DEPRECATED(container, y) {
         // Get direct children blocks and sections of the container (not nested elements)
         const draggableElements = [...container.querySelectorAll(':scope > .editor-block:not(.dragging-element), :scope > .editor-section:not(.dragging-element)')];
         
@@ -1978,6 +2033,37 @@ export class Editor {
             } catch (error) {
                 console.error('Error in onRender callback:', error);
             }
+        }
+    }
+
+    // Proxy properties for backward compatibility with tests
+    get activeExistingDrag() {
+        return this.dropZoneManager ? this.dropZoneManager.activeExistingDrag : null;
+    }
+
+    set activeExistingDrag(value) {
+        if (this.dropZoneManager) {
+            this.dropZoneManager.activeExistingDrag = value;
+        }
+    }
+
+    get currentDragOperation() {
+        return this.dropZoneManager ? this.dropZoneManager.currentDragOperation : null;
+    }
+
+    set currentDragOperation(value) {
+        if (this.dropZoneManager) {
+            this.dropZoneManager.currentDragOperation = value;
+        }
+    }
+
+    get currentTargetBlock() {
+        return this.dropZoneManager ? this.dropZoneManager.currentTargetBlock : null;
+    }
+
+    set currentTargetBlock(value) {
+        if (this.dropZoneManager) {
+            this.dropZoneManager.currentTargetBlock = value;
         }
     }
 }
