@@ -301,7 +301,8 @@
 }
 
 .dragon-editor .editable-area[data-mode="display"] .drop-zone-placeholder{
-    display: none;
+    display: none !important;
+    border: none !important;
 }
 
 /* Base section styles with full-width capability */
@@ -514,6 +515,13 @@
     border-radius: 4px;
     box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
     animation: pulse-green 1.5s infinite;
+}
+
+.dragon-editor .editable-area.valid-drop-target{
+    background: rgba(240, 253, 244, 0.5) !important;
+    border: 2px dashed #10b981 !important;
+    border-radius: 4px;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
 }
 
 /* Make columns visible in edit mode */
@@ -1667,6 +1675,14 @@ body.image-resizing * {
 /* Hide empty sections in display mode */
 .dragon-editor .editable-area[data-mode="display"] .empty-section {
     display: none !important;
+}
+
+/* Remove drop target styling in display mode */
+.dragon-editor .editable-area[data-mode="display"].valid-drop-target {
+    background: white !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
 }
 
 /* Professional alignment toolbar styling */

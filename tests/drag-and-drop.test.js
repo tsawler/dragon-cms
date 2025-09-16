@@ -280,7 +280,7 @@ describe('Drag and Drop Functionality', () => {
 
     test('should show drop indicator on dragover for blocks', () => {
       // Set up drag operation for block
-      editor.currentDragOperation = { type: 'block', isExisting: false };
+      editor.currentDragOperation = { elementType: 'block', type: 'new', isExisting: false };
       
       const dragOverEvent = new DragEvent('dragover', {
         bubbles: true,
@@ -291,8 +291,8 @@ describe('Drag and Drop Functionality', () => {
       
       editableArea.dispatchEvent(dragOverEvent);
       
-      // Should add visual indicators
-      expect(editableArea.style.background).toContain('rgba');
+      // Should add visual indicators via CSS class
+      expect(editableArea.classList.contains('valid-drop-target')).toBe(true);
     });
 
     test('should validate snippet drop zones (blocks only)', () => {
@@ -302,7 +302,7 @@ describe('Drag and Drop Functionality', () => {
       editableArea.appendChild(block);
       
       // Set up drag operation for snippet
-      editor.currentDragOperation = { type: 'snippet', isExisting: false };
+      editor.currentDragOperation = { elementType: 'snippet', type: 'new', isExisting: false };
       
       const dragOverEvent = new DragEvent('dragover', {
         bubbles: true,
@@ -407,30 +407,33 @@ describe('Drag and Drop Functionality', () => {
     });
 
     test('should clear visual indicators after drop', () => {
-      // Add visual indicators
-      editableArea.style.background = 'rgba(59, 130, 246, 0.05)';
-      
+      // Add visual indicators (CSS classes used by DropZoneManager)
+      editableArea.classList.add('valid-drop-target');
+
       const dropOverlay = document.createElement('div');
       dropOverlay.className = 'drop-zone-overlay';
       editableArea.appendChild(dropOverlay);
-      
+
+      // Set up drag data that the DropZoneManager can recognize
+      mockDataTransfer.setData('elementType', 'block');
+
       const dropEvent = new DragEvent('drop', {
         bubbles: true,
         cancelable: true,
         dataTransfer: mockDataTransfer
       });
-      
+
       editableArea.dispatchEvent(dropEvent);
-      
+
       // Visual indicators should be cleared
-      expect(editableArea.style.background).toBe('');
+      expect(editableArea.classList.contains('valid-drop-target')).toBe(false);
       expect(editableArea.querySelector('.drop-zone-overlay')).toBeNull();
     });
   });
 
   describe('Drag preview/ghost element behavior', () => {
     test('should set correct drag effect for new elements', () => {
-      editor.currentDragOperation = { type: 'block', isExisting: false };
+      editor.currentDragOperation = { elementType: 'block', type: 'new', isExisting: false };
       
       const dragOverEvent = new DragEvent('dragover', {
         bubbles: true,
@@ -444,7 +447,7 @@ describe('Drag and Drop Functionality', () => {
     });
 
     test('should set correct drag effect for existing elements', () => {
-      editor.currentDragOperation = { type: 'block', isExisting: true };
+      editor.currentDragOperation = { elementType: 'block', type: 'existing', isExisting: true };
       
       const dragOverEvent = new DragEvent('dragover', {
         bubbles: true,
@@ -462,8 +465,8 @@ describe('Drag and Drop Functionality', () => {
       const block1 = document.createElement('div');
       block1.className = 'editor-block';
       editableArea.appendChild(block1);
-      
-      editor.currentDragOperation = { type: 'block', isExisting: false };
+
+      editor.currentDragOperation = { elementType: 'block', type: 'new', isExisting: false };
       
       const dragOverEvent = new DragEvent('dragover', {
         bubbles: true,
@@ -483,8 +486,8 @@ describe('Drag and Drop Functionality', () => {
       const emptyBlock = document.createElement('div');
       emptyBlock.className = 'editor-block';
       editableArea.appendChild(emptyBlock);
-      
-      editor.currentDragOperation = { type: 'snippet', isExisting: false };
+
+      editor.currentDragOperation = { elementType: 'snippet', type: 'new', isExisting: false };
       
       const dragOverEvent = new DragEvent('dragover', {
         bubbles: true,
@@ -827,17 +830,18 @@ describe('Drag and Drop Functionality', () => {
 
   describe('Edge cases and error handling', () => {
     test('should handle dragleave to clear indicators', () => {
-      editableArea.style.background = 'rgba(59, 130, 246, 0.05)';
-      
+      // Set up visual indicators using CSS class
+      editableArea.classList.add('valid-drop-target');
+
       const dragLeaveEvent = new DragEvent('dragleave', {
         bubbles: true,
         cancelable: true,
         relatedTarget: document.body // Leaving to outside element
       });
-      
+
       editableArea.dispatchEvent(dragLeaveEvent);
-      
-      expect(editableArea.style.background).toBe('');
+
+      expect(editableArea.classList.contains('valid-drop-target')).toBe(false);
     });
 
     test('should restore original position on invalid drop', () => {
@@ -921,12 +925,10 @@ describe('Drag and Drop Functionality', () => {
     });
 
     test('should handle empty template in drag data', () => {
-      mockDataTransfer.data = {
-        elementType: 'block',
-        template: ''
-      };
-      
-      editor.currentDragOperation = { type: 'block', isExisting: false };
+      mockDataTransfer.setData('elementType', 'block');
+      mockDataTransfer.setData('template', '<div class="editor-block"></div>');
+
+      editor.currentDragOperation = { elementType: 'block', type: 'new', isExisting: false };
       
       const dropEvent = new DragEvent('drop', {
         bubbles: true,

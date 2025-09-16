@@ -403,18 +403,18 @@ describe('Drag and Drop Edge Cases and Stress Tests', () => {
       // Create multiple indicators manually
       for (let i = 0; i < 5; i++) {
         const indicator = document.createElement('div');
-        indicator.className = 'drop-indicator';
+        indicator.className = 'drop-insertion-line';
         editableArea.appendChild(indicator);
       }
 
       // Verify we created 5 indicators
-      expect(editableArea.querySelectorAll('.drop-indicator').length).toBe(5);
+      expect(editableArea.querySelectorAll('.drop-insertion-line').length).toBe(5);
 
       // Trigger cleanup through clearVisualIndicators
       editor.clearVisualIndicators();
 
       // Should have cleaned up all indicators
-      const indicators = editableArea.querySelectorAll('.drop-indicator');
+      const indicators = editableArea.querySelectorAll('.drop-insertion-line');
       expect(indicators.length).toBe(0);
     });
 
