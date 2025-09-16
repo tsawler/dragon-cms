@@ -6,6 +6,7 @@
 export class DropZoneManager {
     constructor(editor) {
         this.editor = editor;
+        this.lastDropTime = 0; // Track last drop time to prevent duplicates
         this.editableArea = editor.editableArea;
         this.stateHistory = editor.stateHistory;
 
@@ -93,6 +94,7 @@ export class DropZoneManager {
     setupDrop() {
         this.editableArea.addEventListener('drop', (e) => {
             e.preventDefault();
+            e.stopPropagation(); // Prevent event bubbling that could cause duplicate handling
             this.handleDrop(e);
         });
     }
@@ -308,6 +310,13 @@ export class DropZoneManager {
      * Handle drop events
      */
     handleDrop(e) {
+        // Prevent duplicate drop events that occur within 50ms
+        const now = Date.now();
+        if (now - this.lastDropTime < 50) {
+            return;
+        }
+        this.lastDropTime = now;
+
         const dragData = this.getCurrentDragData(e);
         if (!dragData) return;
 

@@ -22,7 +22,12 @@ class Dragon {
             ...options
         };
         const containerId = options.containerId || 'dragon-editor';
-        
+
+        // Check if an editor already exists for this container
+        if (this.instances.has(containerId)) {
+            return this.instances.get(containerId);
+        }
+
         // Get or create container element
         let container = document.getElementById(containerId);
         if (!container) {
@@ -43,7 +48,7 @@ class Dragon {
 
         // Initialize the editor
         const editor = new Editor(finalOptions);
-        
+
         // Store the instance
         this.instances.set(containerId, editor);
         
