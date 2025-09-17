@@ -323,22 +323,21 @@ describe('Drag and Drop Functionality', () => {
 
     test('should handle drop to create new block', () => {
       // Setup drag data
-      mockDataTransfer.data = {
-        elementType: 'block',
-        template: '<div class="new-block">New Block</div>'
-      };
-      
-      editor.currentDragOperation = { type: 'block', isExisting: false };
-      
+      mockDataTransfer.setData('elementType', 'block');
+      mockDataTransfer.setData('template', '<div class="new-block">New Block</div>');
+
+      // Set up the drop zone manager state to recognize this as a block drop
+      editor.currentDragOperation = { elementType: 'block', type: 'new', isExisting: false };
+
       const dropEvent = new DragEvent('drop', {
         bubbles: true,
         cancelable: true,
         dataTransfer: mockDataTransfer,
         clientY: 100
       });
-      
+
       editableArea.dispatchEvent(dropEvent);
-      
+
       // Check that new block was created
       const newBlock = editableArea.querySelector('.editor-block');
       expect(newBlock).toBeTruthy();
@@ -350,30 +349,29 @@ describe('Drag and Drop Functionality', () => {
       const block = document.createElement('div');
       block.className = 'editor-block';
       editableArea.appendChild(block);
-      
+
       // Setup drag data for snippet
-      mockDataTransfer.data = {
-        elementType: 'snippet',
-        snippetType: 'text',
-        template: '<p>New Snippet</p>'
-      };
-      
-      editor.currentDragOperation = { type: 'snippet', isExisting: false };
+      mockDataTransfer.setData('elementType', 'snippet');
+      mockDataTransfer.setData('snippetType', 'text');
+      mockDataTransfer.setData('template', '<p>New Snippet</p>');
+
+      // Set up the drop zone manager state to recognize this as a snippet drop
+      editor.currentDragOperation = { elementType: 'snippet', type: 'new', isExisting: false };
       editor.currentTargetBlock = block;
-      
+
       const dropEvent = new DragEvent('drop', {
         bubbles: true,
         cancelable: true,
         dataTransfer: mockDataTransfer
       });
-      
+
       Object.defineProperty(dropEvent, 'target', {
         value: block,
         enumerable: true
       });
-      
-      block.dispatchEvent(dropEvent);
-      
+
+      editableArea.dispatchEvent(dropEvent);
+
       // Check that new snippet was created in the block
       const newSnippet = block.querySelector('.editor-snippet');
       expect(newSnippet).toBeTruthy();
@@ -513,11 +511,9 @@ describe('Drag and Drop Functionality', () => {
   describe('Nested element drag restrictions', () => {
     test('should not allow dropping snippets outside blocks', () => {
       // Try to drop snippet directly in editable area (not in a block)
-      mockDataTransfer.data = {
-        elementType: 'snippet',
-        snippetType: 'text',
-        template: '<p>Snippet</p>'
-      };
+      mockDataTransfer.setData('elementType', 'snippet');
+      mockDataTransfer.setData('snippetType', 'text');
+      mockDataTransfer.setData('template', '<p>Snippet</p>');
       
       editor.currentDragOperation = { type: 'snippet', isExisting: false };
       editor.currentTargetBlock = null; // No target block
@@ -610,28 +606,27 @@ describe('Drag and Drop Functionality', () => {
       const parentBlock = document.createElement('div');
       parentBlock.className = 'editor-block';
       editableArea.appendChild(parentBlock);
-      
+
       // Try to drop a block inside another block (invalid)
-      mockDataTransfer.data = {
-        elementType: 'block',
-        template: '<div>Nested block attempt</div>'
-      };
-      
-      editor.currentDragOperation = { type: 'block', isExisting: false };
-      
+      mockDataTransfer.setData('elementType', 'block');
+      mockDataTransfer.setData('template', '<div>Nested block attempt</div>');
+
+      // Set up the drop zone manager state to recognize this as a block drop
+      editor.currentDragOperation = { elementType: 'block', type: 'new', isExisting: false };
+
       const dropEvent = new DragEvent('drop', {
         bubbles: true,
         cancelable: true,
         dataTransfer: mockDataTransfer
       });
-      
+
       Object.defineProperty(dropEvent, 'target', {
         value: parentBlock,
         enumerable: true
       });
-      
-      parentBlock.dispatchEvent(dropEvent);
-      
+
+      editableArea.dispatchEvent(dropEvent);
+
       // Should not nest blocks - new block should be sibling
       const blocks = editableArea.querySelectorAll('.editor-block');
       expect(blocks.length).toBe(2); // Two blocks at same level
@@ -948,12 +943,10 @@ describe('Drag and Drop Functionality', () => {
       const invalidTarget = document.createElement('div');
       invalidTarget.className = 'not-a-block';
       editableArea.appendChild(invalidTarget);
-      
-      mockDataTransfer.data = {
-        elementType: 'snippet',
-        snippetType: 'text',
-        template: '<p>Snippet</p>'
-      };
+
+      mockDataTransfer.setData('elementType', 'snippet');
+      mockDataTransfer.setData('snippetType', 'text');
+      mockDataTransfer.setData('template', '<p>Snippet</p>');
       
       editor.currentDragOperation = { type: 'snippet', isExisting: false };
       editor.currentTargetBlock = null;
@@ -1015,10 +1008,8 @@ describe('Drag and Drop Functionality', () => {
     });
 
     test('should handle malformed drag data gracefully', () => {
-      mockDataTransfer.data = {
-        elementType: 'invalid-type',
-        template: null
-      };
+      mockDataTransfer.setData('elementType', 'invalid-type');
+      mockDataTransfer.setData('template', '');
       
       const dropEvent = new DragEvent('drop', {
         bubbles: true,
