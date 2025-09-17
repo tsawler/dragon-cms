@@ -696,12 +696,34 @@ export class FormattingToolbar {
 
         // Mark as fixed to avoid duplicate processing
         editableElement.dataset.firefoxFixed = 'true';
-        
-        // Apply CSS fixes
-        editableElement.style.cursor = 'text';
-        editableElement.style.userSelect = 'text';
-        editableElement.style.mozUserSelect = 'text';
-        
+
+        // Apply CSS fixes with !important for Firefox to the element itself
+        editableElement.style.setProperty('cursor', 'text', 'important');
+        editableElement.style.setProperty('user-select', 'text', 'important');
+        editableElement.style.setProperty('-moz-user-select', 'text', 'important');
+        editableElement.style.setProperty('-webkit-user-select', 'text', 'important');
+        editableElement.style.setProperty('-ms-user-select', 'text', 'important');
+
+        // Also apply to any nested text elements to ensure they're selectable
+        const textElements = editableElement.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, div, li');
+        textElements.forEach(el => {
+            el.style.setProperty('user-select', 'text', 'important');
+            el.style.setProperty('-moz-user-select', 'text', 'important');
+            el.style.setProperty('-webkit-user-select', 'text', 'important');
+            el.style.setProperty('-ms-user-select', 'text', 'important');
+        });
+
+        // Fix parent elements that might prevent text selection
+        let parent = editableElement.parentElement;
+        while (parent && !parent.classList.contains('dragon-editor')) {
+            // Only fix user-select on direct ancestors, don't break their other functionality
+            if (parent.style.userSelect === 'none' || parent.style.mozUserSelect === 'none') {
+                parent.style.setProperty('-moz-user-select', 'auto', 'important');
+                parent.style.setProperty('user-select', 'auto', 'important');
+            }
+            parent = parent.parentElement;
+        }
+
         // Handle draggable ancestors with mouse events
         this.addFirefoxDragHandling(editableElement);
     }
