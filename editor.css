@@ -11,6 +11,32 @@
     box-sizing: border-box;
 }
 
+/* Ensure contenteditable elements allow text selection in all browsers, especially Firefox */
+.dragon-editor [contenteditable="true"] {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    cursor: text !important;
+}
+
+/* Also apply to nested text elements within contenteditable containers */
+.dragon-editor [contenteditable="true"] p,
+.dragon-editor [contenteditable="true"] h1,
+.dragon-editor [contenteditable="true"] h2,
+.dragon-editor [contenteditable="true"] h3,
+.dragon-editor [contenteditable="true"] h4,
+.dragon-editor [contenteditable="true"] h5,
+.dragon-editor [contenteditable="true"] h6,
+.dragon-editor [contenteditable="true"] span,
+.dragon-editor [contenteditable="true"] div,
+.dragon-editor [contenteditable="true"] li {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+}
+
 
 
 .dragon-editor .editor-container{

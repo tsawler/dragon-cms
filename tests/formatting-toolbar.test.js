@@ -567,12 +567,17 @@ describe('FormattingToolbar', () => {
 
         test('should apply CSS fixes for Firefox', () => {
             const editableElement = document.getElementById('test-editable');
-            
+
             toolbar.fixSingleFirefoxElement(editableElement);
-            
-            expect(editableElement.style.cursor).toBe('text');
-            expect(editableElement.style.userSelect).toBe('text');
-            expect(editableElement.style.mozUserSelect).toBe('text');
+
+            // Check that CSS properties are set with !important
+            expect(editableElement.style.getPropertyValue('cursor')).toBe('text');
+            expect(editableElement.style.getPropertyValue('user-select')).toBe('text');
+            expect(editableElement.style.getPropertyPriority('user-select')).toBe('important');
+            expect(editableElement.style.getPropertyPriority('cursor')).toBe('important');
+
+            // Check that element is marked as fixed
+            expect(editableElement.dataset.firefoxFixed).toBe('true');
         });
 
         test('should handle draggable ancestors', () => {
