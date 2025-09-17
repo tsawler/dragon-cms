@@ -1,4 +1,5 @@
 import { STYLES, styleToString, createSpacingSection, createModalFooter, highlightSyntax } from './modal-utilities.js';
+import { Utilities } from './utilities.js';
 
 // Utility function to style Edge modal headers with neutral colors
 function styleEdgeModalHeader(modalContent) {
@@ -332,9 +333,7 @@ export class StyleEditorModal {
         this.targetElement = element;
         
         // Edge compatibility - create a completely new modal
-        const isEdge = window.navigator.userAgent.indexOf('Edge') > -1 || 
-                      window.navigator.userAgent.indexOf('Edg') > -1 ||
-                      window.navigator.userAgent.indexOf('EdgeHTML') > -1;
+        const isEdge = Utilities.Browser.isEdge();
         
         if (isEdge) {
             // Hide the original modal
@@ -426,7 +425,7 @@ export class StyleEditorModal {
             const computedValue = styles[cssProperty] || '0px';
             
             // Parse the value and unit
-            const parsed = this.parseValueUnit(computedValue);
+            const parsed = Utilities.CSS.parseValueUnit(computedValue);
             
             const valueInput = this.modal.querySelector(`.style-${type}-${side}`);
             const unitSelect = this.modal.querySelector(`.style-${type}-${side}-unit`);
@@ -438,28 +437,6 @@ export class StyleEditorModal {
         });
     }
 
-    parseValueUnit(cssValue) {
-        // Handle common cases like "10px", "1.5em", "auto", "0"
-        if (!cssValue) {
-            return { value: '', unit: 'px' };
-        }
-        if (cssValue === 'auto') {
-            return { value: '', unit: 'auto' };
-        }
-        if (cssValue === '0') {
-            return { value: 0, unit: 'px' };
-        }
-        
-        const match = cssValue.match(/^(-?[\d.]+)([a-z%]+)?$/i);
-        if (match) {
-            return {
-                value: parseFloat(match[1]) || '',
-                unit: match[2] || 'px'
-            };
-        }
-        
-        return { value: '', unit: 'px' };
-    }
 
     applySpacingStyles(modalElement, type) {
         const sides = ['top', 'right', 'bottom', 'left'];
@@ -1027,7 +1004,7 @@ export class CodeEditorModal {
             }
             
             // Make text elements editable and fix Firefox cursor positioning
-            const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+            const isFirefox = Utilities.Browser.isFirefox();
             const textElements = this.targetElement.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, li, td, th, blockquote');
             textElements.forEach(el => {
                 if (!el.querySelector('.drag-handle, .edit-icon, .code-icon, .delete-icon, .settings-icon') && 
@@ -1402,9 +1379,7 @@ export class ColumnSettingsModal {
         this.updatePreview();
         
         // Edge compatibility - create a completely new modal
-        const isEdge = window.navigator.userAgent.indexOf('Edge') > -1 || 
-                      window.navigator.userAgent.indexOf('Edg') > -1 ||
-                      window.navigator.userAgent.indexOf('EdgeHTML') > -1;
+        const isEdge = Utilities.Browser.isEdge();
         
         if (isEdge) {
             // Hide the original modal
@@ -2226,7 +2201,7 @@ export class LinkSettingsModal {
         }
 
         // Sanitize URL (reuse the sanitization logic from formatting toolbar)
-        const sanitizedUrl = this.sanitizeURL(url);
+        const sanitizedUrl = Utilities.Validation.sanitizeURL(url);
         if (!sanitizedUrl) {
             alert('Invalid or dangerous URL. Please enter a valid URL.');
             return;
@@ -2316,43 +2291,6 @@ export class LinkSettingsModal {
         this.close();
     }
 
-    sanitizeURL(url) {
-        if (!url || typeof url !== 'string') {
-            return null;
-        }
-        
-        // Trim and normalize
-        url = url.trim();
-        if (!url) {
-            return null;
-        }
-        
-        // Block dangerous protocols
-        const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:', 'about:'];
-        const lowerUrl = url.toLowerCase();
-        
-        for (const protocol of dangerousProtocols) {
-            if (lowerUrl.startsWith(protocol)) {
-                return null;
-            }
-        }
-        
-        // Allow safe protocols (including relative URLs and anchors)
-        const allowedPattern = /^(https?:\/\/|mailto:|tel:|\/\/|\/|#)/i;
-        
-        if (allowedPattern.test(url)) {
-            return url;
-        }
-        
-        // Auto-add https:// for domain-like strings (more permissive)
-        if (/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*(:[0-9]+)?(\/.*)?\/?$/.test(url)) {
-            return 'https://' + url;
-        }
-        
-        // If nothing matches, still allow it but warn
-        console.warn('URL format not recognized, allowing but recommend using full URLs:', url);
-        return url;
-    }
 }
 export class SectionSettingsModal {
     constructor(editor) {

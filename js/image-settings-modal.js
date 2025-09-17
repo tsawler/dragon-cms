@@ -1,3 +1,5 @@
+import { Utilities } from './utilities.js';
+
 export class ImageSettingsModal {
     constructor(editor) {
         this.editor = editor;
@@ -215,9 +217,7 @@ export class ImageSettingsModal {
         this.modal.classList.add('active');
         
         // Additional Edge compatibility - force redraw
-        const isEdge = window.navigator.userAgent.indexOf('Edge') > -1 || 
-                      window.navigator.userAgent.indexOf('Edg') > -1 ||
-                      window.navigator.userAgent.indexOf('EdgeHTML') > -1;
+        const isEdge = Utilities.Browser.isEdge();
         
         if (isEdge) {
             this.modal.style.display = 'block';
@@ -249,24 +249,28 @@ export class ImageSettingsModal {
         const img = this.targetContainer.querySelector('img');
         
         // Load current settings
-        const bgColor = this.rgbToHex(computedStyle.backgroundColor);
+        const bgColor = Utilities.Color.rgbToHex(computedStyle.backgroundColor);
         this.modal.querySelector('#image-bg-color').value = bgColor === 'transparent' ? '#ffffff' : bgColor;
         this.modal.querySelector('#image-bg-color-text').value = bgColor;
-        this.modal.querySelector('#image-padding').value = parseInt(computedStyle.padding) || 10;
-        this.modal.querySelector('#image-padding-value').textContent = (parseInt(computedStyle.padding) || 10) + 'px';
-        this.modal.querySelector('#image-border-width').value = parseInt(computedStyle.borderWidth) || 0;
-        this.modal.querySelector('#image-border-width-value').textContent = (parseInt(computedStyle.borderWidth) || 0) + 'px';
-        this.modal.querySelector('#image-border-color').value = this.rgbToHex(computedStyle.borderColor) || '#cccccc';
-        this.modal.querySelector('#image-border-color-text').value = this.rgbToHex(computedStyle.borderColor) || '#cccccc';
+        const paddingValue = Utilities.CSS.parseValueUnit(computedStyle.padding).value || 10;
+        const borderWidthValue = Utilities.CSS.parseValueUnit(computedStyle.borderWidth).value || 0;
+
+        this.modal.querySelector('#image-padding').value = paddingValue;
+        this.modal.querySelector('#image-padding-value').textContent = paddingValue + 'px';
+        this.modal.querySelector('#image-border-width').value = borderWidthValue;
+        this.modal.querySelector('#image-border-width-value').textContent = borderWidthValue + 'px';
+        this.modal.querySelector('#image-border-color').value = Utilities.Color.rgbToHex(computedStyle.borderColor) || '#cccccc';
+        this.modal.querySelector('#image-border-color-text').value = Utilities.Color.rgbToHex(computedStyle.borderColor) || '#cccccc';
         this.modal.querySelector('#image-border-style').value = computedStyle.borderStyle || 'solid';
         
         // Try to get border radius from image first, then container
         let borderRadius = 0;
         if (img) {
             const imgStyle = window.getComputedStyle(img);
-            borderRadius = parseInt(imgStyle.borderRadius) || parseInt(computedStyle.borderRadius) || 0;
+            borderRadius = Utilities.CSS.parseValueUnit(imgStyle.borderRadius).value ||
+                          Utilities.CSS.parseValueUnit(computedStyle.borderRadius).value || 0;
         } else {
-            borderRadius = parseInt(computedStyle.borderRadius) || 0;
+            borderRadius = Utilities.CSS.parseValueUnit(computedStyle.borderRadius).value || 0;
         }
         
         this.modal.querySelector('#image-border-radius').value = borderRadius;
@@ -373,16 +377,4 @@ export class ImageSettingsModal {
         this.updatePreview();
     }
 
-    rgbToHex(rgb) {
-        if (!rgb || rgb === 'rgba(0, 0, 0, 0)' || rgb === 'transparent') return 'transparent';
-        
-        const result = rgb.match(/\d+/g);
-        if (!result || result.length < 3) return '#ffffff';
-        
-        const r = parseInt(result[0]);
-        const g = parseInt(result[1]);
-        const b = parseInt(result[2]);
-        
-        return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-    }
 }

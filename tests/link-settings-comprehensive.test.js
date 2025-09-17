@@ -1,4 +1,5 @@
 import { LinkSettingsModal } from '../js/modals.js';
+import { Utilities } from '../js/utilities.js';
 
 describe('LinkSettingsModal - Comprehensive Tests', () => {
   let modal;
@@ -177,7 +178,7 @@ describe('LinkSettingsModal - Comprehensive Tests', () => {
 
       validUrls.forEach(url => {
         expect(() => {
-          const sanitized = modal.sanitizeURL(url);
+          const sanitized = Utilities.Validation.sanitizeURL(url);
           expect(typeof sanitized).toBe('string');
         }).not.toThrow();
       });
@@ -192,7 +193,7 @@ describe('LinkSettingsModal - Comprehensive Tests', () => {
 
       specialUrls.forEach(url => {
         expect(() => {
-          modal.sanitizeURL(url);
+          Utilities.Validation.sanitizeURL(url);
         }).not.toThrow();
       });
     });
@@ -207,7 +208,7 @@ describe('LinkSettingsModal - Comprehensive Tests', () => {
 
       dangerousUrls.forEach(url => {
         expect(() => {
-          const sanitized = modal.sanitizeURL(url);
+          const sanitized = Utilities.Validation.sanitizeURL(url);
           expect(sanitized).toBeFalsy();
         }).not.toThrow();
       });
@@ -224,7 +225,7 @@ describe('LinkSettingsModal - Comprehensive Tests', () => {
 
       malformedUrls.forEach(url => {
         expect(() => {
-          modal.sanitizeURL(url);
+          Utilities.Validation.sanitizeURL(url);
         }).not.toThrow();
       });
     });

@@ -83,6 +83,13 @@ export class Editor {
         if (typeof this.makeExistingSectionsDraggable === 'function') {
             this.makeExistingSectionsDraggable();
         }
+
+        // Ensure all images are resizable - backup conversion
+        if (this.imageUploader) {
+            setTimeout(() => {
+                this.imageUploader.ensureAllImagesResizable();
+            }, 100);
+        }
         
         // Load initial content if provided
         this.loadInitialContent();
@@ -1253,7 +1260,14 @@ export class Editor {
         // Initialize desktop mode
         this.editableArea.classList.add('viewport-desktop');
     }
-    
+
+    // Method to ensure all images have resize functionality
+    refreshImageResizing() {
+        if (this.imageUploader) {
+            this.imageUploader.ensureAllImagesResizable();
+        }
+    }
+
     makeExistingBlocksEditable() {
         // Make all existing text elements in blocks editable
         // This handles blocks that were created before the fix
