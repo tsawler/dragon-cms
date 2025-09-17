@@ -1,3 +1,5 @@
+import { Utilities } from './utilities.js';
+
 export class StateHistory {
     constructor(editor) {
         this.editor = editor;
@@ -63,7 +65,7 @@ export class StateHistory {
         });
         
         // Apply Firefox fixes if needed
-        const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        const isFirefox = Utilities.Browser.isFirefox();
         if (isFirefox && this.editor.formattingToolbar) {
             this.editor.formattingToolbar.fixFirefoxEditableElements();
         }

@@ -1,3 +1,5 @@
+import { Utilities } from './utilities.js';
+
 export class FormattingToolbar {
     constructor(editor) {
         this.editor = editor;
@@ -432,7 +434,7 @@ export class FormattingToolbar {
     
     applyFirefoxFix() {
         // Detect Firefox
-        const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        const isFirefox = Utilities.Browser.isFirefox();
         
         if (!isFirefox) {
             return;
@@ -955,44 +957,6 @@ export class FormattingToolbar {
         return true;
     }
     
-    sanitizeURL(url) {
-        if (!url || typeof url !== 'string') {
-            return null;
-        }
-        
-        // Trim and normalize
-        url = url.trim();
-        if (!url) {
-            return null;
-        }
-        
-        // Block dangerous protocols
-        const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:', 'about:'];
-        const lowerUrl = url.toLowerCase();
-        
-        for (const protocol of dangerousProtocols) {
-            if (lowerUrl.startsWith(protocol)) {
-                return null;
-            }
-        }
-        
-        // Allow safe protocols (including relative URLs and anchors)
-        const allowedPattern = /^(https?:\/\/|mailto:|tel:|\/\/|\/|#)/i;
-        
-        if (allowedPattern.test(url)) {
-            return url;
-        }
-        
-        // Auto-add https:// for domain-like strings (more permissive)
-        // Matches: domain.com, subdomain.domain.com, localhost:3000, IP addresses, etc.
-        if (/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*(:[0-9]+)?(\/.*)?\/?$/.test(url)) {
-            return 'https://' + url;
-        }
-        
-        // If nothing matches, still allow it but warn (better than breaking functionality)
-        console.warn('URL format not recognized, allowing but recommend using full URLs:', url);
-        return url;
-    }
     
     getSelectedLink() {
         const selection = window.getSelection();

@@ -1,3 +1,5 @@
+import { Utilities } from './utilities.js';
+
 export class VideoSettingsModal {
     constructor(editor) {
         this.editor = editor;
@@ -49,7 +51,7 @@ export class VideoSettingsModal {
         this.modal.classList.add('active');
         
         // Additional Edge compatibility - force redraw
-        if (window.navigator.userAgent.indexOf('Edge') > -1) {
+        if (Utilities.Browser.isEdge()) {
             this.modal.style.display = 'block';
         }
         

@@ -1,4 +1,5 @@
 import { StyleEditorModal } from '../js/modals.js';
+import { Utilities } from '../js/utilities.js';
 
 // Mock DOM methods and properties
 global.MutationObserver = class {
@@ -107,14 +108,14 @@ describe('StyleEditorModal - Enhanced Granular Controls', () => {
   describe('Value Parsing and Loading', () => {
     test('should parse CSS values correctly', () => {
       // Test various CSS value formats
-      expect(modal.parseValueUnit('10px')).toEqual({ value: 10, unit: 'px' });
-      expect(modal.parseValueUnit('1.5em')).toEqual({ value: 1.5, unit: 'em' });
-      expect(modal.parseValueUnit('100%')).toEqual({ value: 100, unit: '%' });
-      expect(modal.parseValueUnit('2rem')).toEqual({ value: 2, unit: 'rem' });
-      expect(modal.parseValueUnit('50vh')).toEqual({ value: 50, unit: 'vh' });
-      expect(modal.parseValueUnit('auto')).toEqual({ value: '', unit: 'auto' });
-      expect(modal.parseValueUnit('0')).toEqual({ value: 0, unit: 'px' });
-      expect(modal.parseValueUnit('')).toEqual({ value: '', unit: 'px' });
+      expect(Utilities.CSS.parseValueUnit('10px')).toEqual({ value: 10, unit: 'px' });
+      expect(Utilities.CSS.parseValueUnit('1.5em')).toEqual({ value: 1.5, unit: 'em' });
+      expect(Utilities.CSS.parseValueUnit('100%')).toEqual({ value: 100, unit: '%' });
+      expect(Utilities.CSS.parseValueUnit('2rem')).toEqual({ value: 2, unit: 'rem' });
+      expect(Utilities.CSS.parseValueUnit('50vh')).toEqual({ value: 50, unit: 'vh' });
+      expect(Utilities.CSS.parseValueUnit('auto')).toEqual({ value: '', unit: 'auto' });
+      expect(Utilities.CSS.parseValueUnit('0')).toEqual({ value: 0, unit: 'px' });
+      expect(Utilities.CSS.parseValueUnit('')).toEqual({ value: '', unit: 'px' });
     });
 
     test('should load existing padding values correctly', () => {

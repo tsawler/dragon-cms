@@ -1,4 +1,5 @@
 import { ImageSettingsModal } from '../js/image-settings-modal.js';
+import { Utilities } from '../js/utilities.js';
 
 describe('ImageSettingsModal', () => {
     let modal;
@@ -385,24 +386,24 @@ describe('ImageSettingsModal', () => {
 
     describe('RGB to Hex Conversion', () => {
         test('should convert RGB to hex', () => {
-            expect(modal.rgbToHex('rgb(255, 0, 0)')).toBe('#ff0000');
-            expect(modal.rgbToHex('rgb(0, 255, 0)')).toBe('#00ff00');
-            expect(modal.rgbToHex('rgb(0, 0, 255)')).toBe('#0000ff');
+            expect(Utilities.Color.rgbToHex('rgb(255, 0, 0)')).toBe('#ff0000');
+            expect(Utilities.Color.rgbToHex('rgb(0, 255, 0)')).toBe('#00ff00');
+            expect(Utilities.Color.rgbToHex('rgb(0, 0, 255)')).toBe('#0000ff');
         });
 
         test('should handle transparent values', () => {
-            expect(modal.rgbToHex('transparent')).toBe('transparent');
-            expect(modal.rgbToHex('rgba(0, 0, 0, 0)')).toBe('transparent');
+            expect(Utilities.Color.rgbToHex('transparent')).toBe('transparent');
+            expect(Utilities.Color.rgbToHex('rgba(0, 0, 0, 0)')).toBe('transparent');
         });
 
         test('should handle invalid RGB values', () => {
-            expect(modal.rgbToHex('invalid')).toBe('#ffffff');
-            expect(modal.rgbToHex(null)).toBe('transparent');
-            expect(modal.rgbToHex(undefined)).toBe('transparent');
+            expect(Utilities.Color.rgbToHex('invalid')).toBe('#ffffff');
+            expect(Utilities.Color.rgbToHex(null)).toBe('transparent');
+            expect(Utilities.Color.rgbToHex(undefined)).toBe('transparent');
         });
 
         test('should handle RGBA with opacity', () => {
-            expect(modal.rgbToHex('rgba(255, 0, 0, 0.5)')).toBe('#ff0000');
+            expect(Utilities.Color.rgbToHex('rgba(255, 0, 0, 0.5)')).toBe('#ff0000');
         });
     });
 

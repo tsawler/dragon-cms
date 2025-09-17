@@ -1,3 +1,5 @@
+import { Utilities } from './utilities.js';
+
 export class ButtonSettingsModal {
     constructor(editor) {
         this.editor = editor;
@@ -177,15 +179,15 @@ export class ButtonSettingsModal {
         
         // Load current button settings
         const text = this.originalValues.text;
-        const bgColor = this.rgbToHex(this.originalValues.bgColor) || '#3b82f6';
-        const textColor = this.rgbToHex(this.originalValues.textColor) || '#ffffff';
+        const bgColor = Utilities.Color.rgbToHex(this.originalValues.bgColor) || '#3b82f6';
+        const textColor = Utilities.Color.rgbToHex(this.originalValues.textColor) || '#ffffff';
         const url = this.originalValues.url;
         const target = this.originalValues.target;
         
         // Extract border radius value (default to 4 if not set)
         let borderRadius = 4;
         if (this.originalValues.borderRadius) {
-            borderRadius = parseInt(this.originalValues.borderRadius) || 4;
+            borderRadius = Utilities.CSS.parseValueUnit(this.originalValues.borderRadius).value || 4;
         }
         
         // Detect current size based on padding and fontSize
@@ -204,9 +206,7 @@ export class ButtonSettingsModal {
         }
         
         // Edge compatibility - create a completely new modal
-        const isEdge = window.navigator.userAgent.indexOf('Edge') > -1 || 
-                      window.navigator.userAgent.indexOf('Edg') > -1 ||
-                      window.navigator.userAgent.indexOf('EdgeHTML') > -1;
+        const isEdge = Utilities.Browser.isEdge();
         
         if (isEdge) {
             // Hide the original modal
@@ -335,47 +335,7 @@ export class ButtonSettingsModal {
         this.close();
     }
 
-    rgbToHex(rgb) {
-        if (!rgb) return null;
-        if (rgb.startsWith('#')) return rgb;
-        
-        const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-        if (!match) return null;
-        
-        const hex = '#' + [1, 2, 3].map(i => {
-            const val = parseInt(match[i]);
-            return ('0' + val.toString(16)).slice(-2);
-        }).join('');
-        
-        return hex;
-    }
 
-    sanitizeURL(url) {
-        if (!url || typeof url !== 'string') return '';
-        
-        const trimmedUrl = url.trim();
-        if (!trimmedUrl) return '';
-        
-        // Block dangerous protocols
-        const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:', 'about:'];
-        const lowerUrl = trimmedUrl.toLowerCase();
-        
-        for (const protocol of dangerousProtocols) {
-            if (lowerUrl.startsWith(protocol)) {
-                console.warn('Dangerous URL protocol blocked:', protocol);
-                return '';
-            }
-        }
-        
-        // Allow http, https, mailto, tel, and protocol-relative URLs
-        const allowedPattern = /^(https?:\/\/|mailto:|tel:|\/\/|\/|#)/i;
-        if (!allowedPattern.test(trimmedUrl)) {
-            // If no protocol specified, assume https
-            return 'https://' + trimmedUrl;
-        }
-        
-        return trimmedUrl;
-    }
 
     applyChanges() {
         // Add null checks for DOM elements
@@ -388,7 +348,7 @@ export class ButtonSettingsModal {
         const targetEl = document.getElementById('button-target');
         
         const text = textEl ? textEl.value : '';
-        const url = this.sanitizeURL(urlEl ? urlEl.value : '');
+        const url = Utilities.Validation.sanitizeURL(urlEl ? urlEl.value : '');
         const bgColor = bgColorEl ? bgColorEl.value : '#3b82f6';
         const textColor = textColorEl ? textColorEl.value : '#ffffff';
         const borderRadius = borderRadiusEl ? borderRadiusEl.value : '4';

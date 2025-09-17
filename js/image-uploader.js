@@ -160,6 +160,23 @@ export class ImageUploader {
         reader.readAsDataURL(file);
     }
 
+    // Method to ensure all standalone images get resize containers
+    ensureAllImagesResizable() {
+        const allStandaloneImages = this.editor.editableArea.querySelectorAll('img:not(.image-resize-container img):not(.image-resize-container > img)');
+
+        allStandaloneImages.forEach((img) => {
+            // Skip if already wrapped
+            if (img.parentElement.classList.contains('image-resize-container')) {
+                return;
+            }
+
+            // Create resize container for the image
+            const container = this.createImageResizeContainer(img.cloneNode(true));
+            img.parentNode.replaceChild(container, img);
+            this.reattachImageHandlers(container);
+        });
+    }
+
     reattachImageHandlers(container) {
         // Add class to remove gray background from snippet
         const snippet = container.closest('.image-snippet');
