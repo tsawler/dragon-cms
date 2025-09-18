@@ -319,20 +319,20 @@ export class Editor {
         if (modeBtn) {
             modeBtn.textContent = this.currentMode === 'edit' ? 'Switch to Display Mode' : 'Switch to Edit Mode';
         }
-        
+
         // Hide/show editor header based on mode
         const editorHeader = document.querySelector('.dragon-editor .editor-header');
         if (editorHeader) {
             editorHeader.style.display = this.currentMode === 'edit' ? 'flex' : 'none';
         }
-        
+
         // Hide/show snippet panel based on mode
         const panel = document.getElementById('snippet-panel');
         const handle = document.getElementById('new-panel-handle');
-        
+
         // Hide/show viewport controls based on mode
         const viewportControls = document.querySelector('.viewport-controls');
-        
+
         if (this.currentMode === 'display') {
             // Hide panel and handle in display mode
             if (panel) {
@@ -340,13 +340,13 @@ export class Editor {
             }
             // Close panel and reset margins
             document.querySelector('.editor-main').classList.remove('panel-open');
-            
+
             // Hide icon strip in display mode
             const iconStrip = document.querySelector('.icon-strip');
             if (iconStrip) {
                 iconStrip.style.display = 'none';
             }
-            
+
             if (handle) {
                 handle.style.display = 'none';
             }
@@ -365,13 +365,19 @@ export class Editor {
             document.querySelectorAll('.valid-drop-target').forEach(el => {
                 el.classList.remove('valid-drop-target');
             });
+
+            // Disable dragging for all draggable elements
+            const draggableElements = this.editableArea.querySelectorAll('.editor-block, .editor-snippet, .editor-section');
+            draggableElements.forEach(el => {
+                el.draggable = false;
+            });
         } else {
             // Show icon strip in edit mode
             const iconStrip = document.querySelector('.icon-strip');
             if (iconStrip) {
                 iconStrip.style.display = 'flex';
             }
-            
+
             // Show handle in edit mode (panel starts closed)
             if (handle) {
                 handle.style.display = 'flex';
@@ -382,27 +388,33 @@ export class Editor {
             if (viewportControls) {
                 viewportControls.style.display = 'flex';
             }
-            
+
             // Panel-open class is managed by panel toggle
             // CSS handles margin based on classes
+
+            // Re-enable dragging for all draggable elements
+            const draggableElements = this.editableArea.querySelectorAll('.editor-block, .editor-snippet, .editor-section');
+            draggableElements.forEach(el => {
+                el.draggable = true;
+            });
         }
-        
+
         // Handle contenteditable elements based on mode
         if (typeof this.toggleContentEditableElements === 'function') {
             this.toggleContentEditableElements();
         }
-        
+
         // Dispatch custom event for mode change
-        window.dispatchEvent(new CustomEvent('dragonModeChanged', { 
-            detail: { mode: this.currentMode } 
+        window.dispatchEvent(new CustomEvent('dragonModeChanged', {
+            detail: { mode: this.currentMode }
         }));
-        
+
         // Refresh column resize dividers when mode changes
         // Temporarily disabled to prevent infinite loops
         // if (this.columnResizer) {
         //     this.columnResizer.refresh();
         // }
-        
+
     }
 
     toggleContentEditableElements() {
