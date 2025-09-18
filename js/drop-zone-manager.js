@@ -42,6 +42,12 @@ export class DropZoneManager {
      */
     setupDragStart() {
         this.editableArea.addEventListener('dragstart', (e) => {
+            // Prevent dragging in display mode
+            if (this.editor.currentMode === 'display') {
+                e.preventDefault();
+                return;
+            }
+
             const draggedElement = this.findDraggedElement(e.target);
 
             if (draggedElement) {
@@ -159,6 +165,12 @@ export class DropZoneManager {
      * Handle drag over - show visual feedback
      */
     handleDragOver(e) {
+        // Don't show any drag indicators in display mode
+        if (this.editor.currentMode === 'display') {
+            e.preventDefault();
+            return;
+        }
+
         const dragData = this.getCurrentDragData(e);
         if (!dragData) return;
 
@@ -310,6 +322,12 @@ export class DropZoneManager {
      * Handle drop events
      */
     handleDrop(e) {
+        // Don't allow drops in display mode
+        if (this.editor.currentMode === 'display') {
+            e.preventDefault();
+            return;
+        }
+
         // Prevent duplicate drop events that occur within 50ms
         const now = Date.now();
         if (now - this.lastDropTime < 50) {

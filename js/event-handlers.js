@@ -61,6 +61,12 @@ export class EventHandlerRegistry {
             return;
         }
 
+        // Don't make elements draggable in display mode
+        if (this.editor.currentMode === 'display') {
+            element.draggable = false;
+            return;
+        }
+
         // Mark element as draggable
         element.draggable = true;
         dragHandle.style.cursor = 'move';
@@ -78,6 +84,12 @@ export class EventHandlerRegistry {
     addDragHandleListeners(element, dragHandle) {
         // Start drag from handle
         dragHandle.addEventListener('mousedown', (e) => {
+            // Prevent dragging in display mode
+            if (this.editor.currentMode === 'display') {
+                e.preventDefault();
+                return;
+            }
+
             this.dragState.startDragFromHandle(element);
             element.dataset.dragFromHandle = 'true'; // Keep for compatibility
             e.stopPropagation();

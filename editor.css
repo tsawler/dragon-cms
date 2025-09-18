@@ -311,6 +311,31 @@
     visibility: hidden;
 }
 
+/* Hide all control elements in display mode */
+.dragon-editor .editable-area[data-mode="display"] .drag-handle,
+.dragon-editor .editable-area[data-mode="display"] .edit-icon,
+.dragon-editor .editable-area[data-mode="display"] .settings-icon,
+.dragon-editor .editable-area[data-mode="display"] .code-icon,
+.dragon-editor .editable-area[data-mode="display"] .delete-icon,
+.dragon-editor .editable-area[data-mode="display"] .gear-icon,
+.dragon-editor .editable-area[data-mode="display"] .resizer-handle,
+.dragon-editor .editable-area[data-mode="display"] .section-controls {
+    display: none !important;
+}
+
+/* Disable dragging cursor in display mode */
+.dragon-editor .editable-area[data-mode="display"] .editor-block,
+.dragon-editor .editable-area[data-mode="display"] .editor-snippet,
+.dragon-editor .editable-area[data-mode="display"] .editor-section {
+    cursor: default !important;
+}
+
+/* Hide drop indicators in display mode */
+.dragon-editor .editable-area[data-mode="display"] .drop-insertion-line,
+.dragon-editor .editable-area[data-mode="display"] .drop-zone-overlay {
+    display: none !important;
+}
+
 .dragon-editor .drop-zone-placeholder{
     display: flex;
     align-items: center;
@@ -388,8 +413,6 @@
 .dragon-editor .editor-block{
     margin: 1rem 0;
     padding: 1rem;
-    border: 2px solid transparent;
-    border-radius: 4px;
     position: relative;
     min-height: 80px;
     transition: all 0.2s;
@@ -398,7 +421,8 @@
 }
 
 .dragon-editor .editable-area[data-mode="edit"] .editor-block{
-    border-color: #e2e8f0;
+    border: 2px solid #e2e8f0;
+    border-radius: 4px;
 }
 
 .dragon-editor .editable-area[data-mode="edit"] .editor-block:hover{
@@ -433,7 +457,30 @@
 }
 
 .dragon-editor .editable-area[data-mode="display"] .editor-block{
-    border: none;
+    border: none !important;
+}
+
+/* Remove any hover effects in display mode - comprehensive overrides */
+.dragon-editor .editable-area[data-mode="display"] .editor-block,
+.dragon-editor .editable-area[data-mode="display"] .editor-block:hover,
+.dragon-editor .editable-area[data-mode="display"] .editor-snippet,
+.dragon-editor .editable-area[data-mode="display"] .editor-snippet:hover,
+.dragon-editor .editable-area[data-mode="display"] .editor-section,
+.dragon-editor .editable-area[data-mode="display"] .editor-section:hover,
+.dragon-editor .editable-area[data-mode="display"] .column,
+.dragon-editor .editable-area[data-mode="display"] .column:hover {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Ensure backgrounds aren't changed on hover in display mode */
+.dragon-editor .editable-area[data-mode="display"] .editor-block:hover,
+.dragon-editor .editable-area[data-mode="display"] .editor-snippet:hover,
+.dragon-editor .editable-area[data-mode="display"] .editor-section:hover,
+.dragon-editor .editable-area[data-mode="display"] .column:hover {
+    background: inherit !important;
+    backdrop-filter: none !important;
 }
 
 /* Full-width blocks - base styles */
@@ -691,6 +738,21 @@ body.column-resizing *{
 
 .dragon-editor .editable-area[data-mode="edit"] button:not(.edit-icon):not(.code-icon):not(.delete-icon):not(.settings-icon):not(.btn):not(.modal button):hover::after{
     opacity: 1;
+}
+
+/* Hide editable area border in display mode */
+.dragon-editor .editable-area[data-mode="display"] {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Disable drag-over effects in display mode */
+.dragon-editor .editable-area[data-mode="display"] .valid-drop-target,
+.dragon-editor .editable-area[data-mode="display"] .drag-over {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    animation: none !important;
 }
 
 .dragon-editor .drop-insertion-line{
