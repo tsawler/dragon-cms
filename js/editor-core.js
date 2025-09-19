@@ -229,7 +229,7 @@ export class Editor {
     }
 
     attachEventListeners() {
-        this.dropZoneManager.setup();
+        // Drop zone manager is already set up in init(), don't call setup() again
 
         // Handle header button clicks
         this.attachHeaderListeners();

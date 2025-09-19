@@ -98,6 +98,13 @@ export class DropZoneManager {
      * Handle drop events - perform the actual drop operation
      */
     setupDrop() {
+        // Check if we already have a drop listener
+        if (this.dropListenerAttached) {
+            console.warn('Drop listener already attached, skipping duplicate');
+            return;
+        }
+
+        this.dropListenerAttached = true;
         this.editableArea.addEventListener('drop', (e) => {
             e.preventDefault();
             e.stopPropagation(); // Prevent event bubbling that could cause duplicate handling
