@@ -434,26 +434,22 @@
     background: #fafafa;
 }
 
-/* For blocks inside sections, use a subtle transparent overlay that works on any background */
+/* For blocks inside sections, only add box-shadow for visibility without changing background */
 .dragon-editor .editable-area[data-mode="edit"] .editor-section .editor-block:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(1px);
-    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 0 0 2px rgba(139, 92, 246, 0.3);
 }
 
-/* Special handling for dark sections - use a lighter overlay */
+/* Special handling for dark sections - use only box-shadow */
 .dragon-editor .editable-area[data-mode="edit"] .hero-section .editor-block:hover,
 .dragon-editor .editable-area[data-mode="edit"] .cta-section .editor-block:hover,
 .dragon-editor .editable-area[data-mode="edit"] .footer-section .editor-block:hover {
-    background: rgba(255, 255, 255, 0.15) !important;
-    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.3);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.4);
 }
 
-/* Special handling for light sections - use a darker overlay */
+/* Special handling for light sections - use only box-shadow */
 .dragon-editor .editable-area[data-mode="edit"] .content-section .editor-block:hover,
 .dragon-editor .editable-area[data-mode="edit"] .features-section .editor-block:hover {
-    background: rgba(0, 0, 0, 0.05) !important;
-    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 0 0 2px rgba(139, 92, 246, 0.3);
 }
 
 .dragon-editor .editable-area[data-mode="display"] .editor-block{
@@ -479,8 +475,7 @@
 .dragon-editor .editable-area[data-mode="display"] .editor-snippet:hover,
 .dragon-editor .editable-area[data-mode="display"] .editor-section:hover,
 .dragon-editor .editable-area[data-mode="display"] .column:hover {
-    background: inherit !important;
-    backdrop-filter: none !important;
+    box-shadow: none !important;
 }
 
 /* Full-width blocks - base styles */
